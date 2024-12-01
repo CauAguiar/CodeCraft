@@ -111,7 +111,7 @@ fun AppNavigation() {
             )
         }
         composable("telaLogin") {
-            TelaLogin()
+            TelaLogin(navController, onNextClick = {navController.navigate("telaPrincipal")})
         }
         composable("telaCadastro") {
             TelaCadastro(navController, onNextClick = {navController.navigate("verificacaoTelefone")})
@@ -120,8 +120,230 @@ fun AppNavigation() {
         composable("verificacaoTelefone") {
             TelaVerificacaoTelefone(navController, onConfirmClick = {navController.navigate("digitarSenha")})
         }
+        
+        composable("digitarSenha") {
+            TelaDigitarSenha(navController, onConfirmClick = {navController.navigate("telaPrincipal")})
+        }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Unit) {
+    // Criação dos FocusRequesters para os campos de OTP
+    val (item1, item2, item3, item4, item5, item6) = FocusRequester.createRefs()
+    val (item1_confirm, item2_confirm, item3_confirm, item4_confirm, item5_confirm, item6_confirm) = FocusRequester.createRefs()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack()}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.seta), // Nome da sua imagem PNG
+                            contentDescription = "Seta",
+                            colorFilter = ColorFilter.tint(Color.Black),
+                            modifier = Modifier
+                                .graphicsLayer(
+                                    scaleX = -3.5f,
+                                    scaleY = 3.5f
+                                )
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+
+            Card(
+                shape = RoundedCornerShape(16.dp), // Borda arredondada do Card
+                // Sombra para o Card
+                modifier = Modifier
+                    .width(380.dp)
+                    .height(350.dp)
+                    .padding(16.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.intro_image_1), // Substitua pelo ID da sua imagem
+                    contentDescription = "Imagem de introdução",
+                    modifier = Modifier.fillMaxSize(), // Preenche o tamanho do Car
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Spacer(modifier = Modifier.height(30.dp))
+            Text(
+                text = "DEFINIR A SENHA",
+                fontSize = 24.sp,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(50.dp))
+
+            Text(
+                text = "Digite sua Senha",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                textAlign = TextAlign.Center
+            )
+
+            // Primeira Row para os campos OTP
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item1)
+                        .focusProperties {
+                            next = item2
+                            previous = item1
+                        }
+                        .padding(start = 10.dp)
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item2)
+                        .focusProperties {
+                            next = item3
+                            previous = item1
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item3)
+                        .focusProperties {
+                            next = item4
+                            previous = item2
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item4)
+                        .focusProperties {
+                            previous = item3
+                            next = item5
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item5)
+                        .focusProperties {
+                            previous = item4
+                            next = item6
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item6)
+                        .focusProperties {
+                            previous = item5
+                            next = item6
+                        }
+                        .padding(end = 10.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp)) // Espaçamento entre as duas linhas
+
+            Text(
+                text = "Confirme sua Senha",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                textAlign = TextAlign.Center
+            )
+
+            // Segunda Row para os campos de confirmação de OTP
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item1_confirm)
+                        .focusProperties {
+                            next = item2_confirm
+                            previous = item1_confirm
+                        }
+                        .padding(start = 10.dp)
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item2_confirm)
+                        .focusProperties {
+                            next = item3_confirm
+                            previous = item1_confirm
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item3_confirm)
+                        .focusProperties {
+                            next = item4_confirm
+                            previous = item2_confirm
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item4_confirm)
+                        .focusProperties {
+                            previous = item3_confirm
+                            next = item5_confirm
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item5_confirm)
+                        .focusProperties {
+                            previous = item4_confirm
+                            next = item6_confirm
+                        }
+                )
+                OtpChar(
+                    modifier = Modifier
+                        .focusRequester(item6_confirm)
+                        .focusProperties {
+                            previous = item5_confirm
+                            next = item6_confirm
+                        }
+                        .padding(end = 10.dp)
+                )
+            }
+
+            Button(
+                onClick = onConfirmClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 70.dp)
+                    .height(48.dp)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                            start = Offset(0f, 1f),
+                            end = Offset(0f, 180f) // Direção vertical
+                        ),
+                        shape = CircleShape // Mantém a forma circular do botão
+                    )
+                    .size(60.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+            )
+            {
+                Text("Criar Conta")
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -603,9 +825,184 @@ fun InputField(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaLogin() {
-    TODO("Not yet implemented")
+fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
+    var nome by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var telefone by remember { mutableStateOf("") }
+
+    var dataNascimento by remember { mutableStateOf("") }
+    var showDatePickerDialog by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    val focusManager: FocusManager = LocalFocusManager.current
+
+    if (showDatePickerDialog) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePickerDialog = false },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            dataNascimento = millis.toBrazilianDateFormat()
+                        }
+                        showDatePickerDialog = false
+                        focusManager.clearFocus()
+                    }
+                ) {
+                    Text("Escolher data")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDatePickerDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack()}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.seta), // Nome da sua imagem PNG
+                            contentDescription = "Seta",
+                            colorFilter = ColorFilter.tint(Color.Black),
+                            modifier = Modifier
+                                .graphicsLayer(
+                                    scaleX = -3.5f,
+                                    scaleY = 3.5f
+                                )
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Spacer(modifier = Modifier.height(90.dp))
+            Text(
+                text = "LOGIN",
+                fontSize = 24.sp,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Insira seus dados para o login.",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // Email
+            Text(
+                text = "Email",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+            )
+            TextField(
+                value = email,
+                onValueChange = { email = it },
+                placeholder = {
+                    Text(
+                        text = "Digite o seu email",
+                        style = TextStyle(
+                            textAlign = TextAlign.Center,
+                            color = Color.Gray
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(15.dp),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Center,
+                ),
+                colors = TextFieldDefaults.textFieldColors(
+                    disabledTextColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                )
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // Nome
+            Text(
+                text = "Senha",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+            )
+            TextField(
+                value = nome,
+                onValueChange = { nome = it },
+                placeholder = {
+                    Text(
+                        text = "Digite a sua senha",
+                        style = TextStyle(
+                            textAlign = TextAlign.Center,
+                            color = Color.Gray
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(15.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    disabledTextColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Center,
+                ),
+
+                )
+
+
+            Button(
+                onClick = onNextClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 90.dp)
+                    .height(48.dp)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                            start = Offset(0f, 1f),
+                            end = Offset(0f, 180f) // Direção vertical
+                        ),
+                        shape = CircleShape // Mantém a forma circular do botão
+                    )
+                    .size(60.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+            )
+
+
+            {
+                Text("Entrar")
+            }
+        }
+    }
 }
 
 @Composable
