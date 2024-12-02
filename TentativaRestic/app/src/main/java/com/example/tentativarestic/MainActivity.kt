@@ -31,6 +31,7 @@ import androidx.navigation.compose.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
@@ -180,67 +181,110 @@ fun TelaPrincipal(navController: NavHostController) {
                 }
             })
         },
-        bottomBar = {
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
             Box(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, bottom = 30.dp)
-                    .background(Color.Transparent)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-
-
-                // cor transparente para o fundo do BottomBar para que o NavigationBar fique visível por baixo
+                    .fillMaxSize()
+                    .padding(bottom = 16.dp), // Para dar espaço na parte inferior, se necessário
+                contentAlignment = Alignment.BottomCenter // Centraliza horizontalmente no fundo
             ) {
-                NavigationBar(
-                    modifier = Modifier.clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp, bottomStart = 26.dp, bottomEnd = 26.dp))
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
+                    NavigationBar(
+                        modifier = Modifier
+                            .shadow(4.dp, shape = RoundedCornerShape(80.dp))
+
+                            .clip(
+                            RoundedCornerShape(
+                                topStart = 80.dp,
+                                topEnd = 80.dp,
+                                bottomStart = 80.dp,
+                                bottomEnd = 80.dp
+                            )
                         )
-                        .background(Color.Transparent)
-                        .fillMaxWidth(0.9f),
-                    containerColor = Color.White
+
+                            .background(Color.Transparent)
+                            .fillMaxWidth(0.9f),
+                        containerColor = Color.White
 
 
-                    // Definindo bordas arredondadas para o NavigationBar
+                        // Definindo bordas arredondadas para o NavigationBar
 
-                ) {
-                    NavigationBarItem(icon = {
-                        Icon(
-                            Icons.Filled.Home,
-                            contentDescription = "Home"
+                    ) {
+                        NavigationBarItem(icon = {
+                            Box(
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .width(15.dp)
+                                    .background(
+                                        color = Color(0xFFFFA500), // Cor do círculo (laranja)
+                                        shape = CircleShape // Forma circular
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Filled.Home,
+                                    contentDescription = "Home",
+                                    modifier = Modifier
+                                        .fillMaxSize(1.0f)
+                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                )
+                            }
+                        },
+                            selected = true, onClick = { /*TODO*/ },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.White, // Cor do ícone quando selecionado
+                                unselectedIconColor = Color.Gray, // Cor do ícone quando não selecionado
+                                indicatorColor = Color.Transparent // Indicador circular laranja quando selecionado
+                            ),
+                            modifier = Modifier
+                                .padding(4.dp) // Espaçamento ao redor do indicador
+                                .size(56.dp) // Tamanho do círculo
+                                .background(
+                                    color = if (true) Color(0xFFFFA500) else Color.Transparent,
+                                    shape = CircleShape
+                                )
                         )
-                    },
-                        label = { Text("Home") }, selected = true, onClick = { /*TODO*/ })
-                    NavigationBarItem(icon = {
-                        Icon(
-                            Icons.Filled.Info,
-                            contentDescription = "History"
+                        NavigationBarItem(icon = {
+                            Icon(
+                                Icons.Filled.Info,
+                                contentDescription = "History"
+                            )
+                        },
+                            selected = false, onClick = { /*TODO*/ })
+                        NavigationBarItem(icon = {
+                            Icon(
+                                Icons.Filled.Search,
+                                contentDescription = "Search"
+                            )
+                        },
+                            selected = false, onClick = { /*TODO*/ })
+                        NavigationBarItem(icon = {
+                            Icon(
+                                Icons.Filled.Email,
+                                contentDescription = "Chat"
+                            )
+                        },
+                            selected = false, onClick = { /*TODO*/ })
+                        NavigationBarItem(icon = {
+                            Icon(
+                                Icons.Filled.Person,
+                                contentDescription = "Profile"
+                            )
+                        },
+                            selected = false, onClick = { /*TODO*/ },
+                            modifier = Modifier
+                                .padding(4.dp) // Espaçamento ao redor do indicador
+                                .size(56.dp) // Tamanho do círculo
+                                .apply {
+                                    if (true) { // Condição para aplicar o fundo circular apenas se selecionado
+                                        background(
+                                            color = Color(0xFFFFA500), // Cor de fundo laranja se selecionado
+                                            shape = CircleShape // Define o formato circular
+                                        )
+                                    }
+                                }
                         )
-                    },
-                        label = { Text("History") }, selected = false, onClick = { /*TODO*/ })
-                    NavigationBarItem(icon = {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
-                    },
-                        label = { Text("Search") }, selected = false, onClick = { /*TODO*/ })
-                    NavigationBarItem(icon = {
-                        Icon(
-                            Icons.Filled.Email,
-                            contentDescription = "Chat"
-                        )
-                    },
-                        label = { Text("Chat") }, selected = false, onClick = { /*TODO*/ })
-                    NavigationBarItem(icon = {
-                        Icon(
-                            Icons.Filled.Person,
-                            contentDescription = "Profile"
-                        )
-                    },
-                        label = { Text("Profile") }, selected = false, onClick = { /*TODO*/ })
-                }
+                    }
+
             }
         }
     ) { innerPadding ->
