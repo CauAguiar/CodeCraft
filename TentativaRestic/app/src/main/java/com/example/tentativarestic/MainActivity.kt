@@ -194,13 +194,13 @@ fun TelaPrincipal(navController: NavHostController) {
                             .shadow(4.dp, shape = RoundedCornerShape(80.dp))
 
                             .clip(
-                            RoundedCornerShape(
-                                topStart = 80.dp,
-                                topEnd = 80.dp,
-                                bottomStart = 80.dp,
-                                bottomEnd = 80.dp
+                                RoundedCornerShape(
+                                    topStart = 80.dp,
+                                    topEnd = 80.dp,
+                                    bottomStart = 80.dp,
+                                    bottomEnd = 80.dp
+                                )
                             )
-                        )
 
                             .background(Color.Transparent)
                             .fillMaxWidth(0.9f),
@@ -261,8 +261,8 @@ fun TelaPrincipal(navController: NavHostController) {
                                     Icons.Filled.Info,
                                     contentDescription = "History",
                                             modifier = Modifier
-                                            .fillMaxSize(1.0f)
-                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                                .fillMaxSize(1.0f)
+                                                .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
                                 )
                             }
                         },
@@ -340,11 +340,16 @@ fun TelaPrincipal(navController: NavHostController) {
         ) {
             Text(
                 text = "Procure sua trilha",
-                modifier = Modifier.padding(start = 16.dp).padding(bottom = 1.dp)
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .padding(bottom = 1.dp)
                     .padding(top = 16.dp),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -354,10 +359,17 @@ fun TelaPrincipal(navController: NavHostController) {
                 OutlinedTextField(
                     value = searchText,
                     onValueChange = { searchText = it },
-                    modifier = Modifier.weight(1f),
-                    label = { Text("Procurar") },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") }
+                    placeholder = { Text("Procurar") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(30)),  // Deixa o campo com bordas arredondadas
+                    leadingIcon = {
+                        Icon(Icons.Filled.Search, contentDescription = "Search")
+                    },
+                    shape = RoundedCornerShape(30),  // Borda completamente arredondada
+                    colors = OutlinedTextFieldDefaults.colors()
                 )
+
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = { /* TODO: Handle filter click */ }) {
                     Icon(Icons.Filled.Edit, contentDescription = "Filter")
