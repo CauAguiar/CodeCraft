@@ -1,7 +1,6 @@
 package com.example.tentativarestic
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -10,15 +9,25 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.navigation.compose.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,24 +46,24 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -62,9 +71,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import kotlinx.coroutines.delay
-import org.w3c.dom.Text
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -123,6 +130,220 @@ fun AppNavigation() {
         
         composable("digitarSenha") {
             TelaDigitarSenha(navController, onConfirmClick = {navController.navigate("telaPrincipal")})
+        }
+
+        composable("telaPrincipal") {
+            TelaPrincipal(navController)
+        }
+
+
+    }
+}
+
+data class LanguageItem(val name: String, val icon: ImageVector)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TelaPrincipal(navController: NavHostController) {
+    var searchText by remember { mutableStateOf("") }
+
+    val languages = listOf(
+        LanguageItem("Python", /*R.drawable.python*/Icons.Filled.Home),
+        LanguageItem("JavaScript", /*R.drawable.javascript*/Icons.Filled.Home),
+        LanguageItem("UI/UX", /*R.drawable.uiux*/Icons.Filled.Home),
+        LanguageItem("Java", /*R.drawable.java*/Icons.Filled.Home),
+        LanguageItem("C e C++", /*R.drawable.cpp*/Icons.Filled.Home),
+        LanguageItem("Algoritmos", /*R.drawable.algorithms*/Icons.Filled.Home),
+        LanguageItem("SQL", /*R.drawable.sql*/Icons.Filled.Home),
+        LanguageItem("CSS", /*R.drawable.css*/Icons.Filled.Home),
+        LanguageItem("C#", /*R.drawable.csharp*/Icons.Filled.Home),
+        LanguageItem("Kotlin", /*R.drawable.kotlin*/Icons.Filled.Home),
+        LanguageItem("Haskell", /*R.drawable.haskell*/Icons.Filled.Home),
+        LanguageItem("HTML", /*R.drawable.html*/Icons.Filled.Home),
+        LanguageItem("PHP", /*R.drawable.php*/Icons.Filled.Home),
+        LanguageItem("Ruby", /*R.drawable.ruby*/Icons.Filled.Home),
+        LanguageItem("Swift", /*R.drawable.swift*/Icons.Filled.Home),
+        LanguageItem("TypeScript", /*R.drawable.typescript*/Icons.Filled.Home),
+        LanguageItem("R", /*R.drawable.r*/Icons.Filled.Home),
+        LanguageItem("Go", /*R.drawable.go*/Icons.Filled.Home),
+        LanguageItem("Dart", /*R.drawable.dart*/Icons.Filled.Home),
+        LanguageItem("Scala", /*R.drawable.scala*/Icons.Filled.Home),
+        LanguageItem("Lua", /*R.drawable.lua*/Icons.Filled.Home)
+    )
+
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            TopAppBar(title = { Text("Bom dia Gustavo!")}, modifier = Modifier.offset(y = 14.dp), actions = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(Icons.Filled.Notifications, contentDescription = "Notification")
+                }
+            })
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, bottom = 30.dp)
+                    .background(Color.Transparent)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+
+
+                // cor transparente para o fundo do BottomBar para que o NavigationBar fique visível por baixo
+            ) {
+                NavigationBar(
+                    modifier = Modifier.clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp, bottomStart = 26.dp, bottomEnd = 26.dp))
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
+                        )
+                        .background(Color.Transparent)
+                        .fillMaxWidth(0.9f),
+                    containerColor = Color.White
+
+
+                    // Definindo bordas arredondadas para o NavigationBar
+
+                ) {
+                    NavigationBarItem(icon = {
+                        Icon(
+                            Icons.Filled.Home,
+                            contentDescription = "Home"
+                        )
+                    },
+                        label = { Text("Home") }, selected = true, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Icon(
+                            Icons.Filled.Info,
+                            contentDescription = "History"
+                        )
+                    },
+                        label = { Text("History") }, selected = false, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                        label = { Text("Search") }, selected = false, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Icon(
+                            Icons.Filled.Email,
+                            contentDescription = "Chat"
+                        )
+                    },
+                        label = { Text("Chat") }, selected = false, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Icon(
+                            Icons.Filled.Person,
+                            contentDescription = "Profile"
+                        )
+                    },
+                        label = { Text("Profile") }, selected = false, onClick = { /*TODO*/ })
+                }
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Text(
+                text = "Procure sua trilha",
+                modifier = Modifier.padding(start = 16.dp).padding(bottom = 1.dp)
+                    .padding(top = 16.dp),
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    modifier = Modifier.weight(1f),
+                    label = { Text("Procurar") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(onClick = { /* TODO: Handle filter click */ }) {
+                    Icon(Icons.Filled.Edit, contentDescription = "Filter")
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp)
+                    .padding(bottom = 1.dp)
+                    .padding(top = 16.dp)
+                    .padding(end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Linguagens",
+                    fontSize = 24.sp
+                )
+
+                TextButton(
+                    onClick = { /*TODO: Handle click on see all*/ },
+                ) {
+                    Text("Ver tudo", fontSize = 18.sp)
+                }
+            }
+            Box(
+                modifier = Modifier.fillMaxSize()
+            )
+            {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .zIndex(-1f)
+                        .padding(8.dp),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(languages) { language ->
+                        LanguageCard(language)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun LanguageCard(language: LanguageItem) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(LocalConfiguration.current.screenWidthDp.dp / 3 - 16.dp)
+            .padding(4.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { /*TODO: Handle click on language*/ },
+        colors = CardDefaults.cardColors(Color.White)
+
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            //Image(painter = painterResource(id = language.icon), contentDescription = language.name, modifier = Modifier.size(48.dp))
+            Icon(
+                imageVector = language.icon,  // Directly use the ImageVector here
+                contentDescription = language.name,
+                modifier = Modifier.size(48.dp)  // Resize the icon to 48dp
+            )
+            Text(language.name, textAlign = TextAlign.Center)
         }
     }
 }
@@ -192,7 +413,9 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                 text = "Digite sua Senha",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
                 textAlign = TextAlign.Center
             )
 
@@ -259,7 +482,9 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                 text = "Confirme sua Senha",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
                 textAlign = TextAlign.Center
             )
 
@@ -424,7 +649,9 @@ fun TelaVerificacaoTelefone(navController: NavHostController, onConfirmClick: ()
                 text = "Insira seus dados para o cadastro.",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -608,7 +835,9 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
                 text = "Insira seus dados para o cadastro.",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -618,7 +847,9 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
                 text = "Seu Nome",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 18.dp)
             )
             TextField(
                 value = nome,
@@ -653,7 +884,9 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
                 text = "Email",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 18.dp)
             )
             TextField(
                 value = email,
@@ -687,7 +920,9 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
                 text = "Data de Nascimento",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 18.dp)
             )
             TextField(
                 value = dataNascimento,
@@ -729,7 +964,9 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
                 text = "Telefone Celular",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 18.dp)
             )
             TextField(
                 value = telefone,
@@ -904,7 +1141,9 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
                 text = "Insira seus dados para o login.",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 10.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 10.dp),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(30.dp))
@@ -914,7 +1153,9 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
                 text = "Email",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 18.dp)
             )
             TextField(
                 value = email,
@@ -949,7 +1190,9 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
                 text = "Senha",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally) .padding(bottom = 18.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 18.dp)
             )
             TextField(
                 value = nome,
