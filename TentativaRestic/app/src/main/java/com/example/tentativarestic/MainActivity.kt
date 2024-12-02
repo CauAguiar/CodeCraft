@@ -216,7 +216,7 @@ fun TelaPrincipal(navController: NavHostController) {
                                     .height(42.dp)
                                     .width(15.dp)
                                     .background(
-                                        color = Color(0xFFFFA500), // Cor do círculo (laranja)
+                                        color = Color.Transparent,
                                         shape = CircleShape // Forma circular
                                     )
                             ) {
@@ -239,49 +239,94 @@ fun TelaPrincipal(navController: NavHostController) {
                                 .padding(4.dp) // Espaçamento ao redor do indicador
                                 .size(56.dp) // Tamanho do círculo
                                 .background(
-                                    color = if (true) Color(0xFFFFA500) else Color.Transparent,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                                        start = Offset(0f, 1f),
+                                        end = Offset(0f, 180f) // Direção vertical
+                                    ),
                                     shape = CircleShape
                                 )
                         )
                         NavigationBarItem(icon = {
-                            Icon(
-                                Icons.Filled.Info,
-                                contentDescription = "History"
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .width(15.dp)
+                                    .background(
+                                        color = Color.Transparent, // Cor do círculo (laranja)
+                                        shape = CircleShape // Forma circular
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Filled.Info,
+                                    contentDescription = "History",
+                                            modifier = Modifier
+                                            .fillMaxSize(1.0f)
+                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                )
+                            }
                         },
                             selected = false, onClick = { /*TODO*/ })
                         NavigationBarItem(icon = {
-                            Icon(
-                                Icons.Filled.Search,
-                                contentDescription = "Search"
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .width(15.dp)
+                                    .background(
+                                        color = Color.Transparent, // Cor do círculo (laranja)
+                                        shape = CircleShape // Forma circular
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Filled.Search,
+                                    contentDescription = "Search",
+                                    modifier = Modifier
+                                        .fillMaxSize(1.0f)
+                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                )
+                            }
                         },
                             selected = false, onClick = { /*TODO*/ })
                         NavigationBarItem(icon = {
-                            Icon(
-                                Icons.Filled.Email,
-                                contentDescription = "Chat"
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .width(15.dp)
+                                    .background(
+                                        color = Color.Transparent, // Cor do círculo (laranja)
+                                        shape = CircleShape // Forma circular
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Filled.Email,
+                                    contentDescription = "Chat",
+                                    modifier = Modifier
+                                        .fillMaxSize(1.0f)
+                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                )
+                            }
                         },
                             selected = false, onClick = { /*TODO*/ })
                         NavigationBarItem(icon = {
-                            Icon(
-                                Icons.Filled.Person,
-                                contentDescription = "Profile"
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(42.dp)
+                                    .width(15.dp)
+                                    .background(
+                                        color = Color.Transparent, // Cor do círculo (laranja)
+                                        shape = CircleShape // Forma circular
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Filled.Person,
+                                    contentDescription = "Profile",
+                                    modifier = Modifier
+                                        .fillMaxSize(1.0f)
+                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                )
+                            }
                         },
                             selected = false, onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .padding(4.dp) // Espaçamento ao redor do indicador
-                                .size(56.dp) // Tamanho do círculo
-                                .apply {
-                                    if (true) { // Condição para aplicar o fundo circular apenas se selecionado
-                                        background(
-                                            color = Color(0xFFFFA500), // Cor de fundo laranja se selecionado
-                                            shape = CircleShape // Define o formato circular
-                                        )
-                                    }
-                                }
                         )
                     }
 
