@@ -1,6 +1,7 @@
 package com.example.tentativarestic
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -54,6 +55,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -67,13 +69,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.app.ui.UserViewModel
+import com.example.tentativarestic.data.RetrofitInstance
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import kotlinx.coroutines.delay
+import java.net.URLEncoder
+import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -124,13 +135,47 @@ fun AppNavigation() {
             TelaLogin(navController, onNextClick = {navController.navigate("telaPrincipal")})
         }
         composable("telaCadastro") {
-            TelaCadastro(navController, onNextClick = {navController.navigate("verificacaoTelefone")})
+            TelaCadastro(
+                navController = navController,
+                onNextClick = { nome, dataNascimento, email, senha ->
+                    // URL encode parameters
+                    val encodedNome = URLEncoder.encode(nome, "UTF-8")
+                    val encodedDataNascimento = URLEncoder.encode(dataNascimento, "UTF-8")
+                    val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                    val encodedSenha = URLEncoder.encode(senha, "UTF-8")
+
+                    // Navigate with encoded parameters
+                    navController.navigate("verificacaoTelefone/$encodedNome/$encodedDataNascimento/$encodedEmail/$encodedSenha")
+                }
+            )
         }
-        
-        composable("verificacaoTelefone") {
-            TelaVerificacaoTelefone(navController, onConfirmClick = {navController.navigate("digitarSenha")})
+
+        composable(
+            "verificacaoTelefone/{nome}/{dataNascimento}/{email}/{senha}",
+            arguments = listOf(
+                navArgument("nome") { type = NavType.StringType },
+                navArgument("dataNascimento") { type = NavType.StringType },
+                navArgument("email") { type = NavType.StringType },
+                navArgument("senha") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            // Decode parameters
+            val nome = URLDecoder.decode(backStackEntry.arguments?.getString("nome") ?: "", "UTF-8")
+            val dataNascimento = URLDecoder.decode(backStackEntry.arguments?.getString("dataNascimento") ?: "", "UTF-8")
+            val email = URLDecoder.decode(backStackEntry.arguments?.getString("email") ?: "", "UTF-8")
+            val senha = URLDecoder.decode(backStackEntry.arguments?.getString("senha") ?: "", "UTF-8")
+
+            TelaVerificacaoTelefone(
+                navController = navController,
+                onConfirmClick = { navController.navigate("digitarSenha") },
+                nome = nome,
+                dataNascimento = dataNascimento,
+                email = email,
+                senha = senha
+            )
         }
-        
+
+
         composable("digitarSenha") {
             TelaDigitarSenha(navController, onConfirmClick = {navController.navigate("telaPrincipal")})
         }
@@ -181,8 +226,8 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
                     ) {
                         Icon(Icons.Filled.Edit, contentDescription = "Notification",
                             modifier = Modifier
-                            .fillMaxSize(1.0f)
-                            .scale(0.7f),// Faz o ícone ocupar todo o espaço disponível
+                                .fillMaxSize(1.0f)
+                                .scale(0.7f),// Faz o ícone ocupar todo o espaço disponível
                             tint = Color.White
                         )
                     }
@@ -378,7 +423,9 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFDD835)
                 ), //Gold color
-                modifier = Modifier.fillMaxWidth(0.33f) .height(28.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.33f)
+                    .height(28.dp),
             ) {
                 Text("Membro de Ouro", color = Color.White)
             }
@@ -437,7 +484,10 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.LightGray
                     ), //Gold color
-                    modifier = Modifier.fillMaxWidth(0.5f) .height(48.dp) .offset(y = (-8).dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(48.dp)
+                        .offset(y = (-8).dp),
                 ) {
                     Icon(Icons.Filled.Close, contentDescription = "Profile", tint = Color.Red)
                     Text("Sair", color = Color.Gray, fontSize = 16.sp)
@@ -614,25 +664,26 @@ fun TelaPrincipal(navController: NavHostController, onProfileClick: () -> Unit) 
                             }
                         },
                             selected = false, onClick = {})
-                        NavigationBarItem(icon = {
-                            Box(
-                                modifier = Modifier
-                                    .height(42.dp)
-                                    .width(15.dp)
-                                    .background(
-                                        color = Color.Transparent, // Cor do círculo (laranja)
-                                        shape = CircleShape // Forma circular
-                                    )
-                            ) {
-                                Icon(
-                                    Icons.Filled.Person,
-                                    contentDescription = "Profile",
+                        NavigationBarItem(
+                            icon = {
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxSize(1.0f)
-                                        .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
-                                )
-                            }
-                        },
+                                        .height(42.dp)
+                                        .width(15.dp)
+                                        .background(
+                                            color = Color.Transparent, // Cor do círculo (laranja)
+                                            shape = CircleShape // Forma circular
+                                        )
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Person,
+                                        contentDescription = "Profile",
+                                        modifier = Modifier
+                                            .fillMaxSize(1.0f)
+                                            .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                                    )
+                                }
+                            },
                             selected = false, onClick = onProfileClick,
                         )
                     }
@@ -1009,7 +1060,14 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaVerificacaoTelefone(navController: NavHostController, onConfirmClick: () -> Unit) {
+fun TelaVerificacaoTelefone (
+    navController: NavController,
+    onConfirmClick: () -> Unit,
+    nome: String,
+    dataNascimento: String,
+    email: String,
+    senha: String
+) {
     val (item1, item2, item3, item4, item5, item6) = FocusRequester.createRefs()
 
     var remainingTime by remember { mutableStateOf(60) } // 1 minuto (60 segundos)
@@ -1193,9 +1251,10 @@ fun TelaVerificacaoTelefone(navController: NavHostController, onConfirmClick: ()
 }
 
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
+fun TelaCadastro(navController: NavController, onNextClick: (String, String, String, String) -> Unit, userViewModel: UserViewModel = viewModel()) {
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
@@ -1204,6 +1263,25 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
     var showDatePickerDialog by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val focusManager: FocusManager = LocalFocusManager.current
+    var errorMessage by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    fun checkIfExistsAndRegister() {
+        userViewModel.checkIfExists(email, telefone) { result ->
+            errorMessage = result
+
+            if (result == "") {
+                // Se não houver erro, chama a próxima tela com os dados
+                //print no terminal que deu certo
+                Log.d("Cadastro", "Nome: $nome, Email: $email, Telefone: $telefone, Data de Nascimento: $dataNascimento")
+                onNextClick(nome, email, telefone, dataNascimento)
+            } else {
+                // Caso contrário, exibe o erro
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
     if (showDatePickerDialog) {
         DatePickerDialog(
@@ -1435,7 +1513,7 @@ fun TelaCadastro(navController: NavController, onNextClick: () -> Unit) {
 
             // Botão Próximo
             Button(
-                onClick = onNextClick,
+                onClick = { checkIfExistsAndRegister() },  //onNextClick
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 90.dp)
