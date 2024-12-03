@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
@@ -56,6 +57,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -134,7 +136,11 @@ fun AppNavigation() {
         }
 
         composable("telaPrincipal") {
-            TelaPrincipal(navController)
+            TelaPrincipal(navController, onProfileClick = {navController.navigate("telaPerfil")})
+        }
+
+        composable("telaPerfil") {
+            TelaPerfil(navController, onHomeClick = {navController.navigate("telaPrincipal")})
         }
 
 
@@ -145,7 +151,308 @@ data class LanguageItem(val name: String, val icon: ImageVector)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaPrincipal(navController: NavHostController) {
+fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
+    val languages = listOf(
+        LanguageItem("Meus cursos", /*R.drawable.python*/Icons.Filled.Home),
+        LanguageItem("Tutores", /*R.drawable.javascript*/Icons.Filled.Home),
+        LanguageItem("Pagamento", /*R.drawable.uiux*/Icons.Filled.Home),
+        LanguageItem("Transação", /*R.drawable.java*/Icons.Filled.Home),
+        LanguageItem("Estatísticas", /*R.drawable.cpp*/Icons.Filled.Home),
+        LanguageItem("Favoritos", /*R.drawable.algorithms*/Icons.Filled.Home),
+    )
+
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            TopAppBar(title = { Text("Perfil", fontWeight = FontWeight.Black, fontSize = 28.sp) }, modifier = Modifier.offset(y = 14.dp), actions = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Box(
+                        modifier = Modifier
+                            .height(42.dp)
+                            .width(42.dp)
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                                    start = Offset(0f, 1f),
+                                    end = Offset(0f, 180f) // Direção vertical
+                                ),
+                                shape = CircleShape // Forma circular
+                            )
+                    ) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Notification",
+                            modifier = Modifier
+                            .fillMaxSize(1.0f)
+                            .scale(0.7f),// Faz o ícone ocupar todo o espaço disponível
+                            tint = Color.White
+                        )
+                    }
+                }
+            })
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 16.dp), // Para dar espaço na parte inferior, se necessário
+                contentAlignment = Alignment.BottomCenter // Centraliza horizontalmente no fundo
+            ) {
+                NavigationBar(
+                    modifier = Modifier
+                        .shadow(4.dp, shape = RoundedCornerShape(80.dp))
+
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 80.dp,
+                                topEnd = 80.dp,
+                                bottomStart = 80.dp,
+                                bottomEnd = 80.dp
+                            )
+                        )
+
+                        .background(Color.Transparent)
+                        .fillMaxWidth(0.9f),
+                    containerColor = Color.White
+
+
+                    // Definindo bordas arredondadas para o NavigationBar
+
+                ) {
+                    NavigationBarItem(icon = {
+                        Box(
+                            modifier = Modifier
+                                .height(42.dp)
+                                .width(15.dp)
+                                .background(
+                                    color = Color.Transparent,
+                                    shape = CircleShape // Forma circular
+                                )
+                        ) {
+                            Icon(
+                                Icons.Filled.Home,
+                                contentDescription = "Home",
+                                modifier = Modifier
+                                    .fillMaxSize(1.0f)
+                                    .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                            )
+                        }
+                    },
+                        selected = false, onClick = onHomeClick
+                    )
+                    NavigationBarItem(icon = {
+                        Box(
+                            modifier = Modifier
+                                .height(42.dp)
+                                .width(15.dp)
+                                .background(
+                                    color = Color.Transparent, // Cor do círculo (laranja)
+                                    shape = CircleShape // Forma circular
+                                )
+                        ) {
+                            Icon(
+                                Icons.Filled.Info,
+                                contentDescription = "History",
+                                modifier = Modifier
+                                    .fillMaxSize(1.0f)
+                                    .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                            )
+                        }
+                    },
+                        selected = false, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Box(
+                            modifier = Modifier
+                                .height(42.dp)
+                                .width(15.dp)
+                                .background(
+                                    color = Color.Transparent, // Cor do círculo (laranja)
+                                    shape = CircleShape // Forma circular
+                                )
+                        ) {
+                            Icon(
+                                Icons.Filled.Search,
+                                contentDescription = "Search",
+                                modifier = Modifier
+                                    .fillMaxSize(1.0f)
+                                    .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                            )
+                        }
+                    },
+                        selected = false, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Box(
+                            modifier = Modifier
+                                .height(42.dp)
+                                .width(15.dp)
+                                .background(
+                                    color = Color.Transparent, // Cor do círculo (laranja)
+                                    shape = CircleShape // Forma circular
+                                )
+                        ) {
+                            Icon(
+                                Icons.Filled.Email,
+                                contentDescription = "Chat",
+                                modifier = Modifier
+                                    .fillMaxSize(1.0f)
+                                    .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                            )
+                        }
+                    },
+                        selected = false, onClick = { /*TODO*/ })
+                    NavigationBarItem(icon = {
+                        Box(
+                            modifier = Modifier
+                                .height(42.dp)
+                                .width(15.dp)
+                                .background(
+                                    color = Color.Transparent, // Cor do círculo (laranja)
+                                    shape = CircleShape // Forma circular
+                                )
+                        ) {
+                            Icon(
+                                Icons.Filled.Person,
+                                contentDescription = "Profile",
+                                modifier = Modifier
+                                    .fillMaxSize(1.0f)
+                                    .scale(2.0f),// Faz o ícone ocupar todo o espaço disponível
+                            )
+                        }
+                    },
+                        selected = true, onClick = { /*TODO*/ },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White, // Cor do ícone quando selecionado
+                            unselectedIconColor = Color.Gray, // Cor do ícone quando não selecionado
+                            indicatorColor = Color.Transparent // Indicador circular laranja quando selecionado
+                        ),
+                        modifier = Modifier
+                            .padding(4.dp) // Espaçamento ao redor do indicador
+                            .size(56.dp) // Tamanho do círculo
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                                    start = Offset(0f, 1f),
+                                    end = Offset(0f, 180f) // Direção vertical
+                                ),
+                                shape = CircleShape
+                            )
+                    )
+                }
+
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Spacer(modifier = Modifier.height(36.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                // You can replace this with an actual image loading library like Coil or Glide
+                Image(
+                    painter = painterResource(id = R.drawable.intro_image_1),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.size(100.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Pedro Johnson", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Text("Designer de UX/UI", fontSize = 14.sp, color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = { /*TODO*/ },
+                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFDD835)
+                ), //Gold color
+                modifier = Modifier.fillMaxWidth(0.33f) .height(28.dp),
+            ) {
+                Text("Membro de Ouro", color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                            start = Offset(0f, 1f),
+                            end = Offset(0f, 300f) // Direção vertical
+                        ),
+                        shape = MaterialTheme.shapes.extraLarge
+                    )
+                    .padding(26.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "25", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text(text = "Inscrito", fontSize = 18.sp, color = Color.White)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "8", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text(text = "Certificados", fontSize = 18.sp, color = Color.White)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "12", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+                    Text(text = "Cursos", fontSize = 18.sp, color = Color.White)
+                }
+            }
+
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .zIndex(-1f)
+                        .padding(8.dp),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(languages) { language ->
+                        LanguageCard2(language)
+                    }
+                }
+
+                Button(
+                    onClick = { /*TODO*/ },
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.LightGray
+                    ), //Gold color
+                    modifier = Modifier.fillMaxWidth(0.5f) .height(48.dp) .offset(y = (-8).dp),
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = "Profile", tint = Color.Red)
+                    Text("Sair", color = Color.Gray, fontSize = 16.sp)
+                }
+            }
+
+
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TelaPrincipal(navController: NavHostController, onProfileClick: () -> Unit) {
     var searchText by remember { mutableStateOf("") }
 
     val languages = listOf(
@@ -306,7 +613,7 @@ fun TelaPrincipal(navController: NavHostController) {
                                 )
                             }
                         },
-                            selected = false, onClick = { /*TODO*/ })
+                            selected = false, onClick = {})
                         NavigationBarItem(icon = {
                             Box(
                                 modifier = Modifier
@@ -326,7 +633,7 @@ fun TelaPrincipal(navController: NavHostController) {
                                 )
                             }
                         },
-                            selected = false, onClick = { /*TODO*/ },
+                            selected = false, onClick = onProfileClick,
                         )
                     }
 
@@ -445,6 +752,35 @@ fun LanguageCard(language: LanguageItem) {
                 modifier = Modifier.size(48.dp)  // Resize the icon to 48dp
             )
             Text(language.name, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+@Composable
+fun LanguageCard2(language: LanguageItem) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(LocalConfiguration.current.screenWidthDp.dp / 3 - 16.dp)
+            .padding(4.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { /*TODO: Handle click on language*/ },
+        colors = CardDefaults.cardColors(Color.White)
+
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            //Image(painter = painterResource(id = language.icon), contentDescription = language.name, modifier = Modifier.size(48.dp))
+            Icon(
+                imageVector = language.icon,  // Directly use the ImageVector here
+                contentDescription = language.name,
+                modifier = Modifier.size(48.dp)  // Resize the icon to 48dp
+            )
+            Text(language.name, textAlign = TextAlign.Center, fontSize = 14.sp)
         }
     }
 }
