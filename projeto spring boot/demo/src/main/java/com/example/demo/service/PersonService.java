@@ -24,13 +24,11 @@ public class PersonService {
     }
     
     // Realizar login usando email e senha
-    public Optional<Person> loginWithEmail(String email, String password) {
+    public boolean loginWithEmail(String email, String password) {
         Optional<Person> person = personRepository.findByEmail(email);
-        if (person.isPresent() && person.get().getPassword().equals(password)) {
-            return person;
-        }
-        return Optional.empty();
+        return person.isPresent() && person.get().getPassword().equals(password);
     }
+    
 
     // Login via Facebook
     public Optional<Person> loginWithFacebook(String facebookId) {
@@ -80,5 +78,11 @@ public class PersonService {
             return personRepository.save(person);
         }
         return null;
+    }
+
+    public Optional<Person> findPersonByEmail(String email) {
+        Optional<Person> person = personRepository.findByEmail(email);
+        person.ifPresent(p -> p.setPassword(null));
+        return person;
     }
 }

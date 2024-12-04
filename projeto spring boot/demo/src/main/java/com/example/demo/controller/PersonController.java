@@ -55,11 +55,25 @@ public class PersonController {
     
     
 
-    // Endpoint para login com email e senha
     @PostMapping("/login/email")
-    public Optional<Person> loginWithEmail(@RequestParam String email, @RequestParam String password) {
+    public boolean loginWithEmail(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+    
+        if (email == null || password == null) {
+            throw new IllegalArgumentException("Email and password are required");
+        }
+    
+        // Use diretamente o boolean retornado pelo PersonService
         return personService.loginWithEmail(email, password);
     }
+
+    @PostMapping("/getemail")
+    public Optional<Person> getPersonByEmail(@RequestBody Map<String, String> requestBody) {
+        String email = requestBody.get("email");
+        return personService.findPersonByEmail(email);
+    }
+    
 
     // Endpoint para login com Facebook
     @PostMapping("/login/facebook")

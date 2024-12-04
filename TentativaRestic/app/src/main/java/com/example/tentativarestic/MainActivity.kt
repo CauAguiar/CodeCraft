@@ -49,7 +49,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.NativeKeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
@@ -67,7 +66,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -78,6 +76,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
+import com.example.tentativarestic.data.SharedPrefsManager
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import kotlinx.coroutines.delay
@@ -103,22 +102,25 @@ fun Long.toBrazilianDateFormat(
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var sharedPrefsManager: SharedPrefsManager
+
     private val userViewModel: UserViewModel by viewModels {
         UserViewModelFactory(application) // Passando o application context
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPrefsManager = SharedPrefsManager(application.applicationContext)
         setContent {
             TentativaResticTheme {
-                AppNavigation(userViewModel)
+                AppNavigation(userViewModel, sharedPrefsManager)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation(userViewModel: UserViewModel) {
+fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsManager) {
     // Controlador de navegação
     val navController = rememberNavController()
 
@@ -136,7 +138,7 @@ fun AppNavigation(userViewModel: UserViewModel) {
             )
         }
         composable("telaLogin") {
-            TelaLogin(navController, onNextClick = {navController.navigate("telaPrincipal")})
+            TelaLogin(navController, onNextClick = {navController.navigate("telaPrincipal")}, userViewModel = userViewModel)
         }
         composable("telaCadastro") {
             TelaCadastro(
@@ -216,7 +218,7 @@ fun AppNavigation(userViewModel: UserViewModel) {
         }
 
         composable("telaPrincipal") {
-            TelaPrincipal(navController, onProfileClick = {navController.navigate("telaPerfil")})
+            TelaPrincipal(navController, onProfileClick = {navController.navigate("telaPerfil")}, sharedPrefsManager = sharedPrefsManager)
         }
 
         composable("telaPerfil") {
@@ -538,7 +540,11 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaPrincipal(navController: NavHostController, onProfileClick: () -> Unit) {
+fun TelaPrincipal(
+    navController: NavHostController,
+    onProfileClick: () -> Unit,
+    sharedPrefsManager: SharedPrefsManager
+) {
     var searchText by remember { mutableStateOf("") }
 
     val languages = listOf(
@@ -565,10 +571,12 @@ fun TelaPrincipal(navController: NavHostController, onProfileClick: () -> Unit) 
         LanguageItem("Lua", /*R.drawable.lua*/Icons.Filled.Home)
     )
 
+    val userName = sharedPrefsManager.getUserName()
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(title = { Text("Bom dia Gustavo!")}, modifier = Modifier.offset(y = 14.dp), actions = {
+            TopAppBar(title = { Text("Bom dia $userName!")}, modifier = Modifier.offset(y = 14.dp), actions = {
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(Icons.Filled.Notifications, contentDescription = "Notification")
                 }
@@ -1729,8 +1737,8 @@ fun InputField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
-    var nome by remember { mutableStateOf("") }
+fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewModel: UserViewModel) {
+    var senha by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
 
@@ -1859,8 +1867,8 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
                     .padding(bottom = 18.dp)
             )
             TextField(
-                value = nome,
-                onValueChange = { nome = it },
+                value = senha,
+                onValueChange = { senha = it },
                 placeholder = {
                     Text(
                         text = "Digite a sua senha",
@@ -1884,9 +1892,21 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
 
                 )
 
+            val context = LocalContext.current
 
             Button(
-                onClick = onNextClick,
+                onClick = {
+                    userViewModel.loginWithEmail(email, senha) { isSuccess ->
+                        if (isSuccess) {
+                            // Ação para login bem-sucedido
+                            Toast.makeText(context, "Login bem-sucedido!", Toast.LENGTH_SHORT).show()
+                            onNextClick()
+                        } else {
+                            // Ação para falha no login
+                            Toast.makeText(context, "Falha no login. Tente novamente.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }, //onNextClick
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 90.dp)

@@ -10,8 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tentativarestic.data.RetrofitInstance
 import com.example.tentativarestic.data.SharedPrefsManager
+import com.example.tentativarestic.models.Person
 import com.example.tentativarestic.models.PersonResponse
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 
 class UserViewModel(application: Application) : AndroidViewModel(application) {
@@ -20,6 +23,67 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _userId = mutableStateOf<Long?>(null)
     val userId: State<Long?> = _userId
+
+
+    fun loginWithEmail(email: String, password: String, onResult: (Boolean) -> Unit) {
+        val credentials = mapOf("email" to email, "password" to password)
+
+        // Faz a chamada à API
+        RetrofitInstance.api.loginWithEmail(credentials).enqueue(object : Callback<Boolean> {
+            override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
+                if (response.isSuccessful) {
+                    val success = response.body() ?: false
+
+                    if(success) {
+                        sharedPrefsManager.saveUserEmail(email)
+                        fetchPersonByEmail(email)
+                    }
+                    onResult(success)
+                } else {
+                    onResult(false)
+                }
+            }
+
+            override fun onFailure(call: Call<Boolean>, t: Throwable) {
+                // Em caso de erro na requisição
+                onResult(false)
+            }
+        })
+    }
+
+    fun fetchPersonByEmail(email: String) {
+        val requestBody = mapOf("email" to email)
+
+        val call = RetrofitInstance.api.getPersonByEmail(requestBody)
+
+        call.enqueue(object : retrofit2.Callback<Person> {
+            override fun onResponse(call: Call<Person>, response: retrofit2.Response<Person>) {
+                if (response.isSuccessful) {
+                    val person = response.body()
+                    // Use o objeto person conforme necessário
+                    println("Pessoa encontrada: $person")
+                    sharedPrefsManager.saveUserId(person?.id ?: -1)
+                    sharedPrefsManager.saveUserName(person?.name ?: "")
+                    sharedPrefsManager.saveUserPhone(person?.telefone ?: "")
+                    sharedPrefsManager.saveUserBirthdate(person?.dataNascimento ?: "")
+                    sharedPrefsManager.saveUserEmail(person?.email ?: "")
+                    sharedPrefsManager.saveUserSecondName(person?.secondName ?: "")
+                    sharedPrefsManager.saveUserAge(person?.age ?: 0)
+                    sharedPrefsManager.saveUserGender(person?.gender ?: "")
+                    sharedPrefsManager.saveUserFacebookId(person?.facebookId ?: "")
+                    sharedPrefsManager.saveUserGoogleId(person?.googleId ?: "")
+                    sharedPrefsManager.saveUserConfirmationCode(person?.codigoConfirmacao ?: "")
+                } else {
+                    println("Erro ao obter a pessoa.")
+                }
+            }
+
+            override fun onFailure(call: Call<Person>, t: Throwable) {
+                println("Falha na requisição: ${t.message}")
+            }
+        })
+    }
+
 
     // Função para registrar a pessoa
     fun registerPerson(name: String, email: String, password: String, telefone: String, dataNascimento: String) {
@@ -46,6 +110,10 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                 id?.let {
                     // Salva o ID nas SharedPreferences
                     sharedPrefsManager.saveUserId(it)
+                    sharedPrefsManager.saveUserName(name)
+                    sharedPrefsManager.saveUserPhone(telefone)
+                    sharedPrefsManager.saveUserBirthdate(dataNascimento)
+                    sharedPrefsManager.saveUserEmail(email)
                 }
                 Log.d("UserViewModel", "Usuário registrado com ID: $id")
             } else {
