@@ -29,13 +29,20 @@ public class Person {
     private String secondName;
     private Integer age;
     private String gender;
-
+    private String dataNascimento;
     // Para integração com redes sociais (Facebook ou Google)
     private String facebookId;
     private String googleId;
     private String codigoConfirmacao;
 
     // Getters e Setters
+    public String getDataNascimento() {
+        return dataNascimento;
+    }
+
+    public void setDataNascimento(String dataNascimento) {
+        this.dataNascimento = dataNascimento;
+    }
 
     public Long getId() {
         return id;

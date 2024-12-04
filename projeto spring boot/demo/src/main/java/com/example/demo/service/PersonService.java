@@ -18,16 +18,11 @@ public class PersonService {
     private PersonRepository personRepository;
 
     // Registrar uma nova pessoa
-    public Person registerPerson(String name, String email, String password, String telefone, String codigo) {
-        Person person = new Person();
-        person.setName(name);
-        person.setEmail(email);
-        person.setPassword(password); // Você deve criptografar a senha em um caso real
-        person.setTelefone(telefone);
-        person.setCodigoConfirmacao(codigo);
+    public Person registerPerson(Person person) {
+        // Salva a pessoa no banco de dados
         return personRepository.save(person);
     }
-
+    
     // Realizar login usando email e senha
     public Optional<Person> loginWithEmail(String email, String password) {
         Optional<Person> person = personRepository.findByEmail(email);

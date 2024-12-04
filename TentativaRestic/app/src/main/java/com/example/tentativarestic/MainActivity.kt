@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,9 +15,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -29,7 +28,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.navigation.compose.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +49,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.NativeKeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
@@ -59,7 +58,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -80,7 +78,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
-import com.example.tentativarestic.data.RetrofitInstance
+import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import kotlinx.coroutines.delay
 import java.net.URLEncoder
@@ -89,6 +87,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.random.Random
 
 fun Long.toBrazilianDateFormat(
     pattern: String = "dd/MM/yyyy"
@@ -102,19 +101,24 @@ fun Long.toBrazilianDateFormat(
     return formatter.format(date)
 }
 
+
 class MainActivity : ComponentActivity() {
+    private val userViewModel: UserViewModel by viewModels {
+        UserViewModelFactory(application) // Passando o application context
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TentativaResticTheme {
-                AppNavigation()
+                AppNavigation(userViewModel)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(userViewModel: UserViewModel) {
     // Controlador de navegação
     val navController = rememberNavController()
 
@@ -137,47 +141,78 @@ fun AppNavigation() {
         composable("telaCadastro") {
             TelaCadastro(
                 navController = navController,
-                onNextClick = { nome, dataNascimento, email, senha ->
+                onNextClick = { nome, dataNascimento, email, telefone ->
                     // URL encode parameters
                     val encodedNome = URLEncoder.encode(nome, "UTF-8")
                     val encodedDataNascimento = URLEncoder.encode(dataNascimento, "UTF-8")
                     val encodedEmail = URLEncoder.encode(email, "UTF-8")
-                    val encodedSenha = URLEncoder.encode(senha, "UTF-8")
+                    val encodedTelefone = URLEncoder.encode(telefone, "UTF-8")
 
                     // Navigate with encoded parameters
-                    navController.navigate("verificacaoTelefone/$encodedNome/$encodedDataNascimento/$encodedEmail/$encodedSenha")
-                }
+                    navController.navigate("verificacaoTelefone/$encodedNome/$encodedDataNascimento/$encodedEmail/$encodedTelefone")
+                },
+                userViewModel = userViewModel
             )
         }
 
         composable(
-            "verificacaoTelefone/{nome}/{dataNascimento}/{email}/{senha}",
+            "verificacaoTelefone/{nome}/{dataNascimento}/{email}/{telefone}",
             arguments = listOf(
                 navArgument("nome") { type = NavType.StringType },
                 navArgument("dataNascimento") { type = NavType.StringType },
                 navArgument("email") { type = NavType.StringType },
-                navArgument("senha") { type = NavType.StringType }
+                navArgument("telefone") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             // Decode parameters
             val nome = URLDecoder.decode(backStackEntry.arguments?.getString("nome") ?: "", "UTF-8")
             val dataNascimento = URLDecoder.decode(backStackEntry.arguments?.getString("dataNascimento") ?: "", "UTF-8")
             val email = URLDecoder.decode(backStackEntry.arguments?.getString("email") ?: "", "UTF-8")
-            val senha = URLDecoder.decode(backStackEntry.arguments?.getString("senha") ?: "", "UTF-8")
+            val telefone = URLDecoder.decode(backStackEntry.arguments?.getString("telefone") ?: "", "UTF-8")
 
             TelaVerificacaoTelefone(
                 navController = navController,
-                onConfirmClick = { navController.navigate("digitarSenha") },
+                onConfirmClick = { nome, dataNascimento, email, telefone ->
+                    // URL encode parameters
+                    val encodedNome = URLEncoder.encode(nome, "UTF-8")
+                    val encodedDataNascimento = URLEncoder.encode(dataNascimento, "UTF-8")
+                    val encodedEmail = URLEncoder.encode(email, "UTF-8")
+                    val encodedTelefone = URLEncoder.encode(telefone, "UTF-8")
+
+                    // Navigate with encoded parameters
+                    navController.navigate("digitarSenha/$encodedNome/$encodedDataNascimento/$encodedEmail/$encodedTelefone")
+                },
                 nome = nome,
                 dataNascimento = dataNascimento,
                 email = email,
-                senha = senha
+                telefone = telefone
             )
         }
 
 
-        composable("digitarSenha") {
-            TelaDigitarSenha(navController, onConfirmClick = {navController.navigate("telaPrincipal")})
+        composable("digitarSenha/{nome}/{dataNascimento}/{email}/{telefone}",
+            arguments = listOf(
+                navArgument("nome") { type = NavType.StringType },
+                navArgument("dataNascimento") { type = NavType.StringType },
+                navArgument("email") { type = NavType.StringType },
+                navArgument("telefone") { type = NavType.StringType }
+            )
+        ){ backStackEntry ->
+            // Decode parameters
+            val nome = URLDecoder.decode(backStackEntry.arguments?.getString("nome") ?: "", "UTF-8")
+            val dataNascimento = URLDecoder.decode(backStackEntry.arguments?.getString("dataNascimento") ?: "", "UTF-8")
+            val email = URLDecoder.decode(backStackEntry.arguments?.getString("email") ?: "", "UTF-8")
+            val telefone = URLDecoder.decode(backStackEntry.arguments?.getString("telefone") ?: "", "UTF-8")
+
+            TelaDigitarSenha(
+                navController = navController,
+                onConfirmClick = { navController.navigate("telaPrincipal") },
+                nome = nome,
+                dataNascimento = dataNascimento,
+                email = email,
+                telefone = telefone,
+                userViewModel = userViewModel
+            )
         }
 
         composable("telaPrincipal") {
@@ -257,7 +292,8 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
 
                         .background(Color.Transparent)
                         .fillMaxWidth(0.9f),
-                    containerColor = Color.White
+                    containerColor = Color.White,
+                    windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
 
 
                     // Definindo bordas arredondadas para o NavigationBar
@@ -560,8 +596,11 @@ fun TelaPrincipal(navController: NavHostController, onProfileClick: () -> Unit) 
                             )
 
                             .background(Color.Transparent)
+                            .height(80.dp)
                             .fillMaxWidth(0.9f),
-                        containerColor = Color.White
+
+                        containerColor = Color.White,
+                        windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp)
 
 
                         // Definindo bordas arredondadas para o NavigationBar
@@ -838,10 +877,35 @@ fun LanguageCard2(language: LanguageItem) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Unit) {
+fun TelaDigitarSenha(
+    navController: NavHostController,
+    onConfirmClick: () -> Unit,
+    nome: String,
+    dataNascimento: String,
+    email: String,
+    telefone: String,
+    userViewModel: UserViewModel
+) {
     // Criação dos FocusRequesters para os campos de OTP
     val (item1, item2, item3, item4, item5, item6) = FocusRequester.createRefs()
     val (item1_confirm, item2_confirm, item3_confirm, item4_confirm, item5_confirm, item6_confirm) = FocusRequester.createRefs()
+    val (value1, setValue1) = remember { mutableStateOf("") }
+    val (value2, setValue2) = remember { mutableStateOf("") }
+    val (value3, setValue3) = remember { mutableStateOf("") }
+    val (value4, setValue4) = remember { mutableStateOf("") }
+    val (value5, setValue5) = remember { mutableStateOf("") }
+    val (value6, setValue6) = remember { mutableStateOf("") }
+
+    val finalValue = value1 + value2 + value3 + value4 + value5 + value6
+
+    val (value12, setValue12) = remember { mutableStateOf("") }
+    val (value22, setValue22) = remember { mutableStateOf("") }
+    val (value32, setValue32) = remember { mutableStateOf("") }
+    val (value42, setValue42) = remember { mutableStateOf("") }
+    val (value52, setValue52) = remember { mutableStateOf("") }
+    val (value62, setValue62) = remember { mutableStateOf("") }
+
+    val finalValue2 = value1 + value2 + value3 + value4 + value5 + value6
 
     Scaffold(
         topBar = {
@@ -913,6 +977,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OtpChar(
+                    value = value1,
+                    onValueChange = setValue1,
                     modifier = Modifier
                         .focusRequester(item1)
                         .focusProperties {
@@ -922,6 +988,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         .padding(start = 10.dp)
                 )
                 OtpChar(
+                    value = value2,
+                    onValueChange = setValue2,
                     modifier = Modifier
                         .focusRequester(item2)
                         .focusProperties {
@@ -930,6 +998,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value3,
+                    onValueChange = setValue3,
                     modifier = Modifier
                         .focusRequester(item3)
                         .focusProperties {
@@ -938,6 +1008,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value4,
+                    onValueChange = setValue4,
                     modifier = Modifier
                         .focusRequester(item4)
                         .focusProperties {
@@ -946,6 +1018,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value5,
+                    onValueChange = setValue5,
                     modifier = Modifier
                         .focusRequester(item5)
                         .focusProperties {
@@ -954,6 +1028,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value6,
+                    onValueChange = setValue6,
                     modifier = Modifier
                         .focusRequester(item6)
                         .focusProperties {
@@ -982,6 +1058,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OtpChar(
+                    value = value12,
+                    onValueChange = setValue12,
                     modifier = Modifier
                         .focusRequester(item1_confirm)
                         .focusProperties {
@@ -991,6 +1069,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         .padding(start = 10.dp)
                 )
                 OtpChar(
+                    value = value22,
+                    onValueChange = setValue22,
                     modifier = Modifier
                         .focusRequester(item2_confirm)
                         .focusProperties {
@@ -999,6 +1079,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value32,
+                    onValueChange = setValue32,
                     modifier = Modifier
                         .focusRequester(item3_confirm)
                         .focusProperties {
@@ -1007,6 +1089,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value42,
+                    onValueChange = setValue42,
                     modifier = Modifier
                         .focusRequester(item4_confirm)
                         .focusProperties {
@@ -1015,6 +1099,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value52,
+                    onValueChange = setValue52,
                     modifier = Modifier
                         .focusRequester(item5_confirm)
                         .focusProperties {
@@ -1023,6 +1109,8 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                         }
                 )
                 OtpChar(
+                    value = value62,
+                    onValueChange = setValue62,
                     modifier = Modifier
                         .focusRequester(item6_confirm)
                         .focusProperties {
@@ -1033,8 +1121,32 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
                 )
             }
 
+            fun verifyPassword(): Boolean {
+                return finalValue == finalValue2
+            }
+
+            val context = LocalContext.current
+
+            fun registerUser() {
+                if (verifyPassword()) {
+                    userViewModel.registerPerson(nome, email, finalValue, telefone, dataNascimento);
+                    onConfirmClick()
+                } else {
+                    // Senhas não coincidem
+                    // Exibir mensagem de erro
+                    Toast.makeText(
+                        context,
+                        "As senhas não coincidem. Por favor, tente novamente.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                }
+            }
+
+
+
             Button(
-                onClick = onConfirmClick,
+                onClick = { registerUser() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 70.dp)
@@ -1058,19 +1170,36 @@ fun TelaDigitarSenha(navController: NavHostController, onConfirmClick: () -> Uni
 }
 
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaVerificacaoTelefone (
     navController: NavController,
-    onConfirmClick: () -> Unit,
+    onConfirmClick: (String, String, String, String) -> Unit,
     nome: String,
     dataNascimento: String,
     email: String,
-    senha: String
+    telefone: String
 ) {
     val (item1, item2, item3, item4, item5, item6) = FocusRequester.createRefs()
 
     var remainingTime by remember { mutableStateOf(60) } // 1 minuto (60 segundos)
+
+    var codigo by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        codigo = Random.nextInt(100000, 1000000)  // Gera o código uma vez
+        Log.d("Código de verificação", codigo.toString())
+    }
+
+    val (value1, setValue1) = remember { mutableStateOf("") }
+    val (value2, setValue2) = remember { mutableStateOf("") }
+    val (value3, setValue3) = remember { mutableStateOf("") }
+    val (value4, setValue4) = remember { mutableStateOf("") }
+    val (value5, setValue5) = remember { mutableStateOf("") }
+    val (value6, setValue6) = remember { mutableStateOf("") }
+
+    val finalValue = value1 + value2 + value3 + value4 + value5 + value6
+
 
     // Função para formatar o tempo
     fun formatTime(seconds: Int): String {
@@ -1134,14 +1263,14 @@ fun TelaVerificacaoTelefone (
             }
             Spacer(modifier = Modifier.height(30.dp))
             Text(
-                text = "REGISTRAR-SE",
+                text = "VERIFICAR TELEFONE",
                 fontSize = 24.sp,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Insira seus dados para o cadastro.",
+                text = "Insira o código enviado por SMS.",
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
@@ -1153,6 +1282,8 @@ fun TelaVerificacaoTelefone (
 
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()){
                 OtpChar(
+                    value = value1,
+                    onValueChange = setValue1,
                     modifier = Modifier
                         .focusRequester(item1)
                         .focusProperties {
@@ -1162,6 +1293,8 @@ fun TelaVerificacaoTelefone (
                         .padding(start = 10.dp)
                 )
                 OtpChar(
+                    value = value2,
+                    onValueChange = setValue2,
                     modifier = Modifier
                         .focusRequester(item2)
                         .focusProperties {
@@ -1170,6 +1303,8 @@ fun TelaVerificacaoTelefone (
                         }
                 )
                 OtpChar(
+                    value = value3,
+                    onValueChange = setValue3,
                     modifier = Modifier
                         .focusRequester(item3)
                         .focusProperties {
@@ -1178,6 +1313,8 @@ fun TelaVerificacaoTelefone (
                         }
                 )
                 OtpChar(
+                    value = value4,
+                    onValueChange = setValue4,
                     modifier = Modifier
                         .focusRequester(item4)
                         .focusProperties {
@@ -1186,6 +1323,8 @@ fun TelaVerificacaoTelefone (
                         }
                 )
                 OtpChar(
+                    value = value5,
+                    onValueChange = setValue5,
                     modifier = Modifier
                         .focusRequester(item5)
                         .focusProperties {
@@ -1194,6 +1333,8 @@ fun TelaVerificacaoTelefone (
                         }
                 )
                 OtpChar(
+                    value = value6,
+                    onValueChange = setValue6,
                     modifier = Modifier
                         .focusRequester(item6)
                         .focusProperties {
@@ -1202,6 +1343,8 @@ fun TelaVerificacaoTelefone (
                         }
                         .padding(end = 10.dp)
                 )
+
+                //Text("Valor final: $finalValue") log
 
                 //....
             }
@@ -1221,9 +1364,21 @@ fun TelaVerificacaoTelefone (
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            val context = LocalContext.current
+
+            fun verifyCode() {
+                if (finalValue.toInt() == codigo) {
+                    Log.d("Cadastro", "Nome: $nome, Email: $email, Telefone: $telefone, Data de Nascimento: $dataNascimento")
+                    onConfirmClick(nome, dataNascimento, email, telefone)
+                } else {
+                    // Exibe um Toast com a mensagem de erro
+                    Toast.makeText(context, "Código Diferente", Toast.LENGTH_SHORT).show()
+                }
+            }
+
             // Botão Confirmar
             Button(
-                onClick = onConfirmClick,
+                onClick = { verifyCode() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 90.dp)
@@ -1254,7 +1409,7 @@ fun TelaVerificacaoTelefone (
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaCadastro(navController: NavController, onNextClick: (String, String, String, String) -> Unit, userViewModel: UserViewModel = viewModel()) {
+fun TelaCadastro(navController: NavController, onNextClick: (String, String, String, String) -> Unit, userViewModel: UserViewModel) {
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
@@ -1274,7 +1429,7 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 // Se não houver erro, chama a próxima tela com os dados
                 //print no terminal que deu certo
                 Log.d("Cadastro", "Nome: $nome, Email: $email, Telefone: $telefone, Data de Nascimento: $dataNascimento")
-                onNextClick(nome, email, telefone, dataNascimento)
+                onNextClick(nome, dataNascimento, email, telefone)
             } else {
                 // Caso contrário, exibe o erro
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -1381,11 +1536,10 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(15.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
                 ),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -1421,12 +1575,11 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
                 ),
-                colors = TextFieldDefaults.textFieldColors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                )
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
+                ),
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -1465,12 +1618,11 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 ),
                 readOnly = true,
                 shape = RoundedCornerShape(15.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                )// Impede que o usuário digite manualmente
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
+                ),
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -1502,12 +1654,11 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 shape = RoundedCornerShape(15.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                )
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
+                ),
             )
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -1566,12 +1717,11 @@ fun InputField(
                 .fillMaxWidth()
                 .clickable(enabled = readOnly && onClick != null) { onClick?.invoke() },
             shape = RoundedCornerShape(15.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                disabledTextColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            )
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                disabledBorderColor = Color.Transparent
+            ),
         )
     }
 }
@@ -1690,12 +1840,11 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
                 ),
-                colors = TextFieldDefaults.textFieldColors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                )
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
+                ),
             )
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -1724,11 +1873,10 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(15.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
                 ),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -2095,17 +2243,18 @@ fun TelaInicial(onLoginClick: () -> Unit, onCadastroClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpChar(
-    modifier: Modifier = Modifier
-){
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
     val pattern = remember { Regex("^[^\\t]*\$") } //to not accept the tab key as value
-    var (text,setText) = remember { mutableStateOf("") }
     val maxChar = 1
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(
-        key1 = text,
+        key1 = value,
     ) {
-        if (text.isNotEmpty()) {
+        if (value.isNotEmpty()) {
             focusManager.moveFocus(
                 focusDirection = FocusDirection.Next,
             )
@@ -2116,24 +2265,25 @@ fun OtpChar(
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         TextField(
-            value =text,
+            value = value,
             onValueChange = {
                 if (it.length <= maxChar &&
                     ((it.isEmpty() || it.matches(pattern))))
-                    setText(it)
+                    onValueChange(it)
             },
             modifier = modifier
                 .width(50.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .onKeyEvent {
-                    if (it.key == Key.Tab) {
+                .onKeyEvent { event ->
+                    if (event.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)
                         true
-                    }
-                    if (text.isEmpty() && it.key == Key.Backspace) {
+                    } else if (value.isEmpty() && event.key == Key.Backspace) {
                         focusManager.moveFocus(FocusDirection.Previous)
+                        true
+                    } else {
+                        false
                     }
-                    false
                 },
             textStyle = LocalTextStyle.current.copy(
                 fontSize = 18.sp,
@@ -2142,14 +2292,15 @@ fun OtpChar(
                 imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Number
             ),
-            colors= TextFieldDefaults.textFieldColors(
-                //backgroundColor = Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent),
-
-            )
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.LightGray,
+                unfocusedBorderColor = Color.LightGray,
+                disabledBorderColor = Color.LightGray
+            ),
+        )
     }
 }
+
 
 
 @Preview(showBackground = true)

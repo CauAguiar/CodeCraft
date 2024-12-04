@@ -24,13 +24,36 @@ public class PersonController {
 
     // Endpoint para registrar uma nova pessoa
     @PostMapping("/register")
-    public Person registerPerson(@RequestParam String name, @RequestParam String email,
-                                 @RequestParam String password, @RequestParam String telefone) {
-                // Envia o código de confirmação
-                String codigo = personService.sendConfirmationCode(telefone);
-
-        return personService.registerPerson(name, email, password, telefone, codigo);
+    public Long registerPerson(@RequestBody Map<String, String> params) {
+        // Obtendo os valores do Map
+        String name = params.get("name");
+        String email = params.get("email");
+        String password = params.get("password");
+        String telefone = params.get("telefone");
+        String dataNascimento = params.get("dataNascimento");
+    
+        // Verifica se algum parâmetro não foi enviado
+        if (name == null || email == null || password == null || telefone == null || dataNascimento == null) {
+            throw new IllegalArgumentException("Todos os campos são obrigatórios.");
+        }
+    
+        // Cria um objeto Person com os dados recebidos
+        Person person = new Person();
+        person.setName(name);
+        person.setEmail(email);
+        person.setPassword(password);
+        person.setTelefone(telefone);
+        person.setDataNascimento(dataNascimento);
+    
+        // Envia o código de confirmação    
+        // Registra a pessoa e salva no banco de dados
+        Person savedPerson = personService.registerPerson(person);
+    
+        // Retorna o ID da pessoa registrada
+        return savedPerson.getId();
     }
+    
+    
 
     // Endpoint para login com email e senha
     @PostMapping("/login/email")

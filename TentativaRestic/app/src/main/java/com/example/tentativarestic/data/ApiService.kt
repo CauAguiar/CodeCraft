@@ -26,6 +26,9 @@ interface ApiService {
     suspend fun checkIfExists(
         @Body params: Map<String, String>  // Usando um mapa para enviar os parâmetros no corpo
     ): Response<Map<String, Boolean>>
+
+    @POST("api/person/register")
+    suspend fun registerPerson(@Body params: Map<String, String>): Response<Long> // Retorna apenas o ID
 }
 
 
