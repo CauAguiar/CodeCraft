@@ -82,6 +82,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.SharedPrefsManager
+import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
@@ -235,7 +236,169 @@ fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsM
             TelaCurso(navController, onModuloClick = {navController.navigate("modulo")}, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
         }
 
+        composable ("modulo"){
+            TelaModulo(navController, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
+        }
 
+
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
+    // Container principal
+    var atividades = sharedPrefsManager.getAtividades()
+    var currentActivityIndex by remember { mutableStateOf(0) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Atividade ${currentActivityIndex + 1}/${atividades.size}") }
+            )
+        }
+    ) { paddingValues ->
+        Log.d("AtividadesDebug", "Lista de atividades: $atividades")
+        Log.d("AtividadesDebug", "Índice atual: $currentActivityIndex")
+        val atividadeAtual = atividades[currentActivityIndex]
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5))
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Título da atividade
+            Text(
+                text = atividadeAtual.nome,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Tipo de atividade
+            Text(
+                text = "Tipo: ${atividadeAtual.tipo}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // Exibição personalizada para atividades específicas
+            when (atividadeAtual.tipo) {
+                "quiz" -> QuizContent(atividadeAtual)
+                "video" -> VideoContent(atividadeAtual)
+                "exercicio_aberto" -> ExerciseContent(atividadeAtual)
+                else -> DefaultContent(atividadeAtual)
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Barra de progresso e navegação
+            BottomProgressBar(
+                currentActivityIndex = currentActivityIndex,
+                totalActivities = atividades.size,
+                onPreviousClick = { if (currentActivityIndex > 0) currentActivityIndex-- },
+                onNextClick = { if (currentActivityIndex < atividades.size - 1) currentActivityIndex++ }
+            )
+        }
+    }
+}
+
+@Composable
+fun QuizContent(atividade: Atividade) {
+    Text(
+        text = "Quiz: ${atividade.nome}",
+        style = MaterialTheme.typography.bodyLarge
+    )
+}
+
+@Composable
+fun VideoContent(atividade: Atividade) {
+    Text(
+        text = "Video: ${atividade.nome}",
+        style = MaterialTheme.typography.bodyLarge
+    )
+}
+
+@Composable
+fun ExerciseContent(atividade: Atividade) {
+    Text(
+        text = "Exercício: ${atividade.nome}",
+        style = MaterialTheme.typography.bodyLarge
+    )
+}
+
+@Composable
+fun DefaultContent(atividade: Atividade) {
+    Text(
+        text = "Atividade genérica: ${atividade.nome}",
+        style = MaterialTheme.typography.bodyLarge
+    )
+}
+
+@Composable
+fun BottomProgressBar(
+    currentActivityIndex: Int,
+    totalActivities: Int,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit
+) {
+    // Calcula o progresso
+    val progress = (currentActivityIndex + 1).toFloat() / totalActivities
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF5F5F5))
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Barra de progresso
+        LinearProgressIndicator(
+            progress = progress, // Progresso atual
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp)),
+            color = Color(0xFF2196F3),
+            trackColor = Color(0xFFE0E0E0)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Botões de navegação e indicador
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Botão Anterior
+            Button(
+                onClick = onPreviousClick,
+                enabled = currentActivityIndex > 0 // Desabilita se for a primeira atividade
+            ) {
+                Text(text = "Anterior")
+            }
+
+            // Texto indicando progresso
+            Text(
+                text = "${currentActivityIndex + 1}/$totalActivities",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
+
+            // Botão Próxima
+            Button(
+                onClick = onNextClick,
+                enabled = currentActivityIndex < totalActivities - 1 // Desabilita se for a última atividade
+            ) {
+                Text(text = "Próxima")
+            }
+        }
     }
 }
 
@@ -286,14 +449,14 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
             //contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(unidades.size) { index ->
-                UnidadeItem(unidades[index])
+                UnidadeItem(unidades[index], navController, sharedPrefsManager)
             }
         }
     }
 }
 
 @Composable
-fun UnidadeItem(unidade: Unidade) {
+fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager) {
     // Item individual para cada unidade
     Spacer(modifier = Modifier.height(8.dp))
     Box(
@@ -353,10 +516,17 @@ fun UnidadeItem(unidade: Unidade) {
                 modifier = Modifier
                     .size(80.dp)
                     .offset(x = offsetX) // Aplica o deslocamento calculado
-                    .run {
-                        if (isEnabled == 1) this else this
-                            .alpha(0.5f)
-                            .clickable { } // Desabilita clicabilidade
+                    .clickable(
+                        enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
+                    ) {
+                        if (isEnabled == 1) {
+                            sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
+                            navController.navigate("modulo") // Navega para o módulo específico
+                        }
+                    }
+                    .graphicsLayer { // Aplica transparência se desabilitado
+                        alpha =
+                            if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
                     }
             )
             Spacer(modifier = Modifier.height(8.dp))

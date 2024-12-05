@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +25,7 @@ public class Atividade {
 
     @ManyToOne
     @JoinColumn(name = "modulo_id", nullable = false)
+    @JsonBackReference
     private Modulo modulo; // O módulo ao qual a atividade pertence
 
     @Column(nullable = false)

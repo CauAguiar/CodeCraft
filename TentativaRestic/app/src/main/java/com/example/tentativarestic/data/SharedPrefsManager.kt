@@ -2,6 +2,8 @@ package com.example.tentativarestic.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
+import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Unidade
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -48,6 +50,7 @@ class SharedPrefsManager(context: Context) {
         private const val KEY_MODULO_ORDEM = "modulo_ordem"
         private const val KEY_MODULO_DURACAO = "modulo_duracao"
         private const val KEY_MODULO_HABILITADO = "modulo_habilitado"
+        private const val KEY_ATIVIDADES = "atividades"
 
         private const val KEY_ATIVIDADE_ID = "atividade_id"
         private const val KEY_ATIVIDADE_NOME = "atividade_nome"
@@ -58,6 +61,26 @@ class SharedPrefsManager(context: Context) {
         private const val KEY_ATIVIDADE_ERROS = "atividade_erros"
 
         private const val KEY_UNIDADES = "unidades"
+    }
+
+    fun saveAtividades(atividades: List<Atividade>) {
+        Log.d("AtividadesDebug", "Salvando atividades: $atividades")
+        val atividadesJson = gson.toJson(atividades)
+        sharedPreferences.edit().apply {
+            putString(KEY_ATIVIDADES, atividadesJson)
+            apply()
+        }
+    }
+
+    fun getAtividades(): List<Atividade> {
+        val atividadesJson = sharedPreferences.getString(KEY_ATIVIDADES, null)
+        Log.d("AtividadesDebug", "Dados recuperados: $atividadesJson")
+        return if (atividadesJson != null) {
+            val listType = object : TypeToken<List<Atividade>>() {}.type
+            gson.fromJson(atividadesJson, listType)
+        } else {
+            emptyList()
+        }
     }
 
     // Função para salvar uma lista de Unidades
