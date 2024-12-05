@@ -1,6 +1,7 @@
 package com.example.tentativarestic
 
 import android.os.Bundle
+import android.widget.Space
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -11,11 +12,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -30,6 +33,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -54,6 +58,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -77,6 +82,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.SharedPrefsManager
+import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import kotlinx.coroutines.delay
@@ -125,7 +131,7 @@ fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsM
     val navController = rememberNavController()
 
     // Definir o NavHost e as rotas
-    NavHost(navController = navController, startDestination = "introducao") {
+    NavHost(navController = navController, startDestination = "telaPrincipal") {
         composable("introducao") {
             IntroducaoApp(onFinish = {
                 navController.navigate("telaInicial")
@@ -218,11 +224,15 @@ fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsM
         }
 
         composable("telaPrincipal") {
-            TelaPrincipal(navController, onProfileClick = {navController.navigate("telaPerfil")}, sharedPrefsManager = sharedPrefsManager)
+            TelaPrincipal(navController, onProfileClick = {navController.navigate("telaPerfil")}, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
         }
 
         composable("telaPerfil") {
             TelaPerfil(navController, onHomeClick = {navController.navigate("telaPrincipal")})
+        }
+
+        composable("curso"){
+            TelaCurso(navController, onModuloClick = {navController.navigate("modulo")}, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
         }
 
 
@@ -230,6 +240,128 @@ fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsM
 }
 
 data class LanguageItem(val name: String, val icon: ImageVector)
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel){
+    val nome_curso = sharedPrefsManager.getCursoNome()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                    "$nome_curso",
+                    fontSize = 24.sp,
+                        modifier = Modifier.offset(y = 14.dp)
+                ) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack()}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.seta), // Nome da sua imagem PNG
+                            contentDescription = "Seta",
+                            colorFilter = ColorFilter.tint(Color.Black),
+                            modifier = Modifier
+                                .graphicsLayer(
+                                    scaleX = -3.5f,
+                                    scaleY = 3.5f
+                                )
+                        )
+                    }
+                }
+
+            )
+        }
+    ) { innerPadding ->
+
+        val unidades = remember { sharedPrefsManager.getUnidades() }
+        Log.d("UnidadeListScreen", "Número de unidades: ${unidades.size}")
+        // Exibe as unidades em uma lista rolável
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            //contentPadding = PaddingValues(vertical = 16.dp)
+        ) {
+            items(unidades.size) { index ->
+                UnidadeItem(unidades[index])
+            }
+        }
+    }
+}
+
+@Composable
+fun UnidadeItem(unidade: Unidade) {
+    // Item individual para cada unidade
+    Spacer(modifier = Modifier.height(8.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        BasicText(
+            text = unidade.titulo,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+
+    // Ordenando os módulos pela ordem
+    val modulosOrdenados = unidade.modulos.sortedBy { it.ordem }
+
+    // Exibindo cada módulo
+    // Definindo a posição das imagens
+    val totalModulos = modulosOrdenados.size
+
+
+    // Exibindo cada módulo com efeito de deslocamento
+    modulosOrdenados.forEachIndexed { index, modulo ->
+        // Calculando o deslocamento para criar o efeito de "cobra"
+        val normalizedPosition = index.toFloat() / totalModulos
+        val direction = if (normalizedPosition < 0.5f) -1f else 1f
+
+
+
+        var offsetX = (normalizedPosition * 60f * direction).dp
+
+
+        // Verificando se o módulo está habilitado
+        val isEnabled = if (modulo.habilitado) 1 else 0  // Converte true/false para 1/0
+
+
+
+        // Determinando a imagem com base no módulo
+            val imageResource = when (modulo.descricao.lowercase()) {
+                "estrela" -> R.drawable.imagem_estrela
+                "bau" -> R.drawable.imagem_bau
+                "trofeu" -> R.drawable.imagem_trofeu
+                "livro" -> R.drawable.imagem_livro
+                else -> R.drawable.imagem_padrao // Imagem padrão se não coincidir
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Modificando o aspecto visual da imagem se o módulo estiver desabilitado
+            Image(
+                painter = painterResource(id = imageResource),
+                contentDescription = modulo.descricao,
+                modifier = Modifier
+                    .size(80.dp)
+                    .offset(x = offsetX) // Aplica o deslocamento calculado
+                    .run {
+                        if (isEnabled == 1) this else this
+                            .alpha(0.5f)
+                            .clickable { } // Desabilita clicabilidade
+                    }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -543,7 +675,8 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
 fun TelaPrincipal(
     navController: NavHostController,
     onProfileClick: () -> Unit,
-    sharedPrefsManager: SharedPrefsManager
+    sharedPrefsManager: SharedPrefsManager,
+    userViewModel: UserViewModel
 ) {
     var searchText by remember { mutableStateOf("") }
 
@@ -816,7 +949,7 @@ fun TelaPrincipal(
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     items(languages) { language ->
-                        LanguageCard(language)
+                        LanguageCard(language, sharedPrefsManager, userViewModel, navController)
                     }
                 }
             }
@@ -826,14 +959,19 @@ fun TelaPrincipal(
 
 
 @Composable
-fun LanguageCard(language: LanguageItem) {
+fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel, navController: NavHostController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(LocalConfiguration.current.screenWidthDp.dp / 3 - 16.dp)
             .padding(4.dp)
             .clip(RoundedCornerShape(8.dp))
-            .clickable { /*TODO: Handle click on language*/ },
+            .clickable {
+                sharedPrefsManager.saveCursoNome(language.name)
+                userViewModel.getUnidadesByCurso(language.name)
+                navController.navigate("curso")
+
+            },
         colors = CardDefaults.cardColors(Color.White)
 
     ) {

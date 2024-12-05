@@ -2,10 +2,15 @@ package com.example.tentativarestic.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.tentativarestic.models.Unidade
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class SharedPrefsManager(context: Context) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+
+    private val gson = Gson()
 
     companion object {
         private const val KEY_USER_ID = "user_id"
@@ -19,6 +24,142 @@ class SharedPrefsManager(context: Context) {
         private const val KEY_USER_FACEBOOK_ID = "user_facebook_id"
         private const val KEY_USER_GOOGLE_ID = "user_google_id"
         private const val KEY_USER_CONFIRMATION_CODE = "user_confirmation_code"
+
+        // Chaves relacionadas a curso, módulo, unidade e atividade
+        private const val KEY_CURSO_ID = "curso_id"
+        private const val KEY_CURSO_NOME = "curso_nome"
+        private const val KEY_CURSO_DESCRICAO = "curso_descricao"
+        private const val KEY_CURSO_NIVEL = "curso_nivel"
+        private const val KEY_CURSO_CATEGORIA = "curso_categoria"
+        private const val KEY_CURSO_ICONE = "curso_icone"
+        private const val KEY_CURSO_DURACAO = "curso_duracao"
+        private const val KEY_CURSO_HABILITADO = "curso_habilitado"
+
+        private const val KEY_UNIDADE_ID = "unidade_id"
+        private const val KEY_UNIDADE_TITULO = "unidade_titulo"
+        private const val KEY_UNIDADE_DESCRICAO = "unidade_descricao"
+        private const val KEY_UNIDADE_ORDEM = "unidade_ordem"
+        private const val KEY_UNIDADE_DURACAO = "unidade_duracao"
+        private const val KEY_UNIDADE_HABILITADA = "unidade_habilitada"
+        private const val KEY_UNIDADE_ICONE = "unidade_icone"
+
+        private const val KEY_MODULO_ID = "modulo_id"
+        private const val KEY_MODULO_NOME = "modulo_nome"
+        private const val KEY_MODULO_ORDEM = "modulo_ordem"
+        private const val KEY_MODULO_DURACAO = "modulo_duracao"
+        private const val KEY_MODULO_HABILITADO = "modulo_habilitado"
+
+        private const val KEY_ATIVIDADE_ID = "atividade_id"
+        private const val KEY_ATIVIDADE_NOME = "atividade_nome"
+        private const val KEY_ATIVIDADE_TIPO = "atividade_tipo"
+        private const val KEY_ATIVIDADE_HABILITADA = "atividade_habilitada"
+        private const val KEY_ATIVIDADE_CONCLUIDA = "atividade_concluida"
+        private const val KEY_ATIVIDADE_ACERTOS = "atividade_acertos"
+        private const val KEY_ATIVIDADE_ERROS = "atividade_erros"
+
+        private const val KEY_UNIDADES = "unidades"
+    }
+
+    // Função para salvar uma lista de Unidades
+    fun saveUnidades(unidades: List<Unidade>) {
+        val unidadesJson = gson.toJson(unidades)
+        sharedPreferences.edit().apply {
+            putString(KEY_UNIDADES, unidadesJson)
+            apply()
+        }
+    }
+
+    // Função para recuperar a lista de Unidades
+    fun getUnidades(): List<Unidade> {
+        val unidadesJson = sharedPreferences.getString(KEY_UNIDADES, null)
+        return if (unidadesJson != null) {
+            val listType = object : TypeToken<List<Unidade>>() {}.type
+            gson.fromJson(unidadesJson, listType)
+        } else {
+            emptyList() // Retorna uma lista vazia se não houver unidades salvas
+        }
+    }
+
+    fun saveCursoNome(nome: String) {
+        sharedPreferences.edit().apply {
+            putString(KEY_CURSO_NOME, nome)
+            apply()
+        }
+    }
+
+    fun getCursoNome(): String? {
+        return sharedPreferences.getString(KEY_CURSO_NOME, null)
+    }
+
+    // Funções para salvar e recuperar dados de Curso
+    fun saveCurso(cursoId: Long, nome: String, descricao: String, nivel: String, categoria: String, icone: String?, duracao: Int, habilitado: Boolean) {
+        sharedPreferences.edit().apply {
+            putLong(KEY_CURSO_ID, cursoId)
+            putString(KEY_CURSO_NOME, nome)
+            putString(KEY_CURSO_DESCRICAO, descricao)
+            putString(KEY_CURSO_NIVEL, nivel)
+            putString(KEY_CURSO_CATEGORIA, categoria)
+            putString(KEY_CURSO_ICONE, icone)
+            putInt(KEY_CURSO_DURACAO, duracao)
+            putBoolean(KEY_CURSO_HABILITADO, habilitado)
+            apply()
+        }
+    }
+
+    fun getCursoId(): Long {
+        return sharedPreferences.getLong(KEY_CURSO_ID, -1)
+    }
+
+//    // Funções para salvar e recuperar dados de Unidade
+//    fun saveUnidade(unidadeId: Long, titulo: String, descricao: String, ordem: Int, duracao: Int, habilitada: Boolean, icone: String?) {
+//        sharedPreferences.edit().apply {
+//            putLong(KEY_UNIDADE_ID, unidadeId)
+//            putString(KEY_UNIDADE_TITULO, titulo)
+//            putString(KEY_UNIDADE_DESCRICAO, descricao)
+//            putInt(KEY_UNIDADE_ORDEM, ordem)
+//            putInt(KEY_UNIDADE_DURACAO, duracao)
+//            putBoolean(KEY_UNIDADE_HABILITADA, habilitada)
+//            putString(KEY_UNIDADE_ICONE, icone)
+//            apply()
+//        }
+//    }
+//
+//    fun getUnidadeId(): Long {
+//        return sharedPreferences.getLong(KEY_UNIDADE_ID, -1)
+//    }
+
+    // Funções para salvar e recuperar dados de Módulo
+    fun saveModulo(moduloId: Long, nome: String, ordem: Int, duracao: Int, habilitado: Boolean) {
+        sharedPreferences.edit().apply {
+            putLong(KEY_MODULO_ID, moduloId)
+            putString(KEY_MODULO_NOME, nome)
+            putInt(KEY_MODULO_ORDEM, ordem)
+            putInt(KEY_MODULO_DURACAO, duracao)
+            putBoolean(KEY_MODULO_HABILITADO, habilitado)
+            apply()
+        }
+    }
+
+    fun getModuloId(): Long {
+        return sharedPreferences.getLong(KEY_MODULO_ID, -1)
+    }
+
+    // Funções para salvar e recuperar dados de Atividade
+    fun saveAtividade(atividadeId: Long, nome: String, tipo: String, habilitada: Boolean, concluida: Boolean, acertos: Int?, erros: Int?) {
+        sharedPreferences.edit().apply {
+            putLong(KEY_ATIVIDADE_ID, atividadeId)
+            putString(KEY_ATIVIDADE_NOME, nome)
+            putString(KEY_ATIVIDADE_TIPO, tipo)
+            putBoolean(KEY_ATIVIDADE_HABILITADA, habilitada)
+            putBoolean(KEY_ATIVIDADE_CONCLUIDA, concluida)
+            putInt(KEY_ATIVIDADE_ACERTOS, acertos ?: 0)
+            putInt(KEY_ATIVIDADE_ERROS, erros ?: 0)
+            apply()
+        }
+    }
+
+    fun getAtividadeId(): Long {
+        return sharedPreferences.getLong(KEY_ATIVIDADE_ID, -1)
     }
 
     // Função para salvar o ID do usuário

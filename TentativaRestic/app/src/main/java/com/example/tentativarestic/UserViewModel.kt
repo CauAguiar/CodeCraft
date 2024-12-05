@@ -6,12 +6,15 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tentativarestic.data.RetrofitInstance
 import com.example.tentativarestic.data.SharedPrefsManager
 import com.example.tentativarestic.models.Person
 import com.example.tentativarestic.models.PersonResponse
+import com.example.tentativarestic.models.Unidade
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -23,6 +26,37 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _userId = mutableStateOf<Long?>(null)
     val userId: State<Long?> = _userId
+
+    private val _unidades = MutableLiveData<List<Unidade>>()
+    val unidades: LiveData<List<Unidade>> = _unidades
+
+    fun getUnidadesByCurso(nomeCurso: String) {
+        // Exemplo de uso do Retrofit com uma corrotina
+        viewModelScope.launch {
+            try {
+                // Faz a requisição à API passando o nome do curso
+                val response = RetrofitInstance.api.getUnidadesByCurso(mapOf("nomeCurso" to nomeCurso))
+
+                if (response.isSuccessful) {
+                    val unidadesRecebidas = response.body() ?: emptyList()
+
+                    // Atualiza o estado das unidades no ViewModel
+                    _unidades.value = unidadesRecebidas
+
+                    // Agora salva as unidades no SharedPreferences
+                    sharedPrefsManager.saveUnidades(unidadesRecebidas)
+
+                } else {
+                    // Lidar com falha na requisição (caso necessário)
+                    _unidades.value = emptyList()
+                }
+            } catch (e: Exception) {
+                // Lidar com erros de rede ou outros erros inesperados
+                _unidades.value = emptyList()
+            }
+        }
+    }
+
 
 
     fun loginWithEmail(email: String, password: String, onResult: (Boolean) -> Unit) {

@@ -2,6 +2,8 @@ package com.example.demo.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +41,7 @@ public class Curso {
     private Boolean habilitado; // Indica se o curso está ativo e disponível
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private List<Unidade> unidades; // Relação com as unidades do curso
 
     // Getters e Setters
