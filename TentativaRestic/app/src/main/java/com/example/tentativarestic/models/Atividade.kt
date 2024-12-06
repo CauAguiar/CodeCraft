@@ -6,7 +6,7 @@ data class Atividade(
     val tipo: String, // Tipo da atividade (pode ser "quiz", "video", "exercicio_aberto", etc.)
     val moduloId: Long, // ID do módulo ao qual a atividade pertence
     val habilitada: Boolean, // Indica se a atividade está disponível
-    val concluida: Boolean, // Indica se a atividade foi concluída pelo aluno
+    var concluida: Boolean, // Indica se a atividade foi concluída pelo aluno
     val atividadeEspecificaId: Long? = null, // Armazenará o ID da atividade específica (como Quiz, Video, etc.)
     val acertos: Int? = null, // Para atividades de quiz ou exercícios, número de acertos
     val erros: Int? = null // Para atividades de quiz ou exercícios, número de erros

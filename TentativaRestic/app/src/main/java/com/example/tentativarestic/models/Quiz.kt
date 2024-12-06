@@ -7,6 +7,9 @@ data class Quiz(
     val alternativaB: String, // Alternativa B
     val alternativaC: String, // Alternativa C
     val alternativaD: String, // Alternativa D
-    val respostaCerta: String, // Resposta correta (ex.: "A", "B", "C", ou "D")
-    val enunciado: String // Texto da pergunta (ex.: "Qual é a linguagem de programação mais usada?")
+    val respostaCerta: Int, // Resposta correta (ex.: "A", "B", "C", ou "D")
+    val enunciado: String, // Texto da pergunta (ex.: "Qual é a linguagem de programação mais usada?")
+    var respostaSelecionada: Int? = null, // Resposta selecionada pelo usuário (pode ser nulo)
+    var resultado: Boolean? = null, // Resultado do quiz (pode ser nulo)
+    var confirmouResposta: Boolean = false // Indica se o usuário confirmou a resposta (pode ser nulo)
 )

@@ -84,6 +84,7 @@ import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.SharedPrefsManager
 import com.example.tentativarestic.models.Atividade
+import com.example.tentativarestic.models.Quiz
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
@@ -311,7 +312,7 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 
             // Exibição personalizada para atividades específicas
             when (atividadeAtual.tipo) {
-                "quiz" -> QuizContent(atividadeAtual)
+                "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
                 "video" -> VideoContent(atividadeAtual)
                 "exercicio_aberto" -> ExerciseContent(atividadeAtual)
                 else -> DefaultContent(atividadeAtual)
@@ -323,112 +324,182 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
             BottomProgressBar(
                 currentActivityIndex = currentActivityIndex,
                 totalActivities = atividades.size,
-                onPreviousClick = { if (currentActivityIndex > 0) currentActivityIndex-- },
-                onNextClick = { if (currentActivityIndex < atividades.size - 1) currentActivityIndex++ }
+                onPreviousClick = {
+                    if (currentActivityIndex > 0){
+                        //atividades = sharedPrefsManager.getAtividades()
+                        currentActivityIndex--
+                    }
+                },
+                onNextClick = {
+                    if (currentActivityIndex < atividades.size - 1){
+                        //atividades = sharedPrefsManager.getAtividades()
+                        currentActivityIndex++
+                    }
+                }
             )
         }
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun QuizContent(atividade: Atividade) {
-    var respostaSelecionada by remember { mutableStateOf<Int?>(null) }
-    var resultado by remember { mutableStateOf<Boolean?>(null) }
+fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
+    // Estado persistente usando rememberSaveable
+    val quiz = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getQuizById(it) }
+    Log.d("QuizDebug1", "Quiz: $quiz")
 
-    val pergunta = "O que significa uma estrutura de controle \"if\"?"
-    val opcoes = listOf(
-            "Repita uma ação várias vezes.",
-            "Fazer escolhas com base em condições.",
-            "Declarar uma variável.",
-            "Iniciar um programa."
+    if(quiz != null) {
+        var respostaSelecionadaCopy = quiz.respostaSelecionada
+        var confirmouRespostaCopy = quiz.confirmouResposta
+        var resultadoCopy = quiz.resultado
+
+        var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionadaCopy) }
+        var resultado by remember { mutableStateOf<Boolean?>(resultadoCopy) }
+        var confirmouResposta by remember { mutableStateOf(confirmouRespostaCopy) }
+
+        val pergunta = quiz.enunciado
+        val opcoes = listOf(
+            quiz.alternativaA,
+            quiz.alternativaB,
+            quiz.alternativaC,
+            quiz.alternativaD
         )
-    val respostaCorreta = 1 // Opção 2 é a correta (índice 1)
+        val respostaCorreta = quiz.respostaCerta// Opção 2 é a correta (índice 1)
 
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = pergunta,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Left,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
+            opcoes.forEachIndexed { index, opcao ->
+                val cor = when {
+                    confirmouResposta && respostaSelecionada == index -> // Cor de seleção
+                        if (index == respostaCorreta) Color(0xFF8BAD8D) else Color(0xFFEEA9A3)
 
-        Text(
-            text = pergunta,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Left,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+                    respostaSelecionada == index -> Color(0xFFD6D6D6) // Cor de seleção
+                    else -> Color(0xFFFAFAFA) // Cor padrão
+                }
 
-        opcoes.forEachIndexed { index, opcao ->
-            val cor = if (respostaSelecionada == index && resultado == true) {
-                //MaterialTheme.colors.primary
-                Color(0xFF8CB38D)
-            } else if (respostaSelecionada == index && resultado == false) {
-                //MaterialTheme.colors.error
-                Color(0xFFEB928C)
-            } else {
-                //MaterialTheme.colors.surface
-                Color(0xFFFAFAFA)
+                Button(
+                    onClick = {
+                        if (!confirmouResposta) {
+                            respostaSelecionada = index
+                            quiz.respostaSelecionada = index
+                            sharedPrefsManager.saveQuiz(quiz)
+                            Log.d("QuizDebugReposta", "Resposta selecionada: $quiz")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .padding(vertical = 8.dp)
+                        .background(cor, shape = RoundedCornerShape(14.dp))
+                        .border(
+                            1.dp,
+                            Color.LightGray,
+                            RoundedCornerShape(14.dp)
+                        ),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = cor,
+                        disabledContainerColor = cor
+                    ),
+                    enabled = !confirmouResposta // Desativa o botão após confirmação
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .background(Color.White, shape = CircleShape)
+                                .border(1.dp, Color.LightGray, CircleShape)
+                                .padding(6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "${index + 1}",
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Text(
+                            text = opcao,
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val confirmColor = when {
+                respostaSelecionada != null && !confirmouResposta -> Color(0xFF4CAF50)
+                else -> Color(0xFFBDBDBD)
             }
 
             Button(
                 onClick = {
-                    respostaSelecionada = index
-                    resultado = index == respostaCorreta
+                    if (respostaSelecionada != null) {
+                        resultado = respostaSelecionada == respostaCorreta
+                        confirmouResposta = true
+                        quiz.confirmouResposta = true
+                        quiz.resultado = resultado
+                        atividade.concluida = true
+                        Log.d("QuizDebugResposta2", "Enviado selecionada: $quiz")
+                        sharedPrefsManager.saveQuiz(quiz)
+                        sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(vertical = 8.dp)
-                    .background(cor, shape = RoundedCornerShape(14.dp))
-                    .border(
-                        1.dp,
-                        Color.LightGray,
-                        RoundedCornerShape(14.dp)
-                    ), // Borda menos arredondada
-                colors = ButtonDefaults.buttonColors(containerColor = cor) // Branco neve
+                    .height(56.dp)
+                    .background(
+                        confirmColor,
+                        shape = RoundedCornerShape(28.dp)
+                    )
+                    .padding(vertical = 8.dp),
+                enabled = respostaSelecionada != null && !confirmouResposta,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (respostaSelecionada != null) Color(0xFF4CAF50) else Color(
+                        0xFFBDBDBD
+                    ),
+                    disabledContainerColor = Color(0xFFBDBDBD),
+                    disabledContentColor = Color.White
+                )
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    // Círculo com número
-                    Box(
-                        modifier = Modifier
-                            .size(30.dp)
-                            .background(Color.White, shape = CircleShape)
-                            .border(1.dp, Color.LightGray, CircleShape) // Borda preta
-                            .padding(6.dp), // Ajuste o tamanho do círculo
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "${index + 1}",
-                            color = Color.Black,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
+                Text(
+                    text = "Confirmar Resposta",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-                    Spacer(modifier = Modifier.width(16.dp)) // Espaço entre o círculo e o texto
-
-                    // Texto da opção
+            if (confirmouResposta) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = opcao,
-                        color = Color.Black,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodyLarge
+                        text = if (resultado == true) "Resposta correta!" else "Resposta incorreta.",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (resultado == true) Color(0xFF4CAF50) else Color(0xFFF44336)
                     )
                 }
             }
         }
-
-
-
-        if (respostaSelecionada != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = if (resultado == true) "Resposta correta!" else "Resposta incorreta.",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (resultado == true) Color(0xFF4CAF50) else Color(0xFFF44336)
-            )
-        }
-
+    }
 }
+
 
 @Composable
 fun VideoContent(atividade: Atividade) {

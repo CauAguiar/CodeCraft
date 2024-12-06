@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import java.util.concurrent.atomic.LongAdder;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,10 +31,13 @@ public class Quiz {
     private String alternativaD; // Alternativa D
 
     @Column(nullable = false)
-    private String respostaCerta; // Resposta correta (ex.: "A", "B", "C", ou "D")
+    private Integer respostaCerta; // Resposta correta (ex.: "0", "1", "2", ou "3")
 
     @Column(nullable = false)
     private String enunciado; // Texto da pergunta (ex.: "Qual é a linguagem de programação mais usada?")
+
+    @Column(nullable = true)
+    private Integer respostaSelecionada;
 
     // Getters e Setters
     public Long getId() {
@@ -83,11 +88,11 @@ public class Quiz {
         this.alternativaD = alternativaD;
     }
 
-    public String getRespostaCerta() {
+    public Integer getRespostaCerta() {
         return respostaCerta;
     }
 
-    public void setRespostaCerta(String respostaCerta) {
+    public void setRespostaCerta(Integer respostaCerta) {
         this.respostaCerta = respostaCerta;
     }
 
@@ -97,5 +102,13 @@ public class Quiz {
 
     public void setEnunciado(String enunciado) {
         this.enunciado = enunciado;
+    }
+
+    public Integer getRespostaSelecionada() {
+        return respostaSelecionada;
+    }
+
+    public void setRespostaSelecionada(Integer respostaSelecionada) {
+        this.respostaSelecionada = respostaSelecionada;
     }
 }

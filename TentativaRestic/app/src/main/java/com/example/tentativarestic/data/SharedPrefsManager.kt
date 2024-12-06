@@ -100,6 +100,54 @@ class SharedPrefsManager(context: Context) {
         }
     }
 
+    fun saveQuiz(updatedQuiz: Quiz) {
+        // Pega o JSON armazenado com o ResultadoAtividades
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+
+        if (resultadoAtividadesJson != null) {
+            try {
+                // Converte o JSON para o objeto ResultadoAtividades
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+
+                // Verifica se a lista de quizzes não é nula
+                val quizzes = resultadoAtividades.quiz?.toMutableList() ?: mutableListOf()
+
+                // Encontra o índice do quiz com o id correspondente ou -1 se não encontrado
+                val quizIndex = quizzes.indexOfFirst { it.id == updatedQuiz.id }
+
+                if (quizIndex != -1) {
+                    // Substitui o quiz existente com o novo
+                    quizzes[quizIndex] = updatedQuiz
+                } else {
+                    // Se não encontrar, adiciona o quiz à lista
+                    quizzes.add(updatedQuiz)
+                }
+
+                // Atualiza o objeto ResultadoAtividades com a lista modificada de quizzes
+                val updatedResultadoAtividades = ResultadoAtividades(quiz = quizzes, projeto = resultadoAtividades.projeto, exercicio_aberto = resultadoAtividades.exercicio_aberto, video = resultadoAtividades.video, desconhecido = resultadoAtividades.desconhecido)
+
+                // Converte de volta para JSON
+                val updatedJson = gson.toJson(updatedResultadoAtividades)
+
+                // Salva o JSON atualizado no SharedPreferences
+                sharedPreferences.edit().apply {
+                    putString(KEY_RESULTADOATIVIDADES, updatedJson)
+                    apply()
+                }
+
+                Log.d("QuizDebug", "Quiz salvo ou atualizado com sucesso. ID: ${updatedQuiz.id}")
+
+            } catch (e: Exception) {
+                // Trata possíveis erros durante a deserialização ou manipulação dos dados
+                e.printStackTrace() // Ou logar o erro
+            }
+        } else {
+            Log.e("QuizDebug", "ResultadoAtividades não encontrado no SharedPreferences.")
+        }
+    }
+
+
     // função que pega resultadoatividades, pega a lista de Quiz dentro dela e retorna o objeto Quiz com o ID correspondente
     fun getQuizById(quizId: Long): Quiz? {
         val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
@@ -160,6 +208,35 @@ class SharedPrefsManager(context: Context) {
         }
         return null
     }
+
+    fun saveAtividadeById(id: Long, atividade: Atividade) {
+        var atividades = getAtividades()
+        // Cria uma nova lista de atividades para adicionar a atividade com o ID correto
+        val updatedAtividades = atividades.toMutableList()
+
+        // Verifica se já existe uma Atividade com o mesmo ID
+        val existingAtividadeIndex = updatedAtividades.indexOfFirst { it.id == id }
+
+        if (existingAtividadeIndex != -1) {
+            // Se a Atividade com o mesmo ID já existir, substitui a atividade existente
+            updatedAtividades[existingAtividadeIndex] = atividade
+        } else {
+            // Se o ID não existir, adiciona a nova Atividade à lista
+            updatedAtividades.add(atividade)
+        }
+
+        Log.d("AtividadesDebugY", "Atividades Salva: $atividade")
+
+        // Converte a lista de atividades para JSON e salva no SharedPreferences
+        val atividadesJson = gson.toJson(updatedAtividades)
+        sharedPreferences.edit().apply {
+            putString(KEY_ATIVIDADES, atividadesJson)
+            apply()
+        }
+
+        Log.d("AtividadesDebug", "Atividade salva ou atualizada com sucesso. ID: $id")
+    }
+
 
 
     fun saveAtividades(atividades: List<Atividade>) {
