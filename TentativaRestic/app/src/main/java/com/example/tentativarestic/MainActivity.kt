@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -251,11 +252,33 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
     // Container principal
     var atividades = sharedPrefsManager.getAtividades()
     var currentActivityIndex by remember { mutableStateOf(0) }
+    val nome_curso = sharedPrefsManager.getCursoNome()
+    val unidade_ordem = sharedPrefsManager.getUnidadeOrdem()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Atividade ${currentActivityIndex + 1}/${atividades.size}") }
+                title = {
+                    Text(
+                        "$nome_curso - Unidade $unidade_ordem",
+                        fontSize = 24.sp,
+                        modifier = Modifier.offset(y = 14.dp)
+                    ) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack()}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.seta), // Nome da sua imagem PNG
+                            contentDescription = "Seta",
+                            colorFilter = ColorFilter.tint(Color.Black),
+                            modifier = Modifier
+                                .graphicsLayer(
+                                    scaleX = -3.5f,
+                                    scaleY = 3.5f
+                                )
+                        )
+                    }
+                }
+
             )
         }
     ) { paddingValues ->
@@ -268,7 +291,7 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                 .fillMaxSize()
                 .background(Color(0xFFF5F5F5))
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Título da atividade
@@ -309,10 +332,102 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 
 @Composable
 fun QuizContent(atividade: Atividade) {
-    Text(
-        text = "Quiz: ${atividade.nome}",
-        style = MaterialTheme.typography.bodyLarge
-    )
+    var respostaSelecionada by remember { mutableStateOf<Int?>(null) }
+    var resultado by remember { mutableStateOf<Boolean?>(null) }
+
+    val pergunta = "O que significa uma estrutura de controle \"if\"?"
+    val opcoes = listOf(
+            "Repita uma ação várias vezes.",
+            "Fazer escolhas com base em condições.",
+            "Declarar uma variável.",
+            "Iniciar um programa."
+        )
+    val respostaCorreta = 1 // Opção 2 é a correta (índice 1)
+
+
+
+        Text(
+            text = pergunta,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Left,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        opcoes.forEachIndexed { index, opcao ->
+            val cor = if (respostaSelecionada == index && resultado == true) {
+                //MaterialTheme.colors.primary
+                Color(0xFF8CB38D)
+            } else if (respostaSelecionada == index && resultado == false) {
+                //MaterialTheme.colors.error
+                Color(0xFFEB928C)
+            } else {
+                //MaterialTheme.colors.surface
+                Color(0xFFFAFAFA)
+            }
+
+            Button(
+                onClick = {
+                    respostaSelecionada = index
+                    resultado = index == respostaCorreta
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(vertical = 8.dp)
+                    .background(cor, shape = RoundedCornerShape(14.dp))
+                    .border(
+                        1.dp,
+                        Color.LightGray,
+                        RoundedCornerShape(14.dp)
+                    ), // Borda menos arredondada
+                colors = ButtonDefaults.buttonColors(containerColor = cor) // Branco neve
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    // Círculo com número
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(Color.White, shape = CircleShape)
+                            .border(1.dp, Color.LightGray, CircleShape) // Borda preta
+                            .padding(6.dp), // Ajuste o tamanho do círculo
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp)) // Espaço entre o círculo e o texto
+
+                    // Texto da opção
+                    Text(
+                        text = opcao,
+                        color = Color.Black,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+
+
+
+        if (respostaSelecionada != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = if (resultado == true) "Resposta correta!" else "Resposta incorreta.",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (resultado == true) Color(0xFF4CAF50) else Color(0xFFF44336)
+            )
+        }
+
 }
 
 @Composable
@@ -449,14 +564,14 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
             //contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(unidades.size) { index ->
-                UnidadeItem(unidades[index], navController, sharedPrefsManager)
+                UnidadeItem(unidades[index], navController, sharedPrefsManager, userViewModel)
             }
         }
     }
 }
 
 @Composable
-fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager) {
+fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
     // Item individual para cada unidade
     Spacer(modifier = Modifier.height(8.dp))
     Box(
@@ -520,7 +635,9 @@ fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsM
                         enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
                     ) {
                         if (isEnabled == 1) {
+                            sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
                             sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
+                            userViewModel.processarAtividades(modulo.atividades ?: emptyList())
                             navController.navigate("modulo") // Navega para o módulo específico
                         }
                     }

@@ -4,7 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.example.tentativarestic.models.Atividade
+import com.example.tentativarestic.models.ExercicioAberto
+import com.example.tentativarestic.models.Projeto
+import com.example.tentativarestic.models.Quiz
+import com.example.tentativarestic.models.ResultadoAtividades
 import com.example.tentativarestic.models.Unidade
+import com.example.tentativarestic.models.Video
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -61,7 +66,101 @@ class SharedPrefsManager(context: Context) {
         private const val KEY_ATIVIDADE_ERROS = "atividade_erros"
 
         private const val KEY_UNIDADES = "unidades"
+
+        private const val KEY_RESULTADOATIVIDADES = "resultadoatividades"
     }
+
+    fun saveUnidadeOrdem(ordem: Int) {
+        sharedPreferences.edit().apply {
+            putInt(KEY_UNIDADE_ORDEM, ordem)
+            apply()
+        }
+    }
+
+    fun getUnidadeOrdem(): Int {
+        return sharedPreferences.getInt(KEY_UNIDADE_ORDEM, -1)
+    }
+
+    fun saveUnidadeID(unidadeId: Long) {
+        sharedPreferences.edit().apply {
+            putLong(KEY_UNIDADE_ID, unidadeId)
+            apply()
+        }
+    }
+
+    fun getUnidadeID(): Long {
+        return sharedPreferences.getLong(KEY_UNIDADE_ID, -1)
+    }
+
+    fun saveResultadoAtividades(resultadoAtividades: ResultadoAtividades) {
+        val resultadoAtividadesJson = gson.toJson(resultadoAtividades)
+        sharedPreferences.edit().apply {
+            putString(KEY_RESULTADOATIVIDADES, resultadoAtividadesJson)
+            apply()
+        }
+    }
+
+    // função que pega resultadoatividades, pega a lista de Quiz dentro dela e retorna o objeto Quiz com o ID correspondente
+    fun getQuizById(quizId: Long): Quiz? {
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+        if (resultadoAtividadesJson != null) {
+            return try {
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+                resultadoAtividades.quiz?.find { it.id == quizId }
+            } catch (e: Exception) {
+                e.printStackTrace() // Ou logar o erro usando uma ferramenta apropriada
+                null
+            }
+        }
+        return null
+    }
+
+    fun getProjetoById(projetoId: Long): Projeto? {
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+        if (resultadoAtividadesJson != null) {
+            return try {
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+                resultadoAtividades.projeto?.find { it.id == projetoId }
+            } catch (e: Exception) {
+                e.printStackTrace() // Ou logar o erro usando uma ferramenta apropriada
+                null
+            }
+        }
+        return null
+    }
+
+    fun getVideoById(videoId: Long): Video? {
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+        if (resultadoAtividadesJson != null) {
+            return try {
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+                resultadoAtividades.video?.find { it.id == videoId }
+            } catch (e: Exception) {
+                e.printStackTrace() // Ou logar o erro usando uma ferramenta apropriada
+                null
+            }
+        }
+        return null
+    }
+
+    fun getExercicioAbertoById(exercicioAbertoId: Long): ExercicioAberto? {
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+        if (resultadoAtividadesJson != null) {
+            return try {
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+                resultadoAtividades.exercicio_aberto?.find { it.id == exercicioAbertoId }
+            } catch (e: Exception) {
+                e.printStackTrace() // Ou logar o erro usando uma ferramenta apropriada
+                null
+            }
+        }
+        return null
+    }
+
 
     fun saveAtividades(atividades: List<Atividade>) {
         Log.d("AtividadesDebug", "Salvando atividades: $atividades")

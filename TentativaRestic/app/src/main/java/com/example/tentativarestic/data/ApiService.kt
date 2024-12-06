@@ -1,7 +1,9 @@
 package com.example.tentativarestic.data
 
+import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Person
 import com.example.tentativarestic.models.PersonResponse
+import com.example.tentativarestic.models.ResultadoAtividades
 import com.example.tentativarestic.models.Unidade
 import retrofit2.Call
 import retrofit2.Response
@@ -25,6 +27,8 @@ interface ApiService {
     @POST("api/unidade/getAll")
     suspend fun getUnidadesByCurso(@Body requestBody: Map<String, String>): Response<List<Unidade>>
 
+    @POST("/api/atividades/processar")
+    fun processarAtividades(@Body atividades: List<Atividade>): Call<ResultadoAtividades>
 
     @POST("api/person/register")
     suspend fun registerPerson(@Body params: Map<String, String>): Response<Long> // Retorna apenas o ID
