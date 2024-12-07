@@ -2,22 +2,11 @@ package com.example.demo.model;
 
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-
-import java.util.List;
-
-import java.util.List;
 
 @Entity
 public class Nivelamento {
@@ -26,28 +15,16 @@ public class Nivelamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long curso; // ID do curso
+    private Long cursoId; // ID do curso
 
     private int nivelAluno; // Nível do aluno (1 a 5)
 
     private boolean nivelamentoConcluido; // Se o nivelamento foi concluído
 
-    // Relação com Atividade
-    @ManyToMany
-    @JoinTable(
-            name = "nivelamento_relacao", // Nome da tabela intermediária
-            joinColumns = @JoinColumn(name = "nivelamento_id"),
-            inverseJoinColumns = @JoinColumn(name = "atividade_id")
-    )
+    @OneToMany(mappedBy = "nivelamento")
     private List<Atividade> atividades;
 
-    // Relação com Quiz
-    @ManyToMany
-    @JoinTable(
-            name = "nivelamento_relacao", // Nome da tabela intermediária
-            joinColumns = @JoinColumn(name = "nivelamento_id"),
-            inverseJoinColumns = @JoinColumn(name = "quiz_id")
-    )
+    @OneToMany(mappedBy = "nivelamento")
     private List<Quiz> quizzes;
 
     // Getters e Setters
@@ -59,12 +36,12 @@ public class Nivelamento {
         this.id = id;
     }
 
-    public Long getCurso() {
-        return curso;
+    public Long getCursoId() {
+        return cursoId;
     }
 
-    public void setCurso(Long curso) {
-        this.curso = curso;
+    public void setCursoId(Long cursoId) {
+        this.cursoId = cursoId;
     }
 
     public int getNivelAluno() {
@@ -98,4 +75,6 @@ public class Nivelamento {
     public void setQuizzes(List<Quiz> quizzes) {
         this.quizzes = quizzes;
     }
+
 }
+

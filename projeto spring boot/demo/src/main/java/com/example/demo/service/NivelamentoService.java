@@ -3,50 +3,30 @@ package com.example.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.model.Atividade;
 import com.example.demo.model.Nivelamento;
-import com.example.demo.model.Quiz;
-import com.example.demo.repository.AtividadeRepository;
+import com.example.demo.repository.CursoRepository;
 import com.example.demo.repository.NivelamentoRepository;
-import com.example.demo.repository.QuizRepository;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class NivelamentoService {
+
 
     @Autowired
     private NivelamentoRepository nivelamentoRepository;
 
     @Autowired
-    private AtividadeRepository atividadeRepository;
+    private CursoRepository cursoRepository; // Para verificar a existência do curso
 
-    @Autowired
-    private QuizRepository quizRepository;
+    // Método para obter o nivelamento de um curso específico
+    public Nivelamento getByIdCurso(Long cursoId) {
+        // Verifica se o curso existe
+        cursoRepository.findById(cursoId).orElseThrow(() -> new RuntimeException("Curso não encontrado"));
 
-    // Criar ou atualizar nivelamento
-    public Nivelamento salvarNivelamento(Long curso, int nivelAluno, boolean nivelamentoConcluido, List<Long> atividadeIds, List<Long> quizIds) {
-        Nivelamento nivelamento = new Nivelamento();
-        nivelamento.setCurso(curso);
-        nivelamento.setNivelAluno(nivelAluno);
-        nivelamento.setNivelamentoConcluido(nivelamentoConcluido);
-
-        // Buscar Atividades pelo ID
-        List<Atividade> atividades = atividadeRepository.findAllById(atividadeIds);
-        nivelamento.setAtividades(atividades);
-
-        // Buscar Quizzes pelo ID
-        List<Quiz> quizzes = quizRepository.findAllById(quizIds);
-        nivelamento.setQuizzes(quizzes);
-
-        // Salvar no banco de dados
-        return nivelamentoRepository.save(nivelamento);
+        // Busca o nivelamento associado ao cursoId
+        return nivelamentoRepository.findByCursoId(cursoId)
+                .orElseThrow(() -> new RuntimeException("Nivelamento não encontrado para o curso"));
     }
+
 }
 
 

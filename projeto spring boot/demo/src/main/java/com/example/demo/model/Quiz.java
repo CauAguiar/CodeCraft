@@ -1,12 +1,12 @@
 package com.example.demo.model;
 
-import java.util.concurrent.atomic.LongAdder;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Quiz {
@@ -38,6 +38,18 @@ public class Quiz {
 
     @Column(nullable = true)
     private Integer respostaSelecionada;
+
+    @ManyToOne
+    @JoinColumn(name = "nivelamento_id")
+    private Nivelamento nivelamento;
+
+    public Nivelamento getNivelamento() {
+        return nivelamento;
+    }
+
+    public void setNivelamento(Nivelamento nivelamento) {
+        this.nivelamento = nivelamento;
+    }
 
     // Getters e Setters
     public Long getId() {

@@ -43,6 +43,18 @@ public class Atividade {
     private Integer acertos; // Para atividades de quiz ou exercícios, número de acertos
     @Column(nullable = true)
     private Integer erros; // Para atividades de quiz ou exercícios, número de erros
+    
+    @ManyToOne
+    @JoinColumn(name = "nivelamento_id")
+    private Nivelamento nivelamento;
+
+    public Nivelamento getNivelamento() {
+        return nivelamento;
+    }
+
+    public void setNivelamento(Nivelamento nivelamento) {
+        this.nivelamento = nivelamento;
+    }
 
     // Getters e Setters
     public Long getId() {
