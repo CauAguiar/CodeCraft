@@ -1,6 +1,8 @@
 package com.example.tentativarestic
 
 import android.os.Bundle
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Space
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -17,9 +19,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -62,18 +67,28 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -88,6 +103,10 @@ import com.example.tentativarestic.models.Quiz
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
+import com.wakaztahir.codeeditor.highlight.model.CodeLang
+import com.wakaztahir.codeeditor.highlight.prettify.PrettifyParser
+import com.wakaztahir.codeeditor.highlight.theme.CodeThemeType
+import com.wakaztahir.codeeditor.highlight.utils.parseCodeAsAnnotatedString
 import kotlinx.coroutines.delay
 import java.net.URLEncoder
 import java.net.URLDecoder
@@ -134,7 +153,7 @@ fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsM
     val navController = rememberNavController()
 
     // Definir o NavHost e as rotas
-    NavHost(navController = navController, startDestination = "telaPrincipal") {
+    NavHost(navController = navController, startDestination = "telaInicial") {
         composable("introducao") {
             IntroducaoApp(onFinish = {
                 navController.navigate("telaInicial")
@@ -295,27 +314,30 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título da atividade
-            Text(
-                text = atividadeAtual.nome,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
 
-            // Tipo de atividade
-            Text(
-                text = "Tipo: ${atividadeAtual.tipo}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Spacer(modifier = Modifier.height(40.dp))
+//            // Título da atividade
+//            Text(
+//                text = atividadeAtual.nome,
+//                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+//                modifier = Modifier.padding(bottom = 16.dp)
+//            )
+//
+//            // Tipo de atividade
+//            Text(
+//                text = "Tipo: ${atividadeAtual.tipo}",
+//                style = MaterialTheme.typography.bodyMedium,
+//                color = Color.Gray,
+//                modifier = Modifier.padding(bottom = 24.dp)
+//            )
 
             // Exibição personalizada para atividades específicas
             when (atividadeAtual.tipo) {
                 "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
-                "video" -> VideoContent(atividadeAtual)
-                "exercicio_aberto" -> ExerciseContent(atividadeAtual)
-                else -> DefaultContent(atividadeAtual)
+                "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
+                "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
+                "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
+                else -> DefaultContent(atividadeAtual, sharedPrefsManager)
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -326,13 +348,13 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                 totalActivities = atividades.size,
                 onPreviousClick = {
                     if (currentActivityIndex > 0){
-                        //atividades = sharedPrefsManager.getAtividades()
+                        atividades = sharedPrefsManager.getAtividades()
                         currentActivityIndex--
                     }
                 },
                 onNextClick = {
                     if (currentActivityIndex < atividades.size - 1){
-                        //atividades = sharedPrefsManager.getAtividades()
+                        atividades = sharedPrefsManager.getAtividades()
                         currentActivityIndex++
                     }
                 }
@@ -346,12 +368,19 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     // Estado persistente usando rememberSaveable
     val quiz = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getQuizById(it) }
+    val currentQuiz by rememberUpdatedState(quiz)
     Log.d("QuizDebug1", "Quiz: $quiz")
 
-    if(quiz != null) {
+    if(quiz != null && currentQuiz != null) {
         var respostaSelecionadaCopy = quiz.respostaSelecionada
         var confirmouRespostaCopy = quiz.confirmouResposta
         var resultadoCopy = quiz.resultado
+
+        LaunchedEffect(currentQuiz) {
+            respostaSelecionadaCopy = currentQuiz?.respostaSelecionada
+            confirmouRespostaCopy = currentQuiz!!.confirmouResposta
+            resultadoCopy = currentQuiz?.resultado
+        }
 
         var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionadaCopy) }
         var resultado by remember { mutableStateOf<Boolean?>(resultadoCopy) }
@@ -500,25 +529,311 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     }
 }
 
-
 @Composable
-fun VideoContent(atividade: Atividade) {
-    Text(
-        text = "Video: ${atividade.nome}",
-        style = MaterialTheme.typography.bodyLarge
-    )
+fun VideoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
+    var video = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getVideoById(it) }
+    val currentVideo by rememberUpdatedState(video)
+
+    // Caixa para centralizar o conteúdo na tela
+    if(video != null) {
+        Box(
+            modifier = Modifier
+                // Preenche toda a tela
+                .padding(16.dp), // Pode ajustar o espaçamento conforme necessário
+            contentAlignment = Alignment.Center // Centraliza o conteúdo
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Exibe o título da atividade (nome do vídeo)
+
+                val context = LocalContext.current
+
+                // Initialize ExoPlayer
+                val exoPlayer = ExoPlayer.Builder(context).build()
+
+                // Create a MediaSource
+                val mediaSource =
+                    remember("https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4") {
+                        MediaItem.fromUri("https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4")
+                    }
+
+                // Set MediaSource to ExoPlayer
+                LaunchedEffect(mediaSource) {
+                    exoPlayer.setMediaItem(mediaSource)
+                    exoPlayer.prepare()
+                }
+
+                // Manage lifecycle events
+                DisposableEffect(Unit) {
+                    onDispose {
+                        exoPlayer.release()
+                    }
+                }
+
+                // Use AndroidView to embed an Android View (PlayerView) into Compose
+                AndroidView(
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            player = exoPlayer
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp) // Set your desired height
+                )
+
+                // Aqui você pode adicionar o conteúdo do vídeo (exemplo usando um Placeholder)
+                // Você pode substituir este Box por um player real de vídeo, como um ExoPlayer ou uma URL de vídeo.
+
+                // Botão ou interação com sharedPrefsManager se necessário
+                var isClickedCopy = video.isClicked
+                LaunchedEffect(currentVideo) {
+                    isClickedCopy = currentVideo?.isClicked ?: false
+                }
+                var isClicked by remember { mutableStateOf(isClickedCopy) }
+
+                Button(
+                    onClick = {
+                        // Lógica do clique
+                        isClicked = true // Desativa o botão após o clique
+                        video.isClicked = true
+                        sharedPrefsManager.saveVideo(video)
+                        atividade.concluida = true
+                        sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isClicked) Color.LightGray else Color(0xFF4CAF50),
+                        contentColor = Color.White
+                    ),
+                    enabled = !isClicked, // Desativa o botão quando clicado
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                ) {
+                    Text("Marcar como concluído")
+                }
+
+            }
+        }
+    }
 }
 
 @Composable
-fun ExerciseContent(atividade: Atividade) {
-    Text(
-        text = "Exercício: ${atividade.nome}",
-        style = MaterialTheme.typography.bodyLarge
-    )
+fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
+    var exercicio_aberto = atividade.atividadeEspecificaId?.let {
+        sharedPrefsManager.getExercicioAbertoById(
+            it
+        )
+    }
+    val currentExercicio by rememberUpdatedState(exercicio_aberto)
+
+    if(exercicio_aberto != null) {
+        var respostaCopia = exercicio_aberto.resposta
+        var isRespostaSalvaCopia = exercicio_aberto.isRespostaSalva
+
+        LaunchedEffect(currentExercicio) {
+            respostaCopia = currentExercicio?.resposta ?: ""
+            isRespostaSalvaCopia = currentExercicio?.isRespostaSalva ?: false
+        }
+
+        if(respostaCopia == null){
+            respostaCopia = ""
+        }
+
+        var resposta by remember { mutableStateOf(respostaCopia) }
+        var isRespostaSalva by remember { mutableStateOf(isRespostaSalvaCopia) }
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Exibe o nome do exercício
+            Text(
+                text = "Exercício: ${exercicio_aberto.enunciado}",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(26.dp))
+
+            // Campo de texto para resposta
+
+            Text(
+                text = "Sua Resposta",
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(bottom = 18.dp)
+            )
+
+            TextField(
+                value = resposta,
+                onValueChange = { resposta = it },
+                enabled = !isRespostaSalva,
+                placeholder = {
+                    Text(
+                        text = "Insira sua resposta aqui...",
+                        style = TextStyle(
+                            textAlign = TextAlign.Start,
+                            fontSize = 16.sp,
+                            color = Color.Gray
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Start,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .border(1.dp, Color.LightGray, shape = RoundedCornerShape(15.dp)),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent
+                ),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botão para salvar a resposta
+            Button(
+                onClick = {
+                    // Salva a resposta
+                    isRespostaSalva = true // Impede edições futuras
+                    exercicio_aberto.isRespostaSalva = true
+                    exercicio_aberto.resposta = resposta
+                    sharedPrefsManager.saveExercicioAberto(exercicio_aberto)
+                    atividade.concluida = true
+                    sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isRespostaSalva) Color.LightGray else Color(0xFF4CAF50),
+                    contentColor = Color.White
+                ),
+                enabled = !isRespostaSalva, // Desativa após salvar
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = if (isRespostaSalva) "Resposta Salva" else "Salvar Resposta")
+            }
+
+            // Mensagem de confirmação
+            if (isRespostaSalva) {
+                Text(
+                    text = "Resposta salva com sucesso!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
-fun DefaultContent(atividade: Atividade) {
+fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
+    val context = LocalContext.current
+
+    // 1. Editor de código
+    var codigoPython by remember { mutableStateOf("") }
+
+    // 2. Resultado da validação (exibição)
+    var resultado by remember { mutableStateOf("") }
+    var isValid by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Exibir a área de edição de código
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Escreva seu código Python abaixo:", fontSize = 18.sp)
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val language = CodeLang.Python
+        val code = """             
+            package com.wakaztahir.codeeditor
+            
+            fun main(){
+                println("Hello World");
+            }
+        """.trimIndent()
+
+        // Step 2. Create Parser & Theme
+        val parser = remember { PrettifyParser() } // try getting from LocalPrettifyParser.current
+        var themeState by remember { mutableStateOf(CodeThemeType.Monokai) }
+        val theme = remember(themeState) { themeState.theme() }
+
+        var textFieldValue by remember {
+            mutableStateOf(
+                TextFieldValue(
+                    annotatedString = parseCodeAsAnnotatedString(
+                        parser = parser,
+                        theme = theme,
+                        lang = language,
+                        code = code
+                    )
+                )
+            )
+        }
+
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Black)
+                .height(400.dp),
+            value = textFieldValue,
+            onValueChange = {
+                textFieldValue = it.copy(
+                    annotatedString = parseCodeAsAnnotatedString(
+                        parser = parser,
+                        theme = theme,
+                        lang = language,
+                        code = it.text
+                    )
+                )
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+             // 3. Botão para rodar o código Python
+        Button(
+            onClick = {
+                isLoading = true
+                // Enviar código para ser validado no backend (exemplo)
+                // Aqui estamos simulando uma chamada para um backend
+                // Substitua por uma API real que execute código Python
+                val isCorrect = validatePythonCode(textFieldValue.text)
+                isValid = isCorrect
+                resultado = if (isCorrect) {
+                    "Código correto!"
+                } else {
+                    "Código incorreto. Tente novamente."
+                }
+                isLoading = false
+            }
+        ) {
+            Text("Validar Código")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Resultado da validação
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Text("Resultado: $resultado", color = if (isValid) Color.Green else Color.Red)
+        }
+    }
+}
+
+fun validatePythonCode(text: String): Boolean {
+    // Simula a validação do código Python
+    return text.contains("print") && text.contains("Hello World")
+}
+
+
+@Composable
+fun DefaultContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     Text(
         text = "Atividade genérica: ${atividade.nome}",
         style = MaterialTheme.typography.bodyLarge
@@ -2038,7 +2353,7 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
@@ -2074,7 +2389,7 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -2112,6 +2427,7 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp))
                     .onFocusChanged {
                         if (it.isFocused) {
                             showDatePickerDialog = true
@@ -2155,7 +2471,7 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center
                 ),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -2339,7 +2655,7 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -2375,7 +2691,7 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
@@ -2790,6 +3106,7 @@ fun OtpChar(
             modifier = modifier
                 .width(50.dp)
                 .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
                 .onKeyEvent { event ->
                     if (event.key == Key.Tab) {
                         focusManager.moveFocus(FocusDirection.Next)

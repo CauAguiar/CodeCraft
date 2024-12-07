@@ -100,6 +100,57 @@ class SharedPrefsManager(context: Context) {
         }
     }
 
+    fun saveExercicioAberto(updatedExercicioAberto: ExercicioAberto) {
+        // Pega o JSON armazenado com o ResultadoAtividades
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+
+        if (resultadoAtividadesJson != null) {
+            try {
+                // Converte o JSON para o objeto ResultadoAtividades
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+
+                // Verifica se a lista de exercicios_abertos não é nula
+                val exerciciosAbertos = resultadoAtividades.exercicio_aberto?.toMutableList() ?: mutableListOf()
+
+                // Encontra o índice do exercício aberto com o ID correspondente ou -1 se não encontrado
+                val exercicioIndex = exerciciosAbertos.indexOfFirst { it.id == updatedExercicioAberto.id }
+
+                if (exercicioIndex != -1) {
+                    // Substitui o exercício aberto existente com o novo
+                    exerciciosAbertos[exercicioIndex] = updatedExercicioAberto
+                } else {
+                    // Se não encontrar, adiciona o exercício à lista
+                    exerciciosAbertos.add(updatedExercicioAberto)
+                }
+
+                // Atualiza o objeto ResultadoAtividades com a lista modificada de exercícios abertos
+                val updatedResultadoAtividades = ResultadoAtividades(
+                    quiz = resultadoAtividades.quiz,
+                    projeto = resultadoAtividades.projeto,
+                    exercicio_aberto = exerciciosAbertos,
+                    video = resultadoAtividades.video,
+                    desconhecido = resultadoAtividades.desconhecido
+                )
+
+                // Converte de volta para JSON
+                val updatedJson = gson.toJson(updatedResultadoAtividades)
+
+                // Salva o JSON atualizado no SharedPreferences
+                sharedPreferences.edit().putString(KEY_RESULTADOATIVIDADES, updatedJson).commit()
+
+                Log.d("ExercicioAbertoDebug", "Exercício aberto salvo ou atualizado com sucesso. ID: ${updatedExercicioAberto.id}")
+
+            } catch (e: Exception) {
+                // Trata possíveis erros durante a deserialização ou manipulação dos dados
+                e.printStackTrace()
+            }
+        } else {
+            Log.e("ExercicioAbertoDebug", "ResultadoAtividades não encontrado no SharedPreferences.")
+        }
+    }
+
+
     fun saveQuiz(updatedQuiz: Quiz) {
         // Pega o JSON armazenado com o ResultadoAtividades
         val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
@@ -131,10 +182,7 @@ class SharedPrefsManager(context: Context) {
                 val updatedJson = gson.toJson(updatedResultadoAtividades)
 
                 // Salva o JSON atualizado no SharedPreferences
-                sharedPreferences.edit().apply {
-                    putString(KEY_RESULTADOATIVIDADES, updatedJson)
-                    apply()
-                }
+                sharedPreferences.edit().putString(KEY_RESULTADOATIVIDADES, updatedJson).commit()
 
                 Log.d("QuizDebug", "Quiz salvo ou atualizado com sucesso. ID: ${updatedQuiz.id}")
 
@@ -144,6 +192,57 @@ class SharedPrefsManager(context: Context) {
             }
         } else {
             Log.e("QuizDebug", "ResultadoAtividades não encontrado no SharedPreferences.")
+        }
+    }
+
+
+    fun saveVideo(updatedVideo: Video) {
+        // Pega o JSON armazenado com o ResultadoAtividades
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+
+        if (resultadoAtividadesJson != null) {
+            try {
+                // Converte o JSON para o objeto ResultadoAtividades
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+
+                // Verifica se a lista de vídeos não é nula
+                val videos = resultadoAtividades.video?.toMutableList() ?: mutableListOf()
+
+                // Encontra o índice do vídeo com o ID correspondente ou -1 se não encontrado
+                val videoIndex = videos.indexOfFirst { it.id == updatedVideo.id }
+
+                if (videoIndex != -1) {
+                    // Substitui o vídeo existente com o novo
+                    videos[videoIndex] = updatedVideo
+                } else {
+                    // Se não encontrar, adiciona o vídeo à lista
+                    videos.add(updatedVideo)
+                }
+
+                // Atualiza o objeto ResultadoAtividades com a lista modificada de vídeos
+                val updatedResultadoAtividades = ResultadoAtividades(
+                    quiz = resultadoAtividades.quiz,
+                    projeto = resultadoAtividades.projeto,
+                    exercicio_aberto = resultadoAtividades.exercicio_aberto,
+                    video = videos,
+                    desconhecido = resultadoAtividades.desconhecido
+                )
+
+                // Converte de volta para JSON
+                val updatedJson = gson.toJson(updatedResultadoAtividades)
+
+                // Salva o JSON atualizado no SharedPreferences
+                sharedPreferences.edit().putString(KEY_RESULTADOATIVIDADES, updatedJson).commit()
+
+                Log.d("VideoDebug", "Vídeo salvo ou atualizado com sucesso. ID: ${updatedVideo.id}")
+
+            } catch (e: Exception) {
+                // Trata possíveis erros durante a deserialização ou manipulação dos dados
+                e.printStackTrace()
+            }
+        } else {
+            Log.e("VideoDebug", "ResultadoAtividades não encontrado no SharedPreferences.")
         }
     }
 

@@ -62,6 +62,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -73,6 +75,7 @@ dependencies {
     implementation(libs.retrofit.gson.converter)
     implementation(libs.gson)
     implementation(libs.okhttp.loggingInterceptor)
+    implementation(libs.compose.code.editor)
 
     // Caso precise do Lifecycle, por exemplo, para ViewModels
     implementation(libs.androidx.lifecycle.runtime.ktx)
