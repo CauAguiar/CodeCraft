@@ -153,7 +153,7 @@ fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsM
     val navController = rememberNavController()
 
     // Definir o NavHost e as rotas
-    NavHost(navController = navController, startDestination = "telaInicial") {
+    NavHost(navController = navController, startDestination = "introducao") {
         composable("introducao") {
             IntroducaoApp(onFinish = {
                 navController.navigate("telaInicial")
@@ -315,7 +315,7 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 //            // Título da atividade
 //            Text(
 //                text = atividadeAtual.nome,
@@ -344,6 +344,7 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 
             // Barra de progresso e navegação
             BottomProgressBar(
+                atividades = atividades,
                 currentActivityIndex = currentActivityIndex,
                 totalActivities = atividades.size,
                 onPreviousClick = {
@@ -357,7 +358,8 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                         atividades = sharedPrefsManager.getAtividades()
                         currentActivityIndex++
                     }
-                }
+                },
+                onFinishClick = {},
             )
         }
     }
@@ -609,8 +611,10 @@ fun VideoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
                     enabled = !isClicked, // Desativa o botão quando clicado
                     modifier = Modifier
                         .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .height(50.dp)
                 ) {
-                    Text("Marcar como concluído")
+                    Text("Marcar como concluído", fontSize = 16.sp)
                 }
 
             }
@@ -648,6 +652,8 @@ fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager
             Text(
                 text = "Exercício: ${exercicio_aberto.enunciado}",
                 style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Justify,
+                fontSize = 16.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -713,7 +719,7 @@ fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager
                     contentColor = Color.White
                 ),
                 enabled = !isRespostaSalva, // Desativa após salvar
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth() .height(50.dp)
             ) {
                 Text(text = if (isRespostaSalva) "Resposta Salva" else "Salvar Resposta")
             }
@@ -738,90 +744,131 @@ fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
     // 1. Editor de código
     var codigoPython by remember { mutableStateOf("") }
 
-    // 2. Resultado da validação (exibição)
-    var resultado by remember { mutableStateOf("") }
-    var isValid by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
+    var projeto = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getProjetoById(it) }
+    val currentProjeto by rememberUpdatedState(projeto)
 
-    // Exibir a área de edição de código
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Escreva seu código Python abaixo:", fontSize = 18.sp)
-        
-        Spacer(modifier = Modifier.height(16.dp))
+    if(projeto != null && currentProjeto != null) {
+        var resultadoCopia = projeto.resultado
+        var isValidCopia = projeto.isValid
+        var isConfirmedCopia = projeto.isConfirmed
+        var textoCopia = projeto.texto
 
-        val language = CodeLang.Python
-        val code = """             
-            package com.wakaztahir.codeeditor
-            
-            fun main(){
-                println("Hello World");
-            }
-        """.trimIndent()
 
-        // Step 2. Create Parser & Theme
-        val parser = remember { PrettifyParser() } // try getting from LocalPrettifyParser.current
-        var themeState by remember { mutableStateOf(CodeThemeType.Monokai) }
-        val theme = remember(themeState) { themeState.theme() }
-
-        var textFieldValue by remember {
-            mutableStateOf(
-                TextFieldValue(
-                    annotatedString = parseCodeAsAnnotatedString(
-                        parser = parser,
-                        theme = theme,
-                        lang = language,
-                        code = code
-                    )
-                )
-            )
+        LaunchedEffect(currentProjeto) {
+            resultadoCopia = currentProjeto?.resultado ?: ""
+            isValidCopia = currentProjeto?.isValid ?: false
+            isConfirmedCopia = currentProjeto?.isConfirmed ?: false
+            textoCopia = currentProjeto?.texto ?: ""
         }
 
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black)
-                .height(400.dp),
-            value = textFieldValue,
-            onValueChange = {
-                textFieldValue = it.copy(
-                    annotatedString = parseCodeAsAnnotatedString(
-                        parser = parser,
-                        theme = theme,
-                        lang = language,
-                        code = it.text
+        if(textoCopia == null){
+            textoCopia = ""
+        }
+        if(resultadoCopia == null){
+            resultadoCopia = ""
+        }
+
+        // 2. Resultado da validação (exibição)
+        var resultado by remember { mutableStateOf(resultadoCopia) }
+        var isValid by remember { mutableStateOf(isValidCopia) }
+        var isLoading by remember { mutableStateOf(false) }
+        var isConfirmed by remember { mutableStateOf(isConfirmedCopia)}
+        var texto by remember { mutableStateOf(textoCopia) }
+
+        var enunciado = projeto.descricao
+
+        // Exibir a área de edição de código
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("$enunciado", fontSize = 16.sp, textAlign = TextAlign.Justify)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val language = CodeLang.Python
+            val code = texto
+
+            // Step 2. Create Parser & Theme
+            val parser =
+                remember { PrettifyParser() } // try getting from LocalPrettifyParser.current
+            var themeState by remember { mutableStateOf(CodeThemeType.Monokai) }
+            val theme = remember(themeState) { themeState.theme() }
+
+            var textFieldValue by remember {
+                mutableStateOf(
+                    TextFieldValue(
+                        annotatedString = parseCodeAsAnnotatedString(
+                            parser = parser,
+                            theme = theme,
+                            lang = language,
+                            code = code
+                        )
                     )
                 )
             }
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-             // 3. Botão para rodar o código Python
-        Button(
-            onClick = {
-                isLoading = true
-                // Enviar código para ser validado no backend (exemplo)
-                // Aqui estamos simulando uma chamada para um backend
-                // Substitua por uma API real que execute código Python
-                val isCorrect = validatePythonCode(textFieldValue.text)
-                isValid = isCorrect
-                resultado = if (isCorrect) {
-                    "Código correto!"
-                } else {
-                    "Código incorreto. Tente novamente."
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black)
+                    .height(280.dp),
+                value = textFieldValue,
+                onValueChange = {
+                    textFieldValue = it.copy(
+                        annotatedString = parseCodeAsAnnotatedString(
+                            parser = parser,
+                            theme = theme,
+                            lang = language,
+                            code = it.text
+                        )
+                    )
                 }
-                isLoading = false
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            // 3. Botão para rodar o código Python
+            Button(
+                onClick = {
+                    isConfirmed = true
+                    isLoading = true
+                    // Enviar código para ser validado no backend (exemplo)
+                    // Aqui estamos simulando uma chamada para um backend
+                    // Substitua por uma API real que execute código Python
+                    val isCorrect = validatePythonCode(textFieldValue.text)
+                    isValid = isCorrect
+                    resultado = if (isCorrect) {
+                        "Código correto!"
+                    } else {
+                        "Código incorreto. Tente novamente."
+                    }
+                    projeto.resultado = resultado
+                    projeto.isValid = isValid
+                    projeto.isConfirmed = isConfirmed
+                    projeto.texto = textFieldValue.text
+                    sharedPrefsManager.saveProjeto(projeto)
+                    atividade.concluida = true
+                    sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+
+                    isLoading = false
+                },
+                enabled = !isConfirmed,
+                modifier = Modifier.height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isConfirmed) Color.LightGray else Color(0xFF4CAF50),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Validar Código")
             }
-        ) {
-            Text("Validar Código")
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Resultado da validação
-        if (isLoading) {
-            CircularProgressIndicator()
-        } else {
-            Text("Resultado: $resultado", color = if (isValid) Color.Green else Color.Red)
+            // Resultado da validação
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                if(isConfirmed){
+                    Text("Resultado: $resultado", color = if (isValid) Color.Green else Color.Red)
+                }
+            }
         }
     }
 }
@@ -831,7 +878,6 @@ fun validatePythonCode(text: String): Boolean {
     return text.contains("print") && text.contains("Hello World")
 }
 
-
 @Composable
 fun DefaultContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     Text(
@@ -840,15 +886,21 @@ fun DefaultContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
     )
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun BottomProgressBar(
+    atividades: List<Atividade>,
     currentActivityIndex: Int,
     totalActivities: Int,
     onPreviousClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    onFinishClick: () -> Unit // Callback para finalizar
 ) {
     // Calcula o progresso
     val progress = (currentActivityIndex + 1).toFloat() / totalActivities
+
+    // Verifica se todas as atividades estão concluídas
+    val allActivitiesCompleted = atividades.all { it.concluida }
 
     Column(
         modifier = Modifier
@@ -881,6 +933,19 @@ fun BottomProgressBar(
             // Botão Anterior
             Button(
                 onClick = onPreviousClick,
+                modifier = Modifier.background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                            start = Offset(0f, 1f),
+                            end = Offset(0f, 180f) // Direção vertical
+                        ),
+                        shape = CircleShape)
+                        .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    disabledContentColor = Color.LightGray,
+                    disabledContainerColor = Color.Gray
+                ),
                 enabled = currentActivityIndex > 0 // Desabilita se for a primeira atividade
             ) {
                 Text(text = "Anterior")
@@ -892,12 +957,47 @@ fun BottomProgressBar(
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
             )
 
-            // Botão Próxima
-            Button(
-                onClick = onNextClick,
-                enabled = currentActivityIndex < totalActivities - 1 // Desabilita se for a última atividade
-            ) {
-                Text(text = "Próxima")
+            // Botão Próxima ou Finalizar
+            if (currentActivityIndex == totalActivities - 1) {
+                // Última atividade e todas concluídas
+                Log.d("DebugFinalizar", "$atividades")
+                Button(
+                    onClick = onFinishClick,
+                    modifier = Modifier.background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF4CAF50), Color(0xFF4CAF50)),
+                            start = Offset(0f, 1f),
+                            end = Offset(0f, 180f) // Direção vertical
+                        ),
+                        shape = CircleShape)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50),
+                        disabledContentColor = Color.LightGray,
+                        disabledContainerColor = Color.Gray
+                    ),
+                    enabled = allActivitiesCompleted
+                ) {
+                    Text(text = "Finalizar")
+                }
+            } else {
+                // Não é a última ou nem todas concluídas
+                Button(
+                    onClick = onNextClick,
+                    modifier = Modifier.background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                            start = Offset(0f, 1f),
+                            end = Offset(0f, 180f) // Direção vertical
+                        ),
+                        shape = CircleShape),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    ),
+                    enabled = currentActivityIndex < totalActivities - 1 // Desabilita se for a última atividade
+                ) {
+                    Text(text = "Próxima")
+                }
             }
         }
     }
@@ -1011,6 +1111,8 @@ fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsM
             }
             Spacer(modifier = Modifier.height(8.dp))
             // Modificando o aspecto visual da imagem se o módulo estiver desabilitado
+
+
             Image(
                 painter = painterResource(id = imageResource),
                 contentDescription = modulo.descricao,
@@ -1255,8 +1357,8 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Pedro Johnson", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Text("Designer de UX/UI", fontSize = 14.sp, color = Color.Gray)
+            Text("caue aguiar", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Text("Programador", fontSize = 14.sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -1629,7 +1731,6 @@ fun TelaPrincipal(
         }
     }
 }
-
 
 @Composable
 fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel, navController: NavHostController) {
@@ -2353,7 +2454,9 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
@@ -2389,7 +2492,9 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -2471,7 +2576,9 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center
                 ),
-                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -2655,7 +2762,9 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -2691,7 +2800,9 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth() .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,

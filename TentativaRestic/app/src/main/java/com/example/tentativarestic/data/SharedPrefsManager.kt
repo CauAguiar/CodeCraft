@@ -3,6 +3,8 @@ package com.example.tentativarestic.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.ExercicioAberto
 import com.example.tentativarestic.models.Projeto
@@ -18,6 +20,9 @@ class SharedPrefsManager(context: Context) {
         context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
 
     private val gson = Gson()
+
+    private var _isLoading = MutableLiveData(true)
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     companion object {
         private const val KEY_USER_ID = "user_id"
@@ -68,6 +73,7 @@ class SharedPrefsManager(context: Context) {
         private const val KEY_UNIDADES = "unidades"
 
         private const val KEY_RESULTADOATIVIDADES = "resultadoatividades"
+        private const val KEY_NIVELAMENTO = "nivelamento"
     }
 
     fun saveUnidadeOrdem(ordem: Int) {
@@ -98,7 +104,70 @@ class SharedPrefsManager(context: Context) {
             putString(KEY_RESULTADOATIVIDADES, resultadoAtividadesJson)
             apply()
         }
+        _isLoading.value = false
     }
+
+    fun getResultadoAtividades(): ResultadoAtividades? {
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+        return if (resultadoAtividadesJson != null) {
+            val listType = object : TypeToken<ResultadoAtividades>() {}.type
+            gson.fromJson(resultadoAtividadesJson, listType)
+        } else {
+            null
+        }
+    }
+
+    fun saveProjeto(updatedProjeto: Projeto) {
+        // Pega o JSON armazenado com o ResultadoAtividades
+        val resultadoAtividadesJson = sharedPreferences.getString(KEY_RESULTADOATIVIDADES, null)
+
+        if (resultadoAtividadesJson != null) {
+            try {
+                // Converte o JSON para o objeto ResultadoAtividades
+                val listType = object : TypeToken<ResultadoAtividades>() {}.type
+                val resultadoAtividades: ResultadoAtividades = gson.fromJson(resultadoAtividadesJson, listType)
+
+                // Verifica se a lista de projetos não é nula
+                val projetos = resultadoAtividades.projeto?.toMutableList() ?: mutableListOf()
+
+                // Encontra o índice do projeto com o id correspondente ou -1 se não encontrado
+                val projetoIndex = projetos.indexOfFirst { it.id == updatedProjeto.id }
+
+                if (projetoIndex != -1) {
+                    // Substitui o projeto existente com o novo
+                    projetos[projetoIndex] = updatedProjeto
+                } else {
+                    // Se não encontrar, adiciona o projeto à lista
+                    projetos.add(updatedProjeto)
+                }
+
+                // Atualiza o objeto ResultadoAtividades com a lista modificada de projetos
+                val updatedResultadoAtividades = ResultadoAtividades(
+                    quiz = resultadoAtividades.quiz,
+                    projeto = projetos,
+                    exercicio_aberto = resultadoAtividades.exercicio_aberto,
+                    video = resultadoAtividades.video,
+                    desconhecido = resultadoAtividades.desconhecido
+                )
+
+                // Converte de volta para JSON
+                val updatedJson = gson.toJson(updatedResultadoAtividades)
+
+                // Salva o JSON atualizado no SharedPreferences
+                sharedPreferences.edit().putString(KEY_RESULTADOATIVIDADES, updatedJson).commit()
+
+                Log.d("ProjetoDebug", "Projeto salvo ou atualizado com sucesso. ID: ${updatedProjeto.id}")
+
+            } catch (e: Exception) {
+                // Trata possíveis erros durante a deserialização ou manipulação dos dados
+                e.printStackTrace() // Ou logar o erro
+            }
+        } else {
+            Log.e("ProjetoDebug", "ResultadoAtividades não encontrado no SharedPreferences.")
+        }
+    }
+
+
 
     fun saveExercicioAberto(updatedExercicioAberto: ExercicioAberto) {
         // Pega o JSON armazenado com o ResultadoAtividades

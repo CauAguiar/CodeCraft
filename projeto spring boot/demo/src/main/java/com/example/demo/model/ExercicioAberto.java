@@ -13,7 +13,7 @@ public class ExercicioAberto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2550)
     private String enunciado; // Enunciado do exercício (ex.: "Escreva um algoritmo que...")
 
     @Column(nullable = true)

@@ -17,6 +17,9 @@ import com.example.tentativarestic.models.Person
 import com.example.tentativarestic.models.PersonResponse
 import com.example.tentativarestic.models.ResultadoAtividades
 import com.example.tentativarestic.models.Unidade
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -32,33 +35,36 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _unidades = MutableLiveData<List<Unidade>>()
     val unidades: LiveData<List<Unidade>> = _unidades
 
+    private val _isLoading = MutableStateFlow(true) // Estado da requisição
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     fun processarAtividades(atividades: List<Atividade>) {
-        val call = RetrofitInstance.api.processarAtividades(atividades)
+            val call = RetrofitInstance.api.processarAtividades(atividades)
 
-        call.enqueue(object : Callback<ResultadoAtividades> {
-            override fun onResponse(
-                call: Call<ResultadoAtividades>,
-                response: Response<ResultadoAtividades>
-            ) {
-                if (response.isSuccessful) {
-                    val resultado = response.body()
-                    resultado?.let {
-                        // Processar os resultados
-                        println("Quizzes: ${it.quiz}")
-                        println("Projetos: ${it.projeto}")
-                        println("Exercícios Abertos: ${it.exercicio_aberto}")
-                        println("Vídeos: ${it.video}")
-                        sharedPrefsManager.saveResultadoAtividades(it)
+            call.enqueue(object : Callback<ResultadoAtividades> {
+                override fun onResponse(
+                    call: Call<ResultadoAtividades>,
+                    response: Response<ResultadoAtividades>
+                ) {
+                    if (response.isSuccessful) {
+                        val resultado = response.body()
+                        resultado?.let {
+                            // Processar os resultados
+                            println("Quizzes: ${it.quiz}")
+                            println("Projetos: ${it.projeto}")
+                            println("Exercícios Abertos: ${it.exercicio_aberto}")
+                            println("Vídeos: ${it.video}")
+                            sharedPrefsManager.saveResultadoAtividades(it)
+                        }
+                    } else {
+                        println("Erro: ${response.code()}")
                     }
-                } else {
-                    println("Erro: ${response.code()}")
                 }
-            }
 
-            override fun onFailure(call: Call<ResultadoAtividades>, t: Throwable) {
-                println("Falha na requisição: ${t.message}")
-            }
-        })
+                override fun onFailure(call: Call<ResultadoAtividades>, t: Throwable) {
+                    println("Falha na requisição: ${t.message}")
+                }
+            })
     }
 
     fun getUnidadesByCurso(nomeCurso: String) {

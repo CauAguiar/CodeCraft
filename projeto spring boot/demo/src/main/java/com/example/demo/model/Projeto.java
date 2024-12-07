@@ -16,7 +16,7 @@ public class Projeto {
     @Column(nullable = false)
     private String nome; // Nome do projeto (ex.: "Projeto de Desenvolvimento de Software")
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2550)
     private String descricao; // Descrição do projeto
 
     @Column(nullable = true)
