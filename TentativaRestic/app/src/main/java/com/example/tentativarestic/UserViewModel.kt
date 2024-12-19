@@ -38,61 +38,61 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(true) // Estado da requisição
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    fun processarAtividades(atividades: List<Atividade>) {
-            val call = RetrofitInstance.api.processarAtividades(atividades)
-
-            call.enqueue(object : Callback<ResultadoAtividades> {
-                override fun onResponse(
-                    call: Call<ResultadoAtividades>,
-                    response: Response<ResultadoAtividades>
-                ) {
-                    if (response.isSuccessful) {
-                        val resultado = response.body()
-                        resultado?.let {
-                            // Processar os resultados
-                            println("Quizzes: ${it.quiz}")
-                            println("Projetos: ${it.projeto}")
-                            println("Exercícios Abertos: ${it.exercicio_aberto}")
-                            println("Vídeos: ${it.video}")
-                            sharedPrefsManager.saveResultadoAtividades(it)
-                        }
-                    } else {
-                        println("Erro: ${response.code()}")
-                    }
-                }
-
-                override fun onFailure(call: Call<ResultadoAtividades>, t: Throwable) {
-                    println("Falha na requisição: ${t.message}")
-                }
-            })
-    }
-
-    fun getUnidadesByCurso(nomeCurso: String) {
-        // Exemplo de uso do Retrofit com uma corrotina
-        viewModelScope.launch {
-            try {
-                // Faz a requisição à API passando o nome do curso
-                val response = RetrofitInstance.api.getUnidadesByCurso(mapOf("nomeCurso" to nomeCurso))
-
-                if (response.isSuccessful) {
-                    val unidadesRecebidas = response.body() ?: emptyList()
-
-                    // Atualiza o estado das unidades no ViewModel
-                    _unidades.value = unidadesRecebidas
-
-                    // Agora salva as unidades no SharedPreferences
-                    sharedPrefsManager.saveUnidades(unidadesRecebidas)
-
-                } else {
-                    // Lidar com falha na requisição (caso necessário)
-                    _unidades.value = emptyList()
-                }
-            } catch (e: Exception) {
-                // Lidar com erros de rede ou outros erros inesperados
-                _unidades.value = emptyList()
-            }
-        }
-    }
+//    fun processarAtividades(atividades: List<Atividade>) {
+//            val call = RetrofitInstance.api.processarAtividades(atividades)
+//
+//            call.enqueue(object : Callback<ResultadoAtividades> {
+//                override fun onResponse(
+//                    call: Call<ResultadoAtividades>,
+//                    response: Response<ResultadoAtividades>
+//                ) {
+//                    if (response.isSuccessful) {
+//                        val resultado = response.body()
+//                        resultado?.let {
+//                            // Processar os resultados
+//                            println("Quizzes: ${it.quiz}")
+//                            println("Projetos: ${it.projeto}")
+//                            println("Exercícios Abertos: ${it.exercicio_aberto}")
+//                            println("Vídeos: ${it.video}")
+//                            sharedPrefsManager.saveResultadoAtividades(it)
+//                        }
+//                    } else {
+//                        println("Erro: ${response.code()}")
+//                    }
+//                }
+//
+//                override fun onFailure(call: Call<ResultadoAtividades>, t: Throwable) {
+//                    println("Falha na requisição: ${t.message}")
+//                }
+//            })
+//    }
+//
+//    fun getUnidadesByCurso(nomeCurso: String) {
+//        // Exemplo de uso do Retrofit com uma corrotina
+//        viewModelScope.launch {
+//            try {
+//                // Faz a requisição à API passando o nome do curso
+//                val response = RetrofitInstance.api.getUnidadesByCurso(mapOf("nomeCurso" to nomeCurso))
+//
+//                if (response.isSuccessful) {
+//                    val unidadesRecebidas = response.body() ?: emptyList()
+//
+//                    // Atualiza o estado das unidades no ViewModel
+//                    _unidades.value = unidadesRecebidas
+//
+//                    // Agora salva as unidades no SharedPreferences
+//                    sharedPrefsManager.saveUnidades(unidadesRecebidas)
+//
+//                } else {
+//                    // Lidar com falha na requisição (caso necessário)
+//                    _unidades.value = emptyList()
+//                }
+//            } catch (e: Exception) {
+//                // Lidar com erros de rede ou outros erros inesperados
+//                _unidades.value = emptyList()
+//            }
+//        }
+//    }
 
 
 

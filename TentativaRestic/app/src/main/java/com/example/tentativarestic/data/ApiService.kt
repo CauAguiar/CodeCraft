@@ -20,10 +20,10 @@ interface ApiService {
     @POST("/api/person/getemail")
     fun getPersonByEmail(@Body requestBody: Map<String, String>): Call<com.example.tentativarestic.models.Person>
 //
-//    @POST("api/person/checkExists")
-//    suspend fun checkIfExists(
-//        @Body params: Map<String, String>  // Usando um mapa para enviar os parâmetros no corpo
-//    ): Response<Map<String, Boolean>>
+    @POST("api/person/checkExists")
+    suspend fun checkIfExists(
+        @Body params: Map<String, String>  // Usando um mapa para enviar os parâmetros no corpo
+    ): Response<Map<String, Boolean>>
 //
 //    @POST("api/unidade/getAll")
 //    suspend fun getUnidadesByCurso(@Body requestBody: Map<String, String>): Response<List<Unidade>>
