@@ -43,10 +43,10 @@ interface ApiService {
     @GET("path/to/your/api/modulo")
     suspend fun getModulos(): Response<List<Modulo>>
 
-    @GET("unidades")
+    @GET("api/unidade/getByLanguage")
     suspend fun getUnidadesByLanguage(@Query("language") languageName: String): List<Unidade>
 
-    @GET("modulos")
+    @GET("api/modulo/getByUnidadeIds")
     suspend fun getModulosByUnidadeIds(@Query("unidade_ids") unidadeIds: List<Long>): List<Modulo>
 }
 
