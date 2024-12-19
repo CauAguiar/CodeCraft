@@ -18,4 +18,7 @@ interface ModuloDao {
 
     @Delete
     suspend fun deleteModulo(modulo: Modulo)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertModulos(modulos: List<Modulo>)
 }

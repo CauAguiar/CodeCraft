@@ -18,4 +18,7 @@ interface PerguntasQuestionarioDao {
 
     @Delete
     suspend fun deletePergunta(pergunta: PerguntasQuestionario)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPerguntas(perguntas: List<PerguntasQuestionario>)
 }

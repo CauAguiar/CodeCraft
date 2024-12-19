@@ -18,4 +18,7 @@ interface VideoDao {
 
     @Delete
     suspend fun deleteVideo(video: Video)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertVideos(videos: List<Video>)
 }

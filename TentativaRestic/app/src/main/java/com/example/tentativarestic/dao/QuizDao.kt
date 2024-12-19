@@ -18,4 +18,7 @@ interface QuizDao {
 
     @Delete
     suspend fun deleteQuiz(quiz: Quiz)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQuizzes(quizzes: List<Quiz>)
 }

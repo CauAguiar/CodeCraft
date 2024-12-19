@@ -18,4 +18,7 @@ interface UnidadeDao {
 
     @Delete
     suspend fun deleteUnidade(unidade: Unidade)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUnidades(unidades: List<Unidade>)
 }

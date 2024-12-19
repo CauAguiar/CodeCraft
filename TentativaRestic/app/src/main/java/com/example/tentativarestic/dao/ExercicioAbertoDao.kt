@@ -18,4 +18,7 @@ interface ExercicioAbertoDao {
 
     @Delete
     suspend fun deleteExercicio(exercicio: ExercicioAberto)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExercicios(exercicios: List<ExercicioAberto>)
 }

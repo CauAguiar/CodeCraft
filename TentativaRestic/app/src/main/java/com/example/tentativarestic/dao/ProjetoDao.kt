@@ -18,4 +18,7 @@ interface ProjetoDao {
 
     @Delete
     suspend fun deleteProjeto(projeto: Projeto)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertProjetos(projetos: List<Projeto>)
 }

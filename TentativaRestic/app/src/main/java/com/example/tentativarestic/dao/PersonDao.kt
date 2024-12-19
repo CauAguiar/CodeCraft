@@ -18,4 +18,7 @@ interface PersonDao {
 
     @Delete
     suspend fun deletePerson(person: Person)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPersons(persons: List<Person>)
 }

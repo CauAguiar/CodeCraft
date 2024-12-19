@@ -18,4 +18,7 @@ interface AtividadeDao {
 
     @Delete
     suspend fun deleteAtividade(atividade: Atividade)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAtividades(atividades: List<Atividade>)
 }

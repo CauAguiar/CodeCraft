@@ -18,4 +18,7 @@ interface CursoDao {
 
     @Delete
     suspend fun deleteCurso(curso: Curso)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCursos(cursos: List<Curso>)
 }
