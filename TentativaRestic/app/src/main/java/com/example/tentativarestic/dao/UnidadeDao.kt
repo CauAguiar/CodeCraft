@@ -21,4 +21,12 @@ interface UnidadeDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUnidades(unidades: List<Unidade>)
+
+    @Query("""
+        SELECT unidade.*
+        FROM unidade
+        INNER JOIN curso ON unidade.id_curso = curso.id
+        WHERE curso.nome = :cursoNome
+    """)
+    fun getUnidadesByCursoNome(cursoNome: String): List<Unidade>
 }

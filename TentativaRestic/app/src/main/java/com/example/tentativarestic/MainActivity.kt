@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,12 +87,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.AppDatabase
+import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.data.SharedPrefsManager
 import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import com.example.tentativarestic.viewmodel.CursoViewModel
+import com.example.tentativarestic.viewmodel.UnidadeViewModel
 import com.example.tentativarestic.viewmodel.ViewModelFactory
 import com.wakaztahir.codeeditor.highlight.model.CodeLang
 import com.wakaztahir.codeeditor.highlight.prettify.PrettifyParser
@@ -131,7 +134,7 @@ class MainActivity : ComponentActivity() {
         sharedPrefsManager = SharedPrefsManager(application.applicationContext)
         val context = applicationContext
         val database = AppDatabase.getInstance(context)
-        val viewModelFactory = ViewModelFactory(database)
+        val viewModelFactory = ViewModelFactory(database, DataRepository(database))
         setContent {
             TentativaResticTheme {
                 AppNavigation(userViewModel, sharedPrefsManager, viewModelFactory)
@@ -1036,7 +1039,23 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
         }
     ) { innerPadding ->
 
-        val unidades = remember { sharedPrefsManager.getUnidades() }
+        val context = LocalContext.current
+        val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+        val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+        val viewModel: UnidadeViewModel = viewModel(factory = viewModelFactory)
+
+        val unidades by viewModel.unidades.observeAsState(emptyList())
+
+        // Exemplo de nome do curso
+        val cursoNome = sharedPrefsManager.getCursoNome()
+
+        LaunchedEffect(cursoNome) {
+            if (cursoNome != null) {
+                viewModel.fetchUnidadesByCursoNome(cursoNome)
+            }
+        }
+
+        //val unidades = remember { sharedPrefsManager.getUnidades() }
         Log.d("UnidadeListScreen", "Número de unidades: ${unidades.size}")
         // Exibe as unidades em uma lista rolável
         LazyColumn(
@@ -1054,7 +1073,7 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
 }
 
 @Composable
-fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
+fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
     // Item individual para cada unidade
     Spacer(modifier = Modifier.height(8.dp))
     Box(
@@ -1075,65 +1094,67 @@ fun UnidadeItem(unidade: Unidade, navController: NavHostController, sharedPrefsM
     Spacer(modifier = Modifier.height(8.dp))
 
     // Ordenando os módulos pela ordem
-    val modulosOrdenados = unidade.modulos.sortedBy { it.ordem }
+    //val modulosOrdenados = unidade.modulos.sortedBy { it.ordem }
 
     // Exibindo cada módulo
     // Definindo a posição das imagens
-    val totalModulos = modulosOrdenados.size
+    //val totalModulos = modulosOrdenados.size
 
 
     // Exibindo cada módulo com efeito de deslocamento
-    modulosOrdenados.forEachIndexed { index, modulo ->
-        // Calculando o deslocamento para criar o efeito de "cobra"
-        val normalizedPosition = index.toFloat() / totalModulos
-        val direction = if (normalizedPosition < 0.5f) -1f else 1f
+//    modulosOrdenados.forEachIndexed { index, modulo ->
+//        // Calculando o deslocamento para criar o efeito de "cobra"
+//        val normalizedPosition = index.toFloat() / totalModulos
+//        val direction = if (normalizedPosition < 0.5f) -1f else 1f
+//
+//
+//
+//        var offsetX = (normalizedPosition * 60f * direction).dp
+//
+//
+//        // Verificando se o módulo está habilitado
+//        val isEnabled = if (modulo.habilitado) 1 else 0  // Converte true/false para 1/0
+//
+//
+//
+//        // Determinando a imagem com base no módulo
+//            val imageResource = when (modulo.descricao.lowercase()) {
+//                "estrela" -> R.drawable.imagem_estrela
+//                "bau" -> R.drawable.imagem_bau
+//                "trofeu" -> R.drawable.imagem_trofeu
+//                "livro" -> R.drawable.imagem_livro
+//                else -> R.drawable.imagem_padrao // Imagem padrão se não coincidir
+//            }
+//            Spacer(modifier = Modifier.height(8.dp))
+//            // Modificando o aspecto visual da imagem se o módulo estiver desabilitado
+//
+//
+//            Image(
+//                painter = painterResource(id = imageResource),
+//                contentDescription = modulo.descricao,
+//                modifier = Modifier
+//                    .size(80.dp)
+//                    .offset(x = offsetX) // Aplica o deslocamento calculado
+//                    .clickable(
+//                        enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
+//                    ) {
+//                        if (isEnabled == 1) {
+//                            sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
+//                            sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
+//                            userViewModel.processarAtividades(modulo.atividades ?: emptyList())
+//                            navController.navigate("modulo") // Navega para o módulo específico
+//                        }
+//                    }
+//                    .graphicsLayer { // Aplica transparência se desabilitado
+//                        alpha =
+//                            if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
+//                    }
+//            )
+//            Spacer(modifier = Modifier.height(8.dp))
+//        }
 
-
-
-        var offsetX = (normalizedPosition * 60f * direction).dp
-
-
-        // Verificando se o módulo está habilitado
-        val isEnabled = if (modulo.habilitado) 1 else 0  // Converte true/false para 1/0
-
-
-
-        // Determinando a imagem com base no módulo
-            val imageResource = when (modulo.descricao.lowercase()) {
-                "estrela" -> R.drawable.imagem_estrela
-                "bau" -> R.drawable.imagem_bau
-                "trofeu" -> R.drawable.imagem_trofeu
-                "livro" -> R.drawable.imagem_livro
-                else -> R.drawable.imagem_padrao // Imagem padrão se não coincidir
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            // Modificando o aspecto visual da imagem se o módulo estiver desabilitado
-
-
-            Image(
-                painter = painterResource(id = imageResource),
-                contentDescription = modulo.descricao,
-                modifier = Modifier
-                    .size(80.dp)
-                    .offset(x = offsetX) // Aplica o deslocamento calculado
-                    .clickable(
-                        enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
-                    ) {
-                        if (isEnabled == 1) {
-                            sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
-                            sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
-                            userViewModel.processarAtividades(modulo.atividades ?: emptyList())
-                            navController.navigate("modulo") // Navega para o módulo específico
-                        }
-                    }
-                    .graphicsLayer { // Aplica transparência se desabilitado
-                        alpha =
-                            if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
-                    }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
     }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1733,7 +1754,7 @@ fun TelaPrincipal(
 fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel, navController: NavHostController) {
     val context = LocalContext.current
     val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
-    val viewModelFactory = ViewModelFactory(database)
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
     val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
 
     Card(

@@ -1,6 +1,7 @@
 package com.example.tentativarestic.data
 
 import com.example.tentativarestic.data.RetrofitInstance.api
+import com.example.tentativarestic.entities.Unidade
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -76,5 +77,9 @@ class DataRepository(private val database: AppDatabase) {
         // Passo 2: Salvar ou atualizar as unidades no banco de dados
         unidadeDao.insertUnidades(unidadesResponse)
         moduloDao.insertModulos(modulosResponse)
+    }
+
+    suspend fun getUnidadesByCursoNome(cursoNome: String): List<Unidade> {
+        return unidadeDao.getUnidadesByCursoNome(cursoNome)
     }
 }
