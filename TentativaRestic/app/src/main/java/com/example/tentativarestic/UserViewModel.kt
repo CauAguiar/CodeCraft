@@ -155,7 +155,6 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         })
     }
 
-
     // Função para registrar a pessoa
     fun registerPerson(name: String, email: String, password: String, telefone: String, dataNascimento: String) {
         val params = mapOf(

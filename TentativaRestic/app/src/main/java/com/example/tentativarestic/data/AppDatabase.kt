@@ -1,34 +1,11 @@
 package com.example.tentativarestic.data
 
-// AppDatabase.kt
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.tentativarestic.dao.AtividadeDao
-import com.example.tentativarestic.dao.CursoDao
-import com.example.tentativarestic.dao.ExercicioAbertoDao
-import com.example.tentativarestic.dao.ModuloDao
-import com.example.tentativarestic.dao.PerguntasQuestionarioDao
-import com.example.tentativarestic.dao.PersonDao
-import com.example.tentativarestic.dao.PersonCursoDao
-import com.example.tentativarestic.dao.ProjetoDao
-import com.example.tentativarestic.dao.QuizDao
-import com.example.tentativarestic.dao.RespostasQuestionarioDao
-import com.example.tentativarestic.dao.RespostasUsuarioQuestionarioDao
-import com.example.tentativarestic.dao.UnidadeDao
-import com.example.tentativarestic.dao.VideoDao
-import com.example.tentativarestic.entities.Atividade
-import com.example.tentativarestic.entities.Curso
-import com.example.tentativarestic.entities.ExercicioAberto
-import com.example.tentativarestic.entities.Modulo
-import com.example.tentativarestic.entities.PerguntasQuestionario
-import com.example.tentativarestic.entities.Person
-import com.example.tentativarestic.entities.PersonCurso
-import com.example.tentativarestic.entities.Projeto
-import com.example.tentativarestic.entities.Quiz
-import com.example.tentativarestic.entities.RespostasQuestionario
-import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
-import com.example.tentativarestic.entities.Unidade
-import com.example.tentativarestic.entities.Video
+import com.example.tentativarestic.dao.*
+import com.example.tentativarestic.entities.*
 
 @Database(
     entities = [
@@ -50,6 +27,7 @@ import com.example.tentativarestic.entities.Video
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun atividadeDao(): AtividadeDao
     abstract fun cursoDao(): CursoDao
     abstract fun exercicioAbertoDao(): ExercicioAbertoDao
@@ -63,4 +41,25 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun respostasUsuarioQuestionarioDao(): RespostasUsuarioQuestionarioDao
     abstract fun unidadeDao(): UnidadeDao
     abstract fun videoDao(): VideoDao
+
+    companion object {
+        // Volatile para garantir que mudanças na instância sejam visíveis entre threads
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        // Método para acessar a instância única do banco de dados
+        fun getInstance(context: Context): AppDatabase {
+            // Verifica se a instância já foi criada
+            return INSTANCE ?: synchronized(this) {
+                // Se a instância ainda não foi criada, cria uma nova
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "app_database" // Nome do banco de dados
+                ).build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }

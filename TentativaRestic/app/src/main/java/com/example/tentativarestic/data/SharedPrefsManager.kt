@@ -454,6 +454,13 @@ class SharedPrefsManager(context: Context) {
         }
     }
 
+    fun saveCursoId(cursoId: Long) {
+        sharedPreferences.edit().apply {
+            putLong(KEY_CURSO_ID, cursoId)
+            apply()
+        }
+    }
+
     fun getCursoNome(): String? {
         return sharedPreferences.getString(KEY_CURSO_NOME, null)
     }

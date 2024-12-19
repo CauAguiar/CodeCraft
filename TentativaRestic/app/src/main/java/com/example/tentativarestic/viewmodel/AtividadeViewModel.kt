@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AtividadeViewModel(private val database: AppDatabase, private val repository: DataRepository) : ViewModel() {
-    init {
-        viewModelScope.launch {
-            // Sincroniza os dados ao iniciar o ViewModel
-            repository.syncAtividades()
-        }
-    }
+//    init {
+//        viewModelScope.launch {
+//            // Sincroniza os dados ao iniciar o ViewModel
+//            repository.syncAtividades()
+//        }
+//    }
 
     private val atividadeDao = database.atividadeDao()
 

@@ -1,5 +1,6 @@
 package com.example.tentativarestic.data
 
+import com.example.tentativarestic.data.RetrofitInstance.api
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -10,6 +11,7 @@ class DataRepository(private val database: AppDatabase) {
     private val cursoDao = database.cursoDao()
     private val moduloDao = database.moduloDao()
     private val personDao = database.personDao()
+    private val unidadeDao = database.unidadeDao()
 
     // Função para sincronizar atividades
     suspend fun syncAtividades() {
@@ -64,5 +66,15 @@ class DataRepository(private val database: AppDatabase) {
         syncAtividades()
         syncCursos()
         syncModulos()
+    }
+
+    suspend fun syncUnidadesAndModulos(languageName: String) {
+        // Passo 1: Buscar as unidades pela API
+        val unidadesResponse = api.getUnidadesByLanguage(languageName)
+        val modulosResponse = api.getModulosByUnidadeIds(unidadesResponse.map { it.id })
+
+        // Passo 2: Salvar ou atualizar as unidades no banco de dados
+        unidadeDao.insertUnidades(unidadesResponse)
+        moduloDao.insertModulos(modulosResponse)
     }
 }

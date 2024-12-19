@@ -1,9 +1,6 @@
 package com.example.tentativarestic
 
 import android.os.Bundle
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.Space
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -19,12 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -39,7 +33,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -64,26 +57,21 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -97,12 +85,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.app.ui.UserViewModel
+import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.data.SharedPrefsManager
 import com.example.tentativarestic.models.Atividade
-import com.example.tentativarestic.models.Quiz
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
+import com.example.tentativarestic.viewmodel.CursoViewModel
+import com.example.tentativarestic.viewmodel.ViewModelFactory
 import com.wakaztahir.codeeditor.highlight.model.CodeLang
 import com.wakaztahir.codeeditor.highlight.prettify.PrettifyParser
 import com.wakaztahir.codeeditor.highlight.theme.CodeThemeType
@@ -139,16 +129,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPrefsManager = SharedPrefsManager(application.applicationContext)
+        val context = applicationContext
+        val database = AppDatabase.getInstance(context)
+        val viewModelFactory = ViewModelFactory(database)
         setContent {
             TentativaResticTheme {
-                AppNavigation(userViewModel, sharedPrefsManager)
+                AppNavigation(userViewModel, sharedPrefsManager, viewModelFactory)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation(userViewModel: UserViewModel, sharedPrefsManager: SharedPrefsManager) {
+fun AppNavigation(
+    userViewModel: UserViewModel,
+    sharedPrefsManager: SharedPrefsManager,
+    viewModelFactory: ViewModelFactory
+) {
     // Controlador de navegação
     val navController = rememberNavController()
 
@@ -1734,6 +1731,11 @@ fun TelaPrincipal(
 
 @Composable
 fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel, navController: NavHostController) {
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database)
+    val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1742,9 +1744,8 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
             .clip(RoundedCornerShape(8.dp))
             .clickable {
                 sharedPrefsManager.saveCursoNome(language.name)
-                userViewModel.getUnidadesByCurso(language.name)
+                viewModel.syncUnidadesAndModulos(languageName = "language.name")
                 navController.navigate("curso")
-
             },
         colors = CardDefaults.cardColors(Color.White)
 
