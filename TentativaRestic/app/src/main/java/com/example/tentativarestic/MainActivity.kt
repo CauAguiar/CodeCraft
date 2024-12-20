@@ -152,10 +152,15 @@ fun AppNavigation(
     // Controlador de navegação
     val navController = rememberNavController()
 
+    val showIntroduction = remember { mutableStateOf(sharedPrefsManager.shouldShowIntroduction()) }
+
+    val startCheck = if (showIntroduction.value) "introducao" else "telaInicial"
     // Definir o NavHost e as rotas
-    NavHost(navController = navController, startDestination = "introducao") {
+    NavHost(navController = navController, startDestination = startCheck) {
         composable("introducao") {
             IntroducaoApp(onFinish = {
+                sharedPrefsManager.setIntroductionShown()
+                showIntroduction.value = false
                 navController.navigate("telaInicial")
             })
         }

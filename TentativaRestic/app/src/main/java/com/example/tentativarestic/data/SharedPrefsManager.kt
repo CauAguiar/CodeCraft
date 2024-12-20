@@ -74,6 +74,16 @@ class SharedPrefsManager(context: Context) {
 
         private const val KEY_RESULTADOATIVIDADES = "resultadoatividades"
         private const val KEY_NIVELAMENTO = "nivelamento"
+        private const val INTRODUCTION_SHOWN_KEY = "introduction_shown"
+    }
+
+
+    fun shouldShowIntroduction(): Boolean {
+        return sharedPreferences.getBoolean(INTRODUCTION_SHOWN_KEY, true)
+    }
+
+    fun setIntroductionShown() {
+        sharedPreferences.edit().putBoolean(INTRODUCTION_SHOWN_KEY, false).apply()
     }
 
     fun saveUnidadeOrdem(ordem: Int) {

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.devtools.ksp") version "1.9.0-1.0.12"
 }
 
 android {
@@ -68,6 +69,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
+    ksp(libs.room.compiler) // Use KSP para Room
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -79,7 +81,6 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp.loggingInterceptor)
     implementation(libs.compose.code.editor)
-
     // Caso precise do Lifecycle, por exemplo, para ViewModels
     implementation(libs.androidx.lifecycle.runtime.ktx)
 }
