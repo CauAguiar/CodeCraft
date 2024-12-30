@@ -724,7 +724,9 @@ fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager
                     contentColor = Color.White
                 ),
                 enabled = !isRespostaSalva, // Desativa após salvar
-                modifier = Modifier.fillMaxWidth() .height(50.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
             ) {
                 Text(text = if (isRespostaSalva) "Resposta Salva" else "Salvar Resposta")
             }
@@ -938,14 +940,16 @@ fun BottomProgressBar(
             // Botão Anterior
             Button(
                 onClick = onPreviousClick,
-                modifier = Modifier.background(
+                modifier = Modifier
+                    .background(
                         brush = Brush.linearGradient(
                             colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
                             start = Offset(0f, 1f),
                             end = Offset(0f, 180f) // Direção vertical
                         ),
-                        shape = CircleShape)
-                        .height(50.dp),
+                        shape = CircleShape
+                    )
+                    .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     disabledContentColor = Color.LightGray,
@@ -968,13 +972,15 @@ fun BottomProgressBar(
                 Log.d("DebugFinalizar", "$atividades")
                 Button(
                     onClick = onFinishClick,
-                    modifier = Modifier.background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF4CAF50), Color(0xFF4CAF50)),
-                            start = Offset(0f, 1f),
-                            end = Offset(0f, 180f) // Direção vertical
-                        ),
-                        shape = CircleShape)
+                    modifier = Modifier
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF4CAF50), Color(0xFF4CAF50)),
+                                start = Offset(0f, 1f),
+                                end = Offset(0f, 180f) // Direção vertical
+                            ),
+                            shape = CircleShape
+                        )
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4CAF50),
@@ -2432,212 +2438,218 @@ fun TelaCadastro(navController: NavController, onNextClick: (String, String, Str
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Spacer(modifier = Modifier.height(90.dp))
-            Text(
-                text = "REGISTRAR-SE",
-                fontSize = 24.sp,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Insira seus dados para o cadastro.",
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodyMedium,
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val screenHeight = maxHeight // Altura total disponível
+            val screenWidth = maxWidth // Largura total disponível
+            val spacerInitial = screenHeight * 0.05f // 10% da altura total
+            val textFieldFontSize = (screenWidth.value * 0.05).sp // 5% da largura da tela
+            val textFontSize = (screenWidth.value * 0.045).sp // 4.5% da largura da tela
+            Column(
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 10.dp),
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Nome
-            Text(
-                text = "Seu Nome",
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 18.dp)
-            )
-            TextField(
-                value = nome,
-                onValueChange = { nome = it },
-                placeholder = {
-                    Text(
-                        text = "Digite o seu nome",
-                        style = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
-                shape = RoundedCornerShape(15.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    disabledBorderColor = Color.Transparent
-                ),
-                textStyle = TextStyle(
-                    textAlign = TextAlign.Center,
-                ),
-
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
+            ) {
+                //Spacer(modifier = Modifier.height(spacerInitial))
+                Text(
+                    text = "REGISTRAR-SE",
+                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Insira seus dados para o cadastro.",
+                    fontSize = textFontSize,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 10.dp),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // Email
-            Text(
-                text = "Email",
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 18.dp)
-            )
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = {
-                    Text(
-                        text = "Digite o seu email",
-                        style = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
-                shape = RoundedCornerShape(15.dp),
-                textStyle = TextStyle(
-                    textAlign = TextAlign.Center,
-                ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    disabledBorderColor = Color.Transparent
-                ),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Data de Nascimento
-            Text(
-                text = "Data de Nascimento",
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 18.dp)
-            )
-            TextField(
-                value = dataNascimento,
-                onValueChange = { dataNascimento = it}, // O campo é somente leitura
-                placeholder = {
-                    Text(
-                        text = "DD     /     MM     /    YYYY",
-                        style = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp))
-                    .onFocusChanged {
-                        if (it.isFocused) {
-                            showDatePickerDialog = true
-                        }
+                // Nome
+                Text(
+                    text = "Seu Nome",
+                    fontSize = textFontSize,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 15.dp)
+                )
+                TextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    placeholder = {
+                        Text(
+                            text = "Digite o seu nome",
+                            style = TextStyle(
+                                textAlign = TextAlign.Center,
+                                color = Color.Gray
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     },
-                textStyle = TextStyle(
-                    textAlign = TextAlign.Center
-                ),
-                readOnly = true,
-                shape = RoundedCornerShape(15.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    disabledBorderColor = Color.Transparent
-                ),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent
+                    ),
+                    textStyle = TextStyle(
+                        textAlign = TextAlign.Center,
+                    ),
 
-            // Telefone
-            Text(
-                text = "Telefone Celular",
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 18.dp)
-            )
-            TextField(
-                value = telefone,
-                onValueChange = { telefone = it },
-                placeholder = {
-                    Text(
-                        text = "Digite o seu telefone celular",
-                        style = TextStyle(
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        ),
-                        modifier = Modifier.fillMaxWidth()
                     )
-                },
-                textStyle = TextStyle(
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                shape = RoundedCornerShape(15.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    disabledBorderColor = Color.Transparent
-                ),
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão Próximo
-            Button(
-                onClick = { checkIfExistsAndRegister() },  //onNextClick
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 90.dp)
-                    .height(48.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
-                            start = Offset(0f, 1f),
-                            end = Offset(0f, 180f) // Direção vertical
-                        ),
-                        shape = CircleShape // Mantém a forma circular do botão
-                    )
-                    .size(60.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-            )
+                // Email
+                Text(
+                    text = "Email",
+                    fontSize = textFontSize,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 15.dp)
+                )
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    placeholder = {
+                        Text(
+                            text = "Digite o seu email",
+                            style = TextStyle(
+                                textAlign = TextAlign.Center,
+                                color = Color.Gray
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                    shape = RoundedCornerShape(15.dp),
+                    textStyle = TextStyle(
+                        textAlign = TextAlign.Center,
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent
+                    ),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Data de Nascimento
+                Text(
+                    text = "Data de Nascimento",
+                    fontSize = textFontSize,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 15.dp)
+                )
+                TextField(
+                    value = dataNascimento,
+                    onValueChange = { dataNascimento = it }, // O campo é somente leitura
+                    placeholder = {
+                        Text(
+                            text = "DD     /     MM     /    YYYY",
+                            style = TextStyle(
+                                textAlign = TextAlign.Center,
+                                color = Color.Gray
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally)
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp))
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                showDatePickerDialog = true
+                            }
+                        },
+                    textStyle = TextStyle(
+                        textAlign = TextAlign.Center
+                    ),
+                    readOnly = true,
+                    shape = RoundedCornerShape(15.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent
+                    ),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Telefone
+                Text(
+                    text = "Telefone Celular",
+                    fontSize = textFontSize,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 15.dp)
+                )
+                TextField(
+                    value = telefone,
+                    onValueChange = { telefone = it },
+                    placeholder = {
+                        Text(
+                            text = "Digite o seu telefone celular",
+                            style = TextStyle(
+                                textAlign = TextAlign.Center,
+                                color = Color.Gray
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    textStyle = TextStyle(
+                        textAlign = TextAlign.Center
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp)),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        disabledBorderColor = Color.Transparent
+                    ),
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Botão Próximo
+                Button(
+                    onClick = { checkIfExistsAndRegister() },  //onNextClick
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                                start = Offset(0f, 1f),
+                                end = Offset(0f, 180f) // Direção vertical
+                            ),
+                            shape = CircleShape // Mantém a forma circular do botão
+                        )
+                        .size(60.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                )
 
 
-            {
-                Text("Próximo")
+                {
+                    Text("Próximo")
+                }
             }
         }
     }
@@ -3042,168 +3054,185 @@ fun TelaDeIntroducao(
 
 @Composable
 fun TelaInicial(onLoginClick: () -> Unit, onCadastroClick: () -> Unit) {
+    Scaffold(
+    ) { paddingValues ->
     BackHandler(enabled = true) {
         // Não faça nada para evitar sair do app
     }
     // Tela dividida em duas partes
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Parte superior: Cabeçalho laranja
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.9f) // Ocupa 1.5/3 da tela
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0x80FFBA83), Color(0xFFF2742B)),
-                        start = Offset(0f, 1f),
-                        end = Offset(0f, 1090f) // Direção vertical
-                    ),
-                    // shape = RoundedCornerShape(30.dp) // Mantém a forma circular do botão
-                ),
-            contentAlignment = Alignment.Center
-        ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val screenHeight = maxHeight // Altura total disponível
+            val screenWidth = maxWidth // Largura total disponível
+            val headerHeight = screenHeight * 0.4f // 40% para o cabeçalho
+            val contentHeight = screenHeight * 0.6f // 60% para o conteúdo
+
+            // Escale o tamanho da fonte com base na largura ou altura da tela
+            val titleFontSize = (screenWidth.value * 0.12).sp // 8% da largura da tela
+            val textFontSize = (screenWidth.value * 0.055).sp // 4.5% da largura da tela
+            val buttonFontSize = (screenWidth.value * 0.05).sp // 5% da largura da tela
+
+            val buttonWidth = screenWidth * 0.8f // 80% da largura da tela
+            val buttonHeight = screenHeight * 0.08f // 8% da altura da tela
+
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally, // Alinha os itens horizontalmente no centro
-                verticalArrangement = Arrangement.Top, // Alinha os itens verticalmente no centro
-                modifier = Modifier.fillMaxSize() // Faz a Column ocupar toda a tela
+                modifier = Modifier.fillMaxSize()
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.logo), // Nome da sua imagem PNG
-                    contentDescription = "Seta",
+                // Parte superior: Cabeçalho laranja
+                Box(
                     modifier = Modifier
-                        .size(240.dp)
-                        .padding(top = 50.dp)
-                )
+                        .fillMaxWidth()
+                        .height(headerHeight) // Ocupa 1.5/3 da tela
+                        .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0x80FFBA83), Color(0xFFF2742B)),
+                                start = Offset(0f, 1f),
+                                end = Offset(0f, 1090f) // Direção vertical
+                            ),
+                            // shape = RoundedCornerShape(30.dp) // Mantém a forma circular do botão
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally, // Alinha os itens horizontalmente no centro
+                        verticalArrangement = Arrangement.Top, // Alinha os itens verticalmente no centro
+                        modifier = Modifier.fillMaxSize() // Faz a Column ocupar toda a tela
+                    ) {
 
-                Text(
-                    text = "CodeCraft",
-                    color = Color.White,
-                    fontSize = 52.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                        Image(
+                            painter = painterResource(id = R.drawable.logo), // Nome da sua imagem PNG
+                            contentDescription = "Seta",
+                            modifier = Modifier
+                                .size(headerHeight * 0.7f) // 50% da altura do cabeçalho
+                                .padding(top = 50.dp)
+                        )
+
+                        Text(
+                            text = "CodeCraft",
+                            color = Color.White,
+                            fontSize = titleFontSize,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Parte inferior: Botões
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(contentHeight) // Ocupa 1.5/3 restante
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(30.dp))
+                    Text(
+                        text = "BEM-VINDO",
+                        color = Color.Black,
+                        fontSize = textFontSize,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+                    // Botão Login
+                    Button(
+                        onClick = onLoginClick,
+                        shape = RoundedCornerShape(30.dp), // Borda arredondada
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Azul claro
+                        modifier = Modifier
+                            .width(buttonWidth)
+                            .height(buttonHeight)
+                            .padding(bottom = 8.dp)
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFFFFBA83), Color(0xFFF2742B)),
+                                    start = Offset(0f, 1f),
+                                    end = Offset(0f, 180f) // Direção vertical
+                                ),
+                                shape = RoundedCornerShape(30.dp) // Mantém a forma circular do botão
+                            )
+                    ) {
+                        Text(
+                            text = "Login",
+                            color = Color.White,
+                            fontSize = buttonFontSize,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    // Botão Cadastro
+                    Button(
+                        onClick = onCadastroClick,
+                        shape = RoundedCornerShape(30.dp), // Borda arredondada
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Azul escuro
+                        modifier = Modifier
+                            .width(buttonWidth)
+                            .height(buttonHeight)
+                            .padding(top = 8.dp)
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                                    start = Offset(0f, 1f),
+                                    end = Offset(0f, 180f) // Direção vertical
+                                ),
+                                shape = RoundedCornerShape(30.dp) // Mantém a forma circular do botão
+                            )
+                    ) {
+                        Text(
+                            text = "Cadastro",
+                            color = Color.White,
+                            fontSize = buttonFontSize,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Text(
+                        text = "Faça login com",
+                        color = Color.Black,
+                        fontSize = textFontSize,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 15.dp, top = 28.dp)
+                    )
+
+                    Button(
+                        onClick = onCadastroClick,
+                        shape = RoundedCornerShape(30.dp), // Borda arredondada
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White), // Azul escuro
+                        modifier = Modifier
+                            .shadow(5.dp, shape = RoundedCornerShape(30.dp))
+                            .width(200.dp)
+                            .height(buttonHeight)
+                            .padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = "Facebook",
+                            color = Color.Black,
+                            fontSize = buttonFontSize,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = onCadastroClick,
+                        shape = RoundedCornerShape(30.dp), // Borda arredondada
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White), // Azul escuro
+                        modifier = Modifier
+                            .shadow(5.dp, shape = RoundedCornerShape(30.dp))
+                            .width(200.dp)
+                            .height(buttonHeight)
+                            .padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = "Gmail",
+                            color = Color.Black,
+                            fontSize = buttonFontSize,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
         }
-
-        // Parte inferior: Botões
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f) // Ocupa 1.5/3 restante
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(30.dp))
-            Text(
-                text = "BEM-VINDO",
-                color = Color.Black,
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
-            // Botão Login
-            Button(
-                onClick = onLoginClick,
-                shape = RoundedCornerShape(30.dp), // Borda arredondada
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Azul claro
-                modifier = Modifier
-                    .width(320.dp)
-                    .height(60.dp)
-                    .padding(bottom = 8.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFFFFBA83), Color(0xFFF2742B)),
-                            start = Offset(0f, 1f),
-                            end = Offset(0f, 180f) // Direção vertical
-                        ),
-                        shape = RoundedCornerShape(30.dp) // Mantém a forma circular do botão
-                    )
-            ) {
-                Text(
-                    text = "Login",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            // Botão Cadastro
-            Button(
-                onClick = onCadastroClick,
-                shape = RoundedCornerShape(30.dp), // Borda arredondada
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Azul escuro
-                modifier = Modifier
-                    .width(320.dp)
-                    .height(60.dp)
-                    .padding(top = 8.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
-                            start = Offset(0f, 1f),
-                            end = Offset(0f, 180f) // Direção vertical
-                        ),
-                        shape = RoundedCornerShape(30.dp) // Mantém a forma circular do botão
-                    )
-            ) {
-                Text(
-                    text = "Cadastro",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Text(
-                text = "Faça login com",
-                color = Color.Black,
-                fontSize = 23.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 15.dp, top = 28.dp)
-            )
-
-            Button(
-                onClick = onCadastroClick,
-                shape = RoundedCornerShape(30.dp), // Borda arredondada
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White), // Azul escuro
-                modifier = Modifier
-                    .shadow(5.dp, shape = RoundedCornerShape(30.dp))
-                    .width(200.dp)
-                    .height(60.dp)
-                    .padding(top = 8.dp)
-            ) {
-                Text(
-                    text = "Facebook",
-                    color = Color.Black,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = onCadastroClick,
-                shape = RoundedCornerShape(30.dp), // Borda arredondada
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White), // Azul escuro
-                modifier = Modifier
-                    .shadow(5.dp, shape = RoundedCornerShape(30.dp))
-                    .width(200.dp)
-                    .height(60.dp)
-                    .padding(top = 8.dp)
-            ) {
-                Text(
-                    text = "Gmail",
-                    color = Color.Black,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
 
 
 
@@ -3233,12 +3262,13 @@ fun OtpChar(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
         TextField(
             value = value,
             onValueChange = {
                 if (it.length <= maxChar &&
-                    ((it.isEmpty() || it.matches(pattern))))
+                    ((it.isEmpty() || it.matches(pattern)))
+                )
                     onValueChange(it)
             },
             modifier = modifier
@@ -3258,7 +3288,8 @@ fun OtpChar(
                 },
             textStyle = LocalTextStyle.current.copy(
                 fontSize = 18.sp,
-                textAlign= TextAlign.Center),
+                textAlign = TextAlign.Center
+            ),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Number
