@@ -13,17 +13,17 @@ public class Projeto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String nome; // Nome do projeto (ex.: "Projeto de Desenvolvimento de Software")
-
     @Column(nullable = false, length = 2550)
-    private String descricao; // Descrição do projeto
+    private String descricao;
 
-    @Column(nullable = true)
-    private String linkRepositorio; // Link do repositório (por exemplo, GitHub)
+    @Column(name = "link_repositorio", nullable = true, length = 255)
+    private String linkRepositorio;
 
-    @Column(nullable = true)
-    private String tecnologias; // Tecnologias utilizadas no projeto
+    @Column(nullable = false, length = 255)
+    private String nome;
+
+    @Column(nullable = true, length = 255)
+    private String tecnologias;
 
     // Getters e Setters
     public Long getId() {
@@ -32,14 +32,6 @@ public class Projeto {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
     }
 
     public String getDescricao() {
@@ -56,6 +48,14 @@ public class Projeto {
 
     public void setLinkRepositorio(String linkRepositorio) {
         this.linkRepositorio = linkRepositorio;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String getTecnologias() {

@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Quiz {
@@ -15,41 +13,26 @@ public class Quiz {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String titulo; // Título do quiz (ex.: "Quiz sobre Java Básico")
+    @Column(nullable = false, length = 255)
+    private String titulo;
 
-    @Column(nullable = false)
-    private String alternativaA; // Alternativa A
+    @Column(name = "alternativaA", nullable = false, length = 255)
+    private String alternativaA;
 
-    @Column(nullable = false)
-    private String alternativaB; // Alternativa B
+    @Column(name = "alternativaB", nullable = false, length = 255)
+    private String alternativaB;
 
-    @Column(nullable = false)
-    private String alternativaC; // Alternativa C
+    @Column(name = "alternativaC", nullable = false, length = 255)
+    private String alternativaC;
 
-    @Column(nullable = false)
-    private String alternativaD; // Alternativa D
+    @Column(name = "alternativaD", nullable = false, length = 255)
+    private String alternativaD;
 
-    @Column(nullable = false)
-    private Integer respostaCerta; // Resposta correta (ex.: "0", "1", "2", ou "3")
+    @Column(nullable = false, length = 255)
+    private String enunciado;
 
-    @Column(nullable = false)
-    private String enunciado; // Texto da pergunta (ex.: "Qual é a linguagem de programação mais usada?")
-
-    @Column(nullable = true)
-    private Integer respostaSelecionada;
-
-    @ManyToOne
-    @JoinColumn(name = "nivelamento_id")
-    private Nivelamento nivelamento;
-
-    public Nivelamento getNivelamento() {
-        return nivelamento;
-    }
-
-    public void setNivelamento(Nivelamento nivelamento) {
-        this.nivelamento = nivelamento;
-    }
+    @Column(name = "respostaCorreta", nullable = false, length = 1)
+    private String respostaCorreta;
 
     // Getters e Setters
     public Long getId() {
@@ -100,14 +83,6 @@ public class Quiz {
         this.alternativaD = alternativaD;
     }
 
-    public Integer getRespostaCerta() {
-        return respostaCerta;
-    }
-
-    public void setRespostaCerta(Integer respostaCerta) {
-        this.respostaCerta = respostaCerta;
-    }
-
     public String getEnunciado() {
         return enunciado;
     }
@@ -116,11 +91,11 @@ public class Quiz {
         this.enunciado = enunciado;
     }
 
-    public Integer getRespostaSelecionada() {
-        return respostaSelecionada;
+    public String getRespostaCorreta() {
+        return respostaCorreta;
     }
 
-    public void setRespostaSelecionada(Integer respostaSelecionada) {
-        this.respostaSelecionada = respostaSelecionada;
+    public void setRespostaCorreta(String respostaCorreta) {
+        this.respostaCorreta = respostaCorreta;
     }
 }

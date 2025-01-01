@@ -14,10 +14,10 @@ public class ExercicioAberto {
     private Long id;
 
     @Column(nullable = false, length = 2550)
-    private String enunciado; // Enunciado do exercício (ex.: "Escreva um algoritmo que...")
+    private String enunciado;
 
-    @Column(nullable = true)
-    private String respostaEsperada; // Resposta esperada (opcional)
+    @Column(name = "resposta_esperada", nullable = false, length = 255)
+    private String respostaEsperada;
 
     // Getters e Setters
     public Long getId() {

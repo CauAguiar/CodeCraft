@@ -13,14 +13,14 @@ public class Video {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String titulo; // Título do vídeo (ex.: "Introdução ao Java")
+    @Column(nullable = true, length = 255)
+    private String descricao;
 
-    @Column(nullable = false)
-    private String url; // URL do vídeo (por exemplo, link do YouTube ou arquivo armazenado)
+    @Column(nullable = false, length = 255)
+    private String titulo;
 
-    @Column(nullable = true)
-    private String descricao; // Descrição do vídeo (opcional)
+    @Column(nullable = false, length = 255)
+    private String url;
 
     // Getters e Setters
     public Long getId() {
@@ -29,6 +29,14 @@ public class Video {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 
     public String getTitulo() {
@@ -45,13 +53,5 @@ public class Video {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
     }
 }
