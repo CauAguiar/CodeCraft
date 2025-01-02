@@ -13,5 +13,5 @@ data class Quiz(
     val alternativaC: String,
     val alternativaD: String,
     val enunciado: String,
-    val respostaCorreta: Char
+    val resposta_correta: Char
 )

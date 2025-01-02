@@ -31,8 +31,8 @@ public class Quiz {
     @Column(nullable = false, length = 255)
     private String enunciado;
 
-    @Column(name = "respostaCorreta", nullable = false, length = 1)
-    private String respostaCorreta;
+    @Column(name = "resposta_correta", nullable = false, columnDefinition = "CHAR(1)")
+    private String resposta_correta;    
 
     // Getters e Setters
     public Long getId() {
@@ -92,10 +92,10 @@ public class Quiz {
     }
 
     public String getRespostaCorreta() {
-        return respostaCorreta;
+        return resposta_correta;
     }
 
-    public void setRespostaCorreta(String respostaCorreta) {
-        this.respostaCorreta = respostaCorreta;
+    public void setRespostaCorreta(String resposta_correta) {
+        this.resposta_correta = resposta_correta;
     }
 }

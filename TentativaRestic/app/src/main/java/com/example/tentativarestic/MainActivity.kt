@@ -400,7 +400,7 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             quiz.alternativaC,
             quiz.alternativaD
         )
-        val respostaCorreta = quiz.respostaCerta// Opção 2 é a correta (índice 1)
+        val resposta_correta = quiz.respostaCerta// Opção 2 é a correta (índice 1)
 
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -414,7 +414,7 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             opcoes.forEachIndexed { index, opcao ->
                 val cor = when {
                     confirmouResposta && respostaSelecionada == index -> // Cor de seleção
-                        if (index == respostaCorreta) Color(0xFF8BAD8D) else Color(0xFFEEA9A3)
+                        if (index == resposta_correta) Color(0xFF8BAD8D) else Color(0xFFEEA9A3)
 
                     respostaSelecionada == index -> Color(0xFFD6D6D6) // Cor de seleção
                     else -> Color(0xFFFAFAFA) // Cor padrão
@@ -486,7 +486,7 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             Button(
                 onClick = {
                     if (respostaSelecionada != null) {
-                        resultado = respostaSelecionada == respostaCorreta
+                        resultado = respostaSelecionada == resposta_correta
                         confirmouResposta = true
                         quiz.confirmouResposta = true
                         quiz.resultado = resultado
