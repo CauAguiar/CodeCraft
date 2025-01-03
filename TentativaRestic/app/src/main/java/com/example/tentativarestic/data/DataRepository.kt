@@ -2,6 +2,7 @@ package com.example.tentativarestic.data
 
 import android.util.Log
 import com.example.tentativarestic.data.RetrofitInstance.api
+import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.Unidade
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,22 +15,91 @@ class DataRepository(private val database: AppDatabase) {
     private val moduloDao = database.moduloDao()
     private val personDao = database.personDao()
     private val unidadeDao = database.unidadeDao()
+    private val quizDao = database.quizDao()
+    private val videoDao = database.videoDao()
+    private val exercicioAbertoDao = database.exercicioAbertoDao()
+    //private val licaoDao = database.licaoDao()
 
     // Função para sincronizar atividades
-    suspend fun syncAtividades() {
-        try {
-            val response = RetrofitInstance.api.getAtividades()
-            if (response.isSuccessful) {
-                response.body()?.let {
-                    withContext(Dispatchers.IO) {
-                        atividadeDao.insertAtividades(it)
-                    }
+    suspend fun syncAtividadesEEspecificas(moduloId: Long) {
+        // Etapa 1: Obter as atividades da API
+        val response = api.getAtividades(moduloId)
+        if (response.isSuccessful) {
+            response.body()?.let {
+                withContext(Dispatchers.IO) {
+                    atividadeDao.insertAtividades(it)
                 }
             }
-        } catch (e: HttpException) {
-            // Tratar erro de rede
+        }
+
+        // Sincronizando quizzes
+        syncQuizzes(moduloId)
+
+        // Sincronizando vídeos
+        syncVideos(moduloId)
+
+        // Sincronizando exercícios abertos
+        syncExerciciosAberto(moduloId)
+
+        // Sincronizando lições
+        //syncLicoes(moduloId)
+    }
+
+    suspend fun syncQuizzes(moduloId: Long) {
+        // Etapa 1: Obter os quizzes da API
+        val responseQuiz = api.getQuizzes(moduloId)
+        if (responseQuiz.isSuccessful) {
+            responseQuiz.body()?.let { quizzes ->
+                withContext(Dispatchers.IO) {
+                    // Etapa 2: Inserir os quizzes na tabela 'quiz'
+                    quizDao.insertQuizzes(quizzes)
+                }
+            }
         }
     }
+
+    suspend fun syncVideos(moduloId: Long) {
+        // Etapa 1: Obter os videos da API
+        val responseVideo = api.getVideos(moduloId)
+        if (responseVideo.isSuccessful) {
+            responseVideo.body()?.let { videos ->
+                withContext(Dispatchers.IO) {
+                    // Etapa 2: Inserir os videos na tabela 'video'
+                    videoDao.insertVideos(videos)
+                }
+            }
+        }
+    }
+
+    suspend fun syncExerciciosAberto(moduloId: Long) {
+        // Etapa 1: Obter os exercícios abertos da API
+        val responseExercicioAberto = api.getExerciciosAberto(moduloId)
+        if (responseExercicioAberto.isSuccessful) {
+            responseExercicioAberto.body()?.let { exerciciosAberto ->
+                withContext(Dispatchers.IO) {
+                    // Etapa 2: Inserir os exercícios abertos na tabela 'exercicio_aberto'
+                    exercicioAbertoDao.insertExercicios(exerciciosAberto)
+                }
+            }
+        }
+    }
+
+    suspend fun syncLicoes(moduloId: Long) {
+        // Etapa 1: Obter as lições da API
+//        val responseLicao = api.getLicoes(moduloId)
+//        if (responseLicao.isSuccessful) {
+//            responseLicao.body()?.let { licoes ->
+//                withContext(Dispatchers.IO) {
+//                    // Etapa 2: Inserir as lições na tabela 'licao'
+//                    licaoDao.insertLicoes(licoes)
+//                }
+//            }
+//        }
+    }
+
+
+
+
 
     // Função para sincronizar cursos
     suspend fun syncCursos() {
@@ -65,7 +135,7 @@ class DataRepository(private val database: AppDatabase) {
 
     // Função para sincronizar todas as entidades
     suspend fun syncAll() {
-        syncAtividades()
+        //syncAtividades()
         syncCursos()
         syncModulos()
     }

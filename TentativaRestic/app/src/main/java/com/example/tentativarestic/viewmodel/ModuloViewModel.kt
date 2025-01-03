@@ -6,10 +6,11 @@ import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.entities.Modulo
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import com.example.tentativarestic.data.DataRepository
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ModuloViewModel(private val database: AppDatabase) : ViewModel() {
+class ModuloViewModel(private val database: AppDatabase, private val dataRepository: DataRepository) : ViewModel() {
     private val moduloDao = database.moduloDao()
 
     val modulos: StateFlow<List<Modulo>> = moduloDao.getAllModulos()
@@ -36,5 +37,13 @@ class ModuloViewModel(private val database: AppDatabase) : ViewModel() {
     fun getModulosByUnidadeId(unidadeId: Long): StateFlow<List<Modulo>> {
         return moduloDao.getModulosByUnidadeId(unidadeId)
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
+
+    suspend fun syncAtividadesEEspecificas(moduloId: Long) {
+        try {
+            dataRepository.syncAtividadesEEspecificas(moduloId)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 }

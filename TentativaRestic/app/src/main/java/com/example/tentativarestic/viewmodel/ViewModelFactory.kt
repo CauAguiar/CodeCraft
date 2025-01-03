@@ -19,7 +19,7 @@ class ViewModelFactory(private val database: AppDatabase, private val dataReposi
                 ExercicioAbertoViewModel(database) as T
             }
             modelClass.isAssignableFrom(ModuloViewModel::class.java) -> {
-                ModuloViewModel(database) as T
+                ModuloViewModel(database, dataRepository) as T
             }
             modelClass.isAssignableFrom(PersonViewModel::class.java) -> {
                 PersonViewModel(database) as T

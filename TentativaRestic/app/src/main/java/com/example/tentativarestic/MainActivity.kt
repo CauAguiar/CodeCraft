@@ -1181,7 +1181,10 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
                             //sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
                             //sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
                             //userViewModel.processarAtividades(modulo.atividades ?: emptyList())
-                            navController.navigate("modulo") // Navega para o módulo específico
+                            CoroutineScope(Dispatchers.Main).launch {
+                                viewModel.syncAtividadesEEspecificas()
+                                navController.navigate("modulo") // Navega para o módulo específico
+                            }
                         //}
                     }
                     .graphicsLayer { // Aplica transparência se desabilitado
