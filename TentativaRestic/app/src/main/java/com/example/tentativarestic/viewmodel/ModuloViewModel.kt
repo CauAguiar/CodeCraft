@@ -32,4 +32,9 @@ class ModuloViewModel(private val database: AppDatabase) : ViewModel() {
             moduloDao.deleteModulo(modulo)
         }
     }
+
+    fun getModulosByUnidadeId(unidadeId: Long): StateFlow<List<Modulo>> {
+        return moduloDao.getModulosByUnidadeId(unidadeId)
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
 }

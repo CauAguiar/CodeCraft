@@ -29,4 +29,7 @@ interface UnidadeDao {
         WHERE curso.nome = :cursoNome
     """)
     fun getUnidadesByCursoNome(cursoNome: String): List<Unidade>
+
+    @Query("SELECT * FROM unidade WHERE id IN (:unidadeIds)")
+    suspend fun getUnidadesByIds(unidadeIds: List<Long>): List<Unidade>
 }

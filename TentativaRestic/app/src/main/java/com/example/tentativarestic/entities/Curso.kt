@@ -3,14 +3,15 @@ package com.example.tentativarestic.entities
 // Curso.kt
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "curso")
 data class Curso(
     @PrimaryKey(autoGenerate = true) val id: Long,
-    val categoria: String,
-    val descricao: String,
-    val duracao_total: Int,
-    val icone: String,
-    val nivel: String,
-    val nome: String
+    @SerializedName("categoria") val categoria: String,
+    @SerializedName("descricao") val descricao: String,
+    @SerializedName("duracaoTotal") val duracao_total: Int,
+    @SerializedName("icone") val icone: String,
+    @SerializedName("nivel") val nivel: String,
+    @SerializedName("nome") val nome: String
 )

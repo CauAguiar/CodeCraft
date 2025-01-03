@@ -37,7 +37,7 @@ interface ApiService {
     @GET("path/to/your/api/atividade")
     suspend fun getAtividades(): Response<List<Atividade>>
 
-    @GET("path/to/your/api/curso")
+    @GET("api/curso/getAll")
     suspend fun getCursos(): Response<List<Curso>>
 
     @GET("path/to/your/api/modulo")

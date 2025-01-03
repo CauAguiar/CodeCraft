@@ -31,7 +31,7 @@ public class Quiz {
     @Column(nullable = false, length = 255)
     private String enunciado;
 
-    @Column(name = "resposta_correta", nullable = false, columnDefinition = "CHAR(1)")
+    @Column(name = "resposta_correta", nullable = false, length = 1)
     private String resposta_correta;    
 
     // Getters e Setters

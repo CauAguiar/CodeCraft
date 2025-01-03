@@ -1,26 +1,35 @@
 package com.example.demo.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.model.Unidade;
+import com.example.demo.repository.UnidadeRepository;
 
 @Service
 public class UnidadeService {
 
-    // @Autowired
-    // private UnidadeRepository unidadeRepository;
+    @Autowired
+    private UnidadeRepository unidadeRepository;
 
-    // @Autowired
-    // private CursoRepository cursoRepository;
+    public List<Unidade> getUnidadesByLanguage(String languageName) {
+            List<Unidade> unidades = unidadeRepository.findByCursoNome(languageName);
+            
+            // Imprime o resultado no log
+            // if (unidades.isEmpty()) {
+            //     System.out.println("Nenhuma unidade encontrada para o curso: " + languageName);
+            // } else {
+            //     System.out.println("Unidades encontradas: ");
+            //     for (Unidade unidade : unidades) {
+            //         System.out.println("ID: " + unidade.getId());
+            //         System.out.println("Descrição: " + unidade.getDescricao());
+            //         System.out.println("Título: " + unidade.getTitulo());
+            //         System.out.println("Duração: " + unidade.getDuracaoTotal());
+            //     }
+            // }
 
-    // Método para buscar unidades com base no nome do curso
-    // public List<Unidade> getUnidadesByCursoNome(String nomeCurso) {
-    //     Encontra o curso pelo nome
-    //     Curso curso = cursoRepository.findByNome(nomeCurso);
-    
-    //     if (curso != null) {
-    //         Retorna as unidades associadas a esse curso ordenadas pelo atributo 'ordem'
-    //         return unidadeRepository.findByCurso(curso, Sort.by(Sort.Direction.ASC, "ordem"));
-    //     }
-    //     return null; // Caso o curso não seja encontrado
-    // }
-    
+            return unidades;
+        }
 }

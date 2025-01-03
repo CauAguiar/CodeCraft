@@ -89,11 +89,13 @@ import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.data.SharedPrefsManager
+import com.example.tentativarestic.entities.Modulo
 import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import com.example.tentativarestic.viewmodel.CursoViewModel
+import com.example.tentativarestic.viewmodel.ModuloViewModel
 import com.example.tentativarestic.viewmodel.UnidadeViewModel
 import com.example.tentativarestic.viewmodel.ViewModelFactory
 import com.wakaztahir.codeeditor.highlight.model.CodeLang
@@ -1104,65 +1106,87 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
     }
     Spacer(modifier = Modifier.height(8.dp))
 
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: ModuloViewModel = viewModel(factory = viewModelFactory)
+
+    val unidade_id = unidade.id
+
+    val modulosState = remember { mutableStateOf<List<Modulo>>(emptyList()) }
+
+    // Lançando efeito para consultar os módulos apenas uma vez
+    LaunchedEffect(unidade_id) {
+        // Chama o ViewModel para carregar os módulos
+        viewModel.getModulosByUnidadeId(unidade_id).collect { modulos ->
+            // Atualiza o estado somente quando os módulos mudam
+            modulosState.value = modulos
+        }
+    }
+    val modulosOrdenados = modulosState.value.sortedBy { it.ordem }
+// Agora você pode usar a lista ordenada
+
+
+
+
     // Ordenando os módulos pela ordem
     //val modulosOrdenados = unidade.modulos.sortedBy { it.ordem }
 
     // Exibindo cada módulo
     // Definindo a posição das imagens
-    //val totalModulos = modulosOrdenados.size
+    val totalModulos = modulosOrdenados.size
 
 
     // Exibindo cada módulo com efeito de deslocamento
-//    modulosOrdenados.forEachIndexed { index, modulo ->
+    modulosOrdenados.forEachIndexed { index, modulo ->
 //        // Calculando o deslocamento para criar o efeito de "cobra"
-//        val normalizedPosition = index.toFloat() / totalModulos
-//        val direction = if (normalizedPosition < 0.5f) -1f else 1f
+        val normalizedPosition = index.toFloat() / totalModulos
+        val direction = if (normalizedPosition < 0.5f) -1f else 1f
 //
 //
 //
-//        var offsetX = (normalizedPosition * 60f * direction).dp
+        var offsetX = (normalizedPosition * 60f * direction).dp
 //
 //
 //        // Verificando se o módulo está habilitado
-//        val isEnabled = if (modulo.habilitado) 1 else 0  // Converte true/false para 1/0
+       //val isEnabled = if (modulo.habilitado) 1 else 0  // Converte true/false para 1/0
 //
 //
 //
 //        // Determinando a imagem com base no módulo
-//            val imageResource = when (modulo.descricao.lowercase()) {
-//                "estrela" -> R.drawable.imagem_estrela
-//                "bau" -> R.drawable.imagem_bau
-//                "trofeu" -> R.drawable.imagem_trofeu
-//                "livro" -> R.drawable.imagem_livro
-//                else -> R.drawable.imagem_padrao // Imagem padrão se não coincidir
-//            }
-//            Spacer(modifier = Modifier.height(8.dp))
+            val imageResource = when (modulo.descricao.lowercase()) {
+                "estrela" -> R.drawable.imagem_estrela
+                "bau" -> R.drawable.imagem_bau
+                "trofeu" -> R.drawable.imagem_trofeu
+                "livro" -> R.drawable.imagem_livro
+                else -> R.drawable.imagem_padrao // Imagem padrão se não coincidir
+            }
+            Spacer(modifier = Modifier.height(8.dp))
 //            // Modificando o aspecto visual da imagem se o módulo estiver desabilitado
-//
-//
-//            Image(
-//                painter = painterResource(id = imageResource),
-//                contentDescription = modulo.descricao,
-//                modifier = Modifier
-//                    .size(80.dp)
-//                    .offset(x = offsetX) // Aplica o deslocamento calculado
-//                    .clickable(
-//                        enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
-//                    ) {
-//                        if (isEnabled == 1) {
-//                            sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
-//                            sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
-//                            userViewModel.processarAtividades(modulo.atividades ?: emptyList())
-//                            navController.navigate("modulo") // Navega para o módulo específico
-//                        }
-//                    }
-//                    .graphicsLayer { // Aplica transparência se desabilitado
-//                        alpha =
-//                            if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
-//                    }
-//            )
-//            Spacer(modifier = Modifier.height(8.dp))
-//        }
+
+            Image(
+                painter = painterResource(id = imageResource),
+                contentDescription = modulo.descricao,
+                modifier = Modifier
+                    .size(80.dp)
+                    .offset(x = offsetX) // Aplica o deslocamento calculado
+                    .clickable(
+                        //enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
+                    ) {
+                        //if (isEnabled == 1) {
+                            //sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
+                            //sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
+                            //userViewModel.processarAtividades(modulo.atividades ?: emptyList())
+                            navController.navigate("modulo") // Navega para o módulo específico
+                        //}
+                    }
+                    .graphicsLayer { // Aplica transparência se desabilitado
+                        //alpha =
+                            //if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
+                    }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
     }
 
@@ -1510,6 +1534,15 @@ fun TelaPrincipal(
 
     val userName = sharedPrefsManager.getUserName()
 
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
+
+    viewModel.syncCursos()
+
+
+
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -1767,6 +1800,7 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
     val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
     val viewModelFactory = ViewModelFactory(database, DataRepository(database))
     val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
+    //val syncStatus by viewModel.syncStatus.observeAsState(false)
 
     Card(
         modifier = Modifier
@@ -1776,8 +1810,10 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
             .clip(RoundedCornerShape(8.dp))
             .clickable {
                 sharedPrefsManager.saveCursoNome(language.name)
-                viewModel.syncUnidadesAndModulos(languageName = "language.name")
-                navController.navigate("curso")
+                viewModel.syncUnidadesAndModulos(languageName = language.name)
+                //if (syncStatus) {
+                    navController.navigate("curso")
+                //}
             },
         colors = CardDefaults.cardColors(Color.White)
 
