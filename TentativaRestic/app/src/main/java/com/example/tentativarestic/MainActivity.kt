@@ -89,6 +89,7 @@ import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.data.SharedPrefsManager
+import com.example.tentativarestic.entities.Curso
 import com.example.tentativarestic.entities.Modulo
 import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Unidade
@@ -102,7 +103,10 @@ import com.wakaztahir.codeeditor.highlight.model.CodeLang
 import com.wakaztahir.codeeditor.highlight.prettify.PrettifyParser
 import com.wakaztahir.codeeditor.highlight.theme.CodeThemeType
 import com.wakaztahir.codeeditor.highlight.utils.parseCodeAsAnnotatedString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
@@ -1508,29 +1512,29 @@ fun TelaPrincipal(
 ) {
     var searchText by remember { mutableStateOf("") }
 
-    val languages = listOf(
-        LanguageItem("Python", /*R.drawable.python*/Icons.Filled.Home),
-        LanguageItem("JavaScript", /*R.drawable.javascript*/Icons.Filled.Home),
-        LanguageItem("UI/UX", /*R.drawable.uiux*/Icons.Filled.Home),
-        LanguageItem("Java", /*R.drawable.java*/Icons.Filled.Home),
-        LanguageItem("C e C++", /*R.drawable.cpp*/Icons.Filled.Home),
-        LanguageItem("Algoritmos", /*R.drawable.algorithms*/Icons.Filled.Home),
-        LanguageItem("SQL", /*R.drawable.sql*/Icons.Filled.Home),
-        LanguageItem("CSS", /*R.drawable.css*/Icons.Filled.Home),
-        LanguageItem("C#", /*R.drawable.csharp*/Icons.Filled.Home),
-        LanguageItem("Kotlin", /*R.drawable.kotlin*/Icons.Filled.Home),
-        LanguageItem("Haskell", /*R.drawable.haskell*/Icons.Filled.Home),
-        LanguageItem("HTML", /*R.drawable.html*/Icons.Filled.Home),
-        LanguageItem("PHP", /*R.drawable.php*/Icons.Filled.Home),
-        LanguageItem("Ruby", /*R.drawable.ruby*/Icons.Filled.Home),
-        LanguageItem("Swift", /*R.drawable.swift*/Icons.Filled.Home),
-        LanguageItem("TypeScript", /*R.drawable.typescript*/Icons.Filled.Home),
-        LanguageItem("R", /*R.drawable.r*/Icons.Filled.Home),
-        LanguageItem("Go", /*R.drawable.go*/Icons.Filled.Home),
-        LanguageItem("Dart", /*R.drawable.dart*/Icons.Filled.Home),
-        LanguageItem("Scala", /*R.drawable.scala*/Icons.Filled.Home),
-        LanguageItem("Lua", /*R.drawable.lua*/Icons.Filled.Home)
-    )
+//    val languages = listOf(
+//        LanguageItem("Python", /*R.drawable.python*/Icons.Filled.Home),
+//        LanguageItem("JavaScript", /*R.drawable.javascript*/Icons.Filled.Home),
+//        LanguageItem("UI/UX", /*R.drawable.uiux*/Icons.Filled.Home),
+//        LanguageItem("Java", /*R.drawable.java*/Icons.Filled.Home),
+//        LanguageItem("C e C++", /*R.drawable.cpp*/Icons.Filled.Home),
+//        LanguageItem("Algoritmos", /*R.drawable.algorithms*/Icons.Filled.Home),
+//        LanguageItem("SQL", /*R.drawable.sql*/Icons.Filled.Home),
+//        LanguageItem("CSS", /*R.drawable.css*/Icons.Filled.Home),
+//        LanguageItem("C#", /*R.drawable.csharp*/Icons.Filled.Home),
+//        LanguageItem("Kotlin", /*R.drawable.kotlin*/Icons.Filled.Home),
+//        LanguageItem("Haskell", /*R.drawable.haskell*/Icons.Filled.Home),
+//        LanguageItem("HTML", /*R.drawable.html*/Icons.Filled.Home),
+//        LanguageItem("PHP", /*R.drawable.php*/Icons.Filled.Home),
+//        LanguageItem("Ruby", /*R.drawable.ruby*/Icons.Filled.Home),
+//        LanguageItem("Swift", /*R.drawable.swift*/Icons.Filled.Home),
+//        LanguageItem("TypeScript", /*R.drawable.typescript*/Icons.Filled.Home),
+//        LanguageItem("R", /*R.drawable.r*/Icons.Filled.Home),
+//        LanguageItem("Go", /*R.drawable.go*/Icons.Filled.Home),
+//        LanguageItem("Dart", /*R.drawable.dart*/Icons.Filled.Home),
+//        LanguageItem("Scala", /*R.drawable.scala*/Icons.Filled.Home),
+//        LanguageItem("Lua", /*R.drawable.lua*/Icons.Filled.Home)
+//    )
 
     val userName = sharedPrefsManager.getUserName()
 
@@ -1539,7 +1543,28 @@ fun TelaPrincipal(
     val viewModelFactory = ViewModelFactory(database, DataRepository(database))
     val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
 
-    viewModel.syncCursos()
+
+
+
+
+    val cursoList = remember { mutableStateOf<List<Curso>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.syncCursos()
+
+        viewModel.cursos.collect { cursos ->
+            cursoList.value = cursos
+        }
+    }
+
+    val languages = cursoList.value.map { curso ->
+        LanguageItem(
+            name = curso.nome,
+            icon = Icons.Filled.Home
+        )
+    }
+
+
 
 
 
@@ -1810,9 +1835,13 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
             .clip(RoundedCornerShape(8.dp))
             .clickable {
                 sharedPrefsManager.saveCursoNome(language.name)
-                viewModel.syncUnidadesAndModulos(languageName = language.name)
+
                 //if (syncStatus) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    viewModel.syncUnidadesAndModulos(languageName = language.name)
                     navController.navigate("curso")
+                }
+
                 //}
             },
         colors = CardDefaults.cardColors(Color.White)

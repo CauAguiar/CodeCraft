@@ -19,26 +19,24 @@ class CursoViewModel(private val database: AppDatabase, private val dataReposito
    // val syncStatus: LiveData<Boolean> = _syncStatus
 
     // Função para sincronizar as unidades e módulos com o banco
-    fun syncUnidadesAndModulos(languageName: String) {
-        viewModelScope.launch {
-            try {
-                dataRepository.syncUnidadesAndModulos(languageName)
-               // _syncStatus.postValue(true) // Marque a sincronização como concluída
-            } catch (e: Exception) {
-                //_syncStatus.postValue(false) // Caso haja erro
-            }
+    suspend fun syncUnidadesAndModulos(languageName: String) {
+        try {
+            dataRepository.syncUnidadesAndModulos(languageName)
+            // _syncStatus.postValue(true) // Marque a sincronização como concluída
+        } catch (e: Exception) {
+            // _syncStatus.postValue(false) // Caso haja erro
+            throw e // Propaga o erro, se necessário
         }
     }
 
-    fun syncCursos() {
-        viewModelScope.launch {
+
+    suspend fun syncCursos() {
             try {
                 dataRepository.syncCursos()
                 //_syncStatus.postValue(true) // Marque a sincronização como concluída
             } catch (e: Exception) {
                 //_syncStatus.postValue(false) // Caso haja erro
             }
-        }
     }
 
     val cursos: StateFlow<List<Curso>> = cursoDao.getAllCursos()
