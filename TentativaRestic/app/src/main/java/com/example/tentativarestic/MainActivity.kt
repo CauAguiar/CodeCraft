@@ -89,15 +89,25 @@ import com.example.app.ui.UserViewModel
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.data.SharedPrefsManager
+import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.Curso
+import com.example.tentativarestic.entities.ExercicioAberto
 import com.example.tentativarestic.entities.Modulo
-import com.example.tentativarestic.models.Atividade
+import com.example.tentativarestic.entities.Projeto
+import com.example.tentativarestic.entities.Quiz
+import com.example.tentativarestic.entities.Video
+//import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
+import com.example.tentativarestic.viewmodel.AtividadeViewModel
 import com.example.tentativarestic.viewmodel.CursoViewModel
+import com.example.tentativarestic.viewmodel.ExercicioAbertoViewModel
 import com.example.tentativarestic.viewmodel.ModuloViewModel
+import com.example.tentativarestic.viewmodel.ProjetoViewModel
+import com.example.tentativarestic.viewmodel.QuizViewModel
 import com.example.tentativarestic.viewmodel.UnidadeViewModel
+import com.example.tentativarestic.viewmodel.VideoViewModel
 import com.example.tentativarestic.viewmodel.ViewModelFactory
 import com.wakaztahir.codeeditor.highlight.model.CodeLang
 import com.wakaztahir.codeeditor.highlight.prettify.PrettifyParser
@@ -107,6 +117,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
@@ -281,17 +292,18 @@ fun AppNavigation(
 @Composable
 fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
     // Container principal
-    var atividades = sharedPrefsManager.getAtividades()
+    //var atividades = sharedPrefsManager.getAtividades()
     var currentActivityIndex by remember { mutableStateOf(0) }
     val nome_curso = sharedPrefsManager.getCursoNome()
-    val unidade_ordem = sharedPrefsManager.getUnidadeOrdem()
+    //val unidade_ordem = sharedPrefsManager.getUnidadeOrdem()
+
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "$nome_curso - Unidade $unidade_ordem",
+                        "$nome_curso - Unidade ", //$unidade_ordem
                         fontSize = 24.sp,
                         modifier = Modifier.offset(y = 14.dp)
                     ) },
@@ -313,9 +325,93 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
             )
         }
     ) { paddingValues ->
+//        val context2 = LocalContext.current
+//        val database2 = AppDatabase.getInstance(context2) // Acessando a instância singleton do banco de dados
+//        val viewModelFactory2 = ViewModelFactory(database2, DataRepository(database2))
+//        val viewModel2: CursoViewModel = viewModel(factory = viewModelFactory2)
+
+        //val modulo_id2 = sharedPrefsManager.getModuloId()
+
+        //val cursoList = remember { mutableStateOf<List<Curso>>(emptyList()) }
+
+//        LaunchedEffect(modulo_id2) {
+//
+//            viewModel2.cursos.collect { cursos ->
+//                cursoList.value = cursos
+//                Log.d("CursosDebug", "Lista de cursos: $cursos")
+//            }
+//        }
+
+        val modulo_id = sharedPrefsManager.getModuloId()
+        Log.d("ModuloDebug", "Módulo ID: $modulo_id")
+
+        val context = LocalContext.current
+        val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+        val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+        val viewModel: AtividadeViewModel = viewModel(factory = viewModelFactory)
+
+        val atividadesState = remember { mutableStateOf<List<Atividade>>(emptyList()) }
+        Log.d("AtividadesDebug", "entrou fora do launched")
+        val isDataLoaded = remember { mutableStateOf(false) }
+
+
+
+
+        val viewModel3: ModuloViewModel = viewModel(factory = viewModelFactory)
+
+        val isLoading by viewModel3.isLoading.collectAsState()
+        isLoading == true
+
+        val atividadeAtual2 = remember { mutableStateOf<Atividade?>(null) }
+
+        // Coletando as atividades de forma assíncrona com LaunchedEffect
+        LaunchedEffect(modulo_id) {
+            viewModel3.syncAtividadesEEspecificas(modulo_id)
+            viewModel3.syncQuizzes(modulo_id)
+            viewModel3.syncVideos(modulo_id)
+            viewModel3.syncExerciciosAberto(modulo_id)
+            viewModel3.syncProjetos(modulo_id)
+
+            Log.d("AtividadesDebug", "entrou no launched")
+            viewModel.getAtividadesByModuloId(modulo_id).collect { atividades ->
+                atividadesState.value = atividades
+                Log.d("AtividadesDebug", "Lista de atividades: $atividades")
+                isDataLoaded.value = true
+                if(atividades.isNotEmpty()) {
+                    atividadeAtual2.value = atividades[currentActivityIndex]
+                }
+                //Log.d("AtividadesDebug", "Lista de atividades teste: $teste")
+            }
+        }
+
+       // val teste = remember { mutableStateOf<List<Atividade>>(emptyList()) }
+
+
+
+
+//        LaunchedEffect(modulo_id2) {
+//            viewModel3.syncAtividadesEEspecificas(modulo_id)
+//
+//            viewModel.atividades.collect { atividades ->
+//                teste.value = atividades
+//                Log.d("AtividadeDebug teste", "Lista de atividades teste: $atividades")
+//                isDataLoaded.value = true
+//            }
+//        }
+
+
+
+        //if (!isLoading) {
+        if(isDataLoaded.value){
+        // Usando o valor das atividades
+        val atividades = atividadesState.value
+
+
+
         Log.d("AtividadesDebug", "Lista de atividades: $atividades")
         Log.d("AtividadesDebug", "Índice atual: $currentActivityIndex")
-        val atividadeAtual = atividades[currentActivityIndex]
+
+        val atividadeAtual = atividadeAtual2.value
 
         Column(
             modifier = Modifier
@@ -342,13 +438,21 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 //                modifier = Modifier.padding(bottom = 24.dp)
 //            )
 
-            // Exibição personalizada para atividades específicas
-            when (atividadeAtual.tipo) {
-                "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
-                "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
-                "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
-                "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
-                else -> DefaultContent(atividadeAtual, sharedPrefsManager)
+            LaunchedEffect(currentActivityIndex) {
+                if(atividades.isNotEmpty()) {
+                    atividadeAtual2.value = atividades[currentActivityIndex]
+                }
+            }
+
+            if(atividadeAtual != null) {
+                // Exibição personalizada para atividades específicas
+                when (atividadeAtual.tipo) {
+                    "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
+                    "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
+                    "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
+                    "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
+                    else -> DefaultContent(atividadeAtual, sharedPrefsManager)
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -359,19 +463,20 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                 currentActivityIndex = currentActivityIndex,
                 totalActivities = atividades.size,
                 onPreviousClick = {
-                    if (currentActivityIndex > 0){
-                        atividades = sharedPrefsManager.getAtividades()
+                    if (currentActivityIndex > 0) {
+                        //atividades = sharedPrefsManager.getAtividades()
                         currentActivityIndex--
                     }
                 },
                 onNextClick = {
-                    if (currentActivityIndex < atividades.size - 1){
-                        atividades = sharedPrefsManager.getAtividades()
+                    if (currentActivityIndex < atividades.size - 1) {
+                        //atividades = sharedPrefsManager.getAtividades()
                         currentActivityIndex++
                     }
                 },
                 onFinishClick = {},
             )
+        }
         }
     }
 }
@@ -380,24 +485,45 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 @Composable
 fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     // Estado persistente usando rememberSaveable
-    val quiz = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getQuizById(it) }
+    //val quiz = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getQuizById(it) }
+
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: QuizViewModel = viewModel(factory = viewModelFactory)
+
+    val quizState = remember { mutableStateOf<Quiz?>(null) }
+
+    // Coletando o Flow de quizzes
+    LaunchedEffect(atividade.atividade_especifica_id) {
+        viewModel.getQuizById(atividade.atividade_especifica_id).collect { quiz ->
+            quizState.value = quiz
+        }
+    }
+
+    val quiz = quizState.value
+
+
     val currentQuiz by rememberUpdatedState(quiz)
     Log.d("QuizDebug1", "Quiz: $quiz")
 
     if(quiz != null && currentQuiz != null) {
-        var respostaSelecionadaCopy = quiz.respostaSelecionada
-        var confirmouRespostaCopy = quiz.confirmouResposta
-        var resultadoCopy = quiz.resultado
+        //var respostaSelecionadaCopy = quiz.respostaSelecionada
+        //var confirmouRespostaCopy = quiz.confirmouResposta
+        //var resultadoCopy = quiz.resultado
 
         LaunchedEffect(currentQuiz) {
-            respostaSelecionadaCopy = currentQuiz?.respostaSelecionada
-            confirmouRespostaCopy = currentQuiz!!.confirmouResposta
-            resultadoCopy = currentQuiz?.resultado
+            //respostaSelecionadaCopy = currentQuiz?.respostaSelecionada
+            //confirmouRespostaCopy = currentQuiz!!.confirmouResposta
+            //resultadoCopy = currentQuiz?.resultado
         }
 
-        var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionadaCopy) }
-        var resultado by remember { mutableStateOf<Boolean?>(resultadoCopy) }
-        var confirmouResposta by remember { mutableStateOf(confirmouRespostaCopy) }
+        //var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionadaCopy) }
+        //var resultado by remember { mutableStateOf<Boolean?>(resultadoCopy) }
+        //var confirmouResposta by remember { mutableStateOf(confirmouRespostaCopy) }
+        var respostaSelecionada = 1
+        var resultado = false
+        var confirmouResposta = false
 
         val pergunta = quiz.enunciado
         val opcoes = listOf(
@@ -406,7 +532,7 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             quiz.alternativaC,
             quiz.alternativaD
         )
-        val resposta_correta = quiz.respostaCerta// Opção 2 é a correta (índice 1)
+        val resposta_correta = quiz.resposta_correta// Opção 2 é a correta (índice 1)
 
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -417,10 +543,13 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
+            val letras = listOf('A', 'B', 'C', 'D', 'E')
+
             opcoes.forEachIndexed { index, opcao ->
+                val letra = letras.getOrNull(index)
                 val cor = when {
                     confirmouResposta && respostaSelecionada == index -> // Cor de seleção
-                        if (index == resposta_correta) Color(0xFF8BAD8D) else Color(0xFFEEA9A3)
+                        if (letra == resposta_correta) Color(0xFF8BAD8D) else Color(0xFFEEA9A3)
 
                     respostaSelecionada == index -> Color(0xFFD6D6D6) // Cor de seleção
                     else -> Color(0xFFFAFAFA) // Cor padrão
@@ -430,8 +559,8 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
                     onClick = {
                         if (!confirmouResposta) {
                             respostaSelecionada = index
-                            quiz.respostaSelecionada = index
-                            sharedPrefsManager.saveQuiz(quiz)
+                            //quiz.respostaSelecionada = index
+                            //sharedPrefsManager.saveQuiz(quiz)
                             Log.d("QuizDebugReposta", "Resposta selecionada: $quiz")
                         }
                     },
@@ -492,14 +621,14 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             Button(
                 onClick = {
                     if (respostaSelecionada != null) {
-                        resultado = respostaSelecionada == resposta_correta
+                        //resultado = respostaSelecionada == resposta_correta
                         confirmouResposta = true
-                        quiz.confirmouResposta = true
-                        quiz.resultado = resultado
-                        atividade.concluida = true
+                        //quiz.confirmouResposta = true
+                        //quiz.resultado = resultado
+                        //atividade.concluida = true
                         Log.d("QuizDebugResposta2", "Enviado selecionada: $quiz")
-                        sharedPrefsManager.saveQuiz(quiz)
-                        sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                        //sharedPrefsManager.saveQuiz(quiz)
+                        //sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
                     }
                 },
                 modifier = Modifier
@@ -544,7 +673,21 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
 
 @Composable
 fun VideoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
-    var video = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getVideoById(it) }
+    //var video = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getVideoById(it) }
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: VideoViewModel = viewModel(factory = viewModelFactory)
+
+    val videoState = remember { mutableStateOf<Video?>(null) }
+
+    // Coletando o Flow de quizzes
+    LaunchedEffect(atividade.atividade_especifica_id) {
+        viewModel.getVideoById(atividade.atividade_especifica_id).collect { video ->
+            videoState.value = video
+        }
+    }
+    var video = videoState.value
     val currentVideo by rememberUpdatedState(video)
 
     // Caixa para centralizar o conteúdo na tela
@@ -600,20 +743,21 @@ fun VideoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
                 // Você pode substituir este Box por um player real de vídeo, como um ExoPlayer ou uma URL de vídeo.
 
                 // Botão ou interação com sharedPrefsManager se necessário
-                var isClickedCopy = video.isClicked
+                //var isClickedCopy = video.isClicked
                 LaunchedEffect(currentVideo) {
-                    isClickedCopy = currentVideo?.isClicked ?: false
+                   //isClickedCopy = currentVideo?.isClicked ?: false
                 }
-                var isClicked by remember { mutableStateOf(isClickedCopy) }
+                //var isClicked by remember { mutableStateOf(isClickedCopy) }
+                var isClicked = false
 
                 Button(
                     onClick = {
                         // Lógica do clique
                         isClicked = true // Desativa o botão após o clique
-                        video.isClicked = true
-                        sharedPrefsManager.saveVideo(video)
-                        atividade.concluida = true
-                        sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                        //video.isClicked = true
+                        //sharedPrefsManager.saveVideo(video)
+                        //atividade.concluida = true
+                        //sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isClicked) Color.LightGray else Color(0xFF4CAF50),
@@ -635,28 +779,46 @@ fun VideoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
 
 @Composable
 fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
-    var exercicio_aberto = atividade.atividadeEspecificaId?.let {
-        sharedPrefsManager.getExercicioAbertoById(
-            it
-        )
+    //var exercicio_aberto = atividade.atividadeEspecificaId?.let {
+      //  sharedPrefsManager.getExercicioAbertoById(
+        //    it
+        //)
+    //}
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: ExercicioAbertoViewModel = viewModel(factory = viewModelFactory)
+
+    val exercicio_aberto_state = remember { mutableStateOf<ExercicioAberto?>(null) }
+
+    // Coletando o Flow de quizzes
+    LaunchedEffect(atividade.atividade_especifica_id) {
+        viewModel.getExercicioById(atividade.atividade_especifica_id).collect { exercicio_aberto ->
+            exercicio_aberto_state.value = exercicio_aberto
+        }
     }
+
+    var exercicio_aberto = exercicio_aberto_state.value
+
     val currentExercicio by rememberUpdatedState(exercicio_aberto)
 
     if(exercicio_aberto != null) {
-        var respostaCopia = exercicio_aberto.resposta
-        var isRespostaSalvaCopia = exercicio_aberto.isRespostaSalva
+        //var respostaCopia = exercicio_aberto.resposta
+        //var isRespostaSalvaCopia = exercicio_aberto.isRespostaSalva
 
         LaunchedEffect(currentExercicio) {
-            respostaCopia = currentExercicio?.resposta ?: ""
-            isRespostaSalvaCopia = currentExercicio?.isRespostaSalva ?: false
+          //  respostaCopia = currentExercicio?.resposta ?: ""
+            //isRespostaSalvaCopia = currentExercicio?.isRespostaSalva ?: false
         }
 
-        if(respostaCopia == null){
-            respostaCopia = ""
-        }
+       // if(respostaCopia == null){
+         //   respostaCopia = ""
+        //}
 
-        var resposta by remember { mutableStateOf(respostaCopia) }
-        var isRespostaSalva by remember { mutableStateOf(isRespostaSalvaCopia) }
+        //var resposta by remember { mutableStateOf(respostaCopia) }
+        //var isRespostaSalva by remember { mutableStateOf(isRespostaSalvaCopia) }
+        var resposta = ""
+        var isRespostaSalva = false
 
         Column(modifier = Modifier.padding(16.dp)) {
             // Exibe o nome do exercício
@@ -719,11 +881,11 @@ fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager
                 onClick = {
                     // Salva a resposta
                     isRespostaSalva = true // Impede edições futuras
-                    exercicio_aberto.isRespostaSalva = true
-                    exercicio_aberto.resposta = resposta
-                    sharedPrefsManager.saveExercicioAberto(exercicio_aberto)
-                    atividade.concluida = true
-                    sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                    //exercicio_aberto.isRespostaSalva = true
+                    //exercicio_aberto.resposta = resposta
+                    //sharedPrefsManager.saveExercicioAberto(exercicio_aberto)
+                    //atividade.concluida = true
+                    //sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isRespostaSalva) Color.LightGray else Color(0xFF4CAF50),
@@ -757,36 +919,56 @@ fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
     // 1. Editor de código
     var codigoPython by remember { mutableStateOf("") }
 
-    var projeto = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getProjetoById(it) }
+    //var projeto = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getProjetoById(it) }
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: ProjetoViewModel = viewModel(factory = viewModelFactory)
+
+    val projetoState = remember { mutableStateOf<Projeto?>(null) }
+
+    // Coletando o Flow de quizzes
+    LaunchedEffect(atividade.atividade_especifica_id) {
+        viewModel.getProjetoById(atividade.atividade_especifica_id).collect { projeto ->
+            projetoState.value = projeto
+        }
+    }
+
+    var projeto = projetoState.value
+
     val currentProjeto by rememberUpdatedState(projeto)
 
     if(projeto != null && currentProjeto != null) {
-        var resultadoCopia = projeto.resultado
-        var isValidCopia = projeto.isValid
-        var isConfirmedCopia = projeto.isConfirmed
-        var textoCopia = projeto.texto
+        //var resultadoCopia = projeto.resultado
+        //var isValidCopia = projeto.isValid
+        //var isConfirmedCopia = projeto.isConfirmed
+        //var textoCopia = projeto.texto
 
 
         LaunchedEffect(currentProjeto) {
-            resultadoCopia = currentProjeto?.resultado ?: ""
-            isValidCopia = currentProjeto?.isValid ?: false
-            isConfirmedCopia = currentProjeto?.isConfirmed ?: false
-            textoCopia = currentProjeto?.texto ?: ""
+            //resultadoCopia = currentProjeto?.resultado ?: ""
+            //isValidCopia = currentProjeto?.isValid ?: false
+            //isConfirmedCopia = currentProjeto?.isConfirmed ?: false
+            //textoCopia = currentProjeto?.texto ?: ""
         }
 
-        if(textoCopia == null){
-            textoCopia = ""
-        }
-        if(resultadoCopia == null){
-            resultadoCopia = ""
-        }
+       // if(textoCopia == null){
+       //     textoCopia = ""
+       // }
+       // if(resultadoCopia == null){
+        //    resultadoCopia = ""
+       // }
 
         // 2. Resultado da validação (exibição)
-        var resultado by remember { mutableStateOf(resultadoCopia) }
-        var isValid by remember { mutableStateOf(isValidCopia) }
-        var isLoading by remember { mutableStateOf(false) }
-        var isConfirmed by remember { mutableStateOf(isConfirmedCopia)}
-        var texto by remember { mutableStateOf(textoCopia) }
+        //var resultado by remember { mutableStateOf(resultadoCopia) }
+        //var isValid by remember { mutableStateOf(isValidCopia) }
+        //var isLoading by remember { mutableStateOf(false) }
+        //var isConfirmed by remember { mutableStateOf(isConfirmedCopia)}
+        //var texto by remember { mutableStateOf(textoCopia) }
+        var resultado = ""
+        var isValid = false
+        var isLoading = false
+        var isConfirmed = false
+        var texto = ""
 
         var enunciado = projeto.descricao
 
@@ -852,13 +1034,13 @@ fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
                     } else {
                         "Código incorreto. Tente novamente."
                     }
-                    projeto.resultado = resultado
-                    projeto.isValid = isValid
-                    projeto.isConfirmed = isConfirmed
-                    projeto.texto = textFieldValue.text
-                    sharedPrefsManager.saveProjeto(projeto)
-                    atividade.concluida = true
-                    sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                    //projeto.resultado = resultado
+                    //projeto.isValid = isValid
+                    //projeto.isConfirmed = isConfirmed
+                    //projeto.texto = textFieldValue.text
+                    //sharedPrefsManager.saveProjeto(projeto)
+                    //atividade.concluida = true
+                    //sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
 
                     isLoading = false
                 },
@@ -913,7 +1095,8 @@ fun BottomProgressBar(
     val progress = (currentActivityIndex + 1).toFloat() / totalActivities
 
     // Verifica se todas as atividades estão concluídas
-    val allActivitiesCompleted = atividades.all { it.concluida }
+    //val allActivitiesCompleted = atividades.all { it.concluida }
+    val allActivitiesCompleted = false
 
     Column(
         modifier = Modifier
@@ -924,13 +1107,15 @@ fun BottomProgressBar(
     ) {
         // Barra de progresso
         LinearProgressIndicator(
-            progress = progress, // Progresso atual
+            progress = {
+                progress // Progresso atual
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
                 .clip(RoundedCornerShape(4.dp)),
             color = Color(0xFF2196F3),
-            trackColor = Color(0xFFE0E0E0)
+            trackColor = Color(0xFFE0E0E0),
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1178,18 +1363,21 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
                         //enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
                     ) {
                         //if (isEnabled == 1) {
-                            //sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
-                            //sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
-                            //userViewModel.processarAtividades(modulo.atividades ?: emptyList())
-                            CoroutineScope(Dispatchers.Main).launch {
-                                viewModel.syncAtividadesEEspecificas()
-                                navController.navigate("modulo") // Navega para o módulo específico
-                            }
+                        //sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
+                        sharedPrefsManager.saveModuloId(modulo.id)
+                        //sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
+                        //userViewModel.processarAtividades(modulo.atividades ?: emptyList())
+
+                        //CoroutineScope(Dispatchers.Main).launch {
+                        //viewModel.syncAtividadesEEspecificas(modulo.id)
+                        //navController.navigate("modulo") // Navega para o módulo específico
+                        //viewModel.syncAtividadesEEspecificas(modulo.id)
+                        navController.navigate("modulo")
                         //}
                     }
                     .graphicsLayer { // Aplica transparência se desabilitado
                         //alpha =
-                            //if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
+                        //if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
                     }
             )
             Spacer(modifier = Modifier.height(8.dp))

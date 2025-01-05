@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.entities.ExercicioAberto
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -31,5 +32,9 @@ class ExercicioAbertoViewModel(private val database: AppDatabase) : ViewModel() 
         viewModelScope.launch {
             exercicioAbertoDao.deleteExercicio(exercicio)
         }
+    }
+
+    suspend fun getExercicioById(atividade_especifica_id: Long): Flow<ExercicioAberto> {
+        return exercicioAbertoDao.getExercicioById(atividade_especifica_id)
     }
 }

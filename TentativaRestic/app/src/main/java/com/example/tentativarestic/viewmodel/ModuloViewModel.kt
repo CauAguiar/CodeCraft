@@ -7,6 +7,7 @@ import com.example.tentativarestic.entities.Modulo
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import com.example.tentativarestic.data.DataRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -39,9 +40,55 @@ class ModuloViewModel(private val database: AppDatabase, private val dataReposit
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     }
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     suspend fun syncAtividadesEEspecificas(moduloId: Long) {
         try {
+            _isLoading.value = true
             dataRepository.syncAtividadesEEspecificas(moduloId)
+            // Sincronizando quizzes
+            //dataRepository.syncQuizzes(moduloId)
+
+            // Sincronizando vídeos
+            //dataRepository.syncVideos(moduloId)
+
+            // Sincronizando exercícios abertos
+            //dataRepository.syncExerciciosAberto(moduloId)
+        } catch (e: Exception) {
+            throw e
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    suspend fun syncQuizzes(moduloId: Long) {
+        try {
+            dataRepository.syncQuizzes(moduloId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun syncProjetos(moduloId: Long) {
+        try {
+            dataRepository.syncProjetos(moduloId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun syncVideos(moduloId: Long) {
+        try {
+            dataRepository.syncVideos(moduloId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun syncExerciciosAberto(moduloId: Long) {
+        try {
+            dataRepository.syncExerciciosAberto(moduloId)
         } catch (e: Exception) {
             throw e
         }

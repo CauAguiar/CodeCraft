@@ -21,4 +21,7 @@ interface ProjetoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProjetos(projetos: List<Projeto>)
+
+    @Query("SELECT * FROM projeto WHERE id = :atividade_especifica_id")
+    fun getProjetoById(atividade_especifica_id: Long): Flow<Projeto>
 }

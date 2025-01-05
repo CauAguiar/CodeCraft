@@ -21,4 +21,7 @@ interface VideoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVideos(videos: List<Video>)
+
+    @Query("SELECT * FROM video WHERE id = :atividade_especifica_id")
+    fun getVideoById(atividade_especifica_id: Long): Flow<Video>
 }

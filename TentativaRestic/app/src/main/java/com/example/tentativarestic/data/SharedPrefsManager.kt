@@ -77,6 +77,12 @@ class SharedPrefsManager(context: Context) {
         private const val INTRODUCTION_SHOWN_KEY = "introduction_shown"
     }
 
+    fun saveModuloId(moduloId: Long) {
+        sharedPreferences.edit().apply {
+            putLong(KEY_MODULO_ID, moduloId)
+            apply()
+        }
+    }
 
     fun shouldShowIntroduction(): Boolean {
         return sharedPreferences.getBoolean(INTRODUCTION_SHOWN_KEY, true)

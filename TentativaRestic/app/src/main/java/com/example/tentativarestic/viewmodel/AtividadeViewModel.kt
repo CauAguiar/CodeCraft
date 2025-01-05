@@ -1,10 +1,12 @@
 package com.example.tentativarestic.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.entities.Atividade
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -41,4 +43,15 @@ class AtividadeViewModel(private val database: AppDatabase, private val reposito
             atividadeDao.deleteAtividade(atividade)
         }
     }
+
+    suspend fun getAtividadesByModuloId(moduloId: Long): StateFlow<List<Atividade>> {
+        Log.d("AtividadeViewModel", "getAtividadesByModuloId: $moduloId")
+        //val response = atividadeDao.getAtividadesByModuloId(moduloId).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        val response = atividadeDao.getAllAtividades().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        // Logando o conteúdo da lista
+        Log.d("AtividadeViewModel", "getAtividadesByModuloId: ${response.value}")
+
+        return response
+    }
+
 }

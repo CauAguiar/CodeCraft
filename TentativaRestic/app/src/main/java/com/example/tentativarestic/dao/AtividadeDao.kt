@@ -4,6 +4,7 @@ package com.example.tentativarestic.dao
 import androidx.room.*
 import com.example.tentativarestic.entities.Atividade
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 @Dao
 interface AtividadeDao {
@@ -21,4 +22,7 @@ interface AtividadeDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAtividades(atividades: List<Atividade>)
+
+    @Query("SELECT * FROM atividade WHERE modulo_id = :moduloId")
+    fun getAtividadesByModuloId(moduloId: Long): Flow<List<Atividade>>
 }

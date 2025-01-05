@@ -21,4 +21,7 @@ interface ExercicioAbertoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercicios(exercicios: List<ExercicioAberto>)
+
+    @Query("SELECT * FROM exercicio_aberto WHERE id = :atividade_especifica_id")
+    fun getExercicioById(atividade_especifica_id: Long): Flow<ExercicioAberto>
 }

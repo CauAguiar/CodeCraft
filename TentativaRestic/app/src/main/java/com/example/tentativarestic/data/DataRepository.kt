@@ -18,71 +18,121 @@ class DataRepository(private val database: AppDatabase) {
     private val quizDao = database.quizDao()
     private val videoDao = database.videoDao()
     private val exercicioAbertoDao = database.exercicioAbertoDao()
+    private val projetoDao = database.projetoDao()
     //private val licaoDao = database.licaoDao()
 
     // Função para sincronizar atividades
     suspend fun syncAtividadesEEspecificas(moduloId: Long) {
-        // Etapa 1: Obter as atividades da API
-        val response = api.getAtividades(moduloId)
-        if (response.isSuccessful) {
-            response.body()?.let {
-                withContext(Dispatchers.IO) {
-                    atividadeDao.insertAtividades(it)
+        try {
+            // Etapa 1: Obter as atividades da API
+            val response = api.getAtividades(moduloId)
+            if (response.isSuccessful) {
+                response.body()?.let { atividades ->
+                    // Inserir no Room em uma thread de IO
+                    withContext(Dispatchers.IO) {
+                        atividadeDao.insertAtividades(atividades)
+                    }
+                }
+            } else {
+                Log.e("Sync", "Falha na resposta da API: ${response.code()} - ${response.message()}")
+            }
+        } catch (e: Exception) {
+            // Trata qualquer exceção durante a chamada da API
+            Log.e("Sync", "Erro ao sincronizar atividades: ${e.message}")
+        }
+    }
+
+    suspend fun syncProjetos(moduloId: Long) {
+        try {
+            val response = api.getProjetos(moduloId)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    withContext(Dispatchers.IO) {
+                        projetoDao.insertProjetos(it)
+                    }
                 }
             }
+        } catch (e: HttpException) {
+            // Tratar erro de rede
         }
+    }
 
-        // Sincronizando quizzes
-        syncQuizzes(moduloId)
 
-        // Sincronizando vídeos
-        syncVideos(moduloId)
-
-        // Sincronizando exercícios abertos
-        syncExerciciosAberto(moduloId)
+//        // Sincronizando quizzes
+//        syncQuizzes(moduloId)
+//
+//        // Sincronizando vídeos
+//        syncVideos(moduloId)
+//
+//        // Sincronizando exercícios abertos
+//        syncExerciciosAberto(moduloId)
 
         // Sincronizando lições
         //syncLicoes(moduloId)
-    }
 
+    // Função para sincronizar quizzes
     suspend fun syncQuizzes(moduloId: Long) {
-        // Etapa 1: Obter os quizzes da API
-        val responseQuiz = api.getQuizzes(moduloId)
-        if (responseQuiz.isSuccessful) {
-            responseQuiz.body()?.let { quizzes ->
-                withContext(Dispatchers.IO) {
-                    // Etapa 2: Inserir os quizzes na tabela 'quiz'
-                    quizDao.insertQuizzes(quizzes)
+        try {
+            // Etapa 1: Obter os quizzes da API
+            val responseQuiz = api.getQuizzes(moduloId)
+            if (responseQuiz.isSuccessful) {
+                responseQuiz.body()?.let { quizzes ->
+                    withContext(Dispatchers.IO) {
+                        // Etapa 2: Inserir os quizzes na tabela 'quiz'
+                        quizDao.insertQuizzes(quizzes)
+                        Log.d("Sync", "Quizzes sincronizados com sucesso")
+                    }
                 }
+            } else {
+                Log.e("Sync", "Erro ao obter quizzes da API: ${responseQuiz.code()}")
             }
+        } catch (e: Exception) {
+            Log.e("Sync", "Erro ao sincronizar quizzes: ${e.message}")
         }
     }
 
+    // Função para sincronizar vídeos
     suspend fun syncVideos(moduloId: Long) {
-        // Etapa 1: Obter os videos da API
-        val responseVideo = api.getVideos(moduloId)
-        if (responseVideo.isSuccessful) {
-            responseVideo.body()?.let { videos ->
-                withContext(Dispatchers.IO) {
-                    // Etapa 2: Inserir os videos na tabela 'video'
-                    videoDao.insertVideos(videos)
+        try {
+            // Etapa 1: Obter os vídeos da API
+            val responseVideo = api.getVideos(moduloId)
+            if (responseVideo.isSuccessful) {
+                responseVideo.body()?.let { videos ->
+                    withContext(Dispatchers.IO) {
+                        // Etapa 2: Inserir os vídeos na tabela 'video'
+                        videoDao.insertVideos(videos)
+                        Log.d("Sync", "Vídeos sincronizados com sucesso")
+                    }
                 }
+            } else {
+                Log.e("Sync", "Erro ao obter vídeos da API: ${responseVideo.code()}")
             }
+        } catch (e: Exception) {
+            Log.e("Sync", "Erro ao sincronizar vídeos: ${e.message}")
         }
     }
 
+    // Função para sincronizar exercícios abertos
     suspend fun syncExerciciosAberto(moduloId: Long) {
-        // Etapa 1: Obter os exercícios abertos da API
-        val responseExercicioAberto = api.getExerciciosAberto(moduloId)
-        if (responseExercicioAberto.isSuccessful) {
-            responseExercicioAberto.body()?.let { exerciciosAberto ->
-                withContext(Dispatchers.IO) {
-                    // Etapa 2: Inserir os exercícios abertos na tabela 'exercicio_aberto'
-                    exercicioAbertoDao.insertExercicios(exerciciosAberto)
+        try {
+            // Etapa 1: Obter os exercícios abertos da API
+            val responseExercicioAberto = api.getExerciciosAberto(moduloId)
+            if (responseExercicioAberto.isSuccessful) {
+                responseExercicioAberto.body()?.let { exerciciosAberto ->
+                    withContext(Dispatchers.IO) {
+                        // Etapa 2: Inserir os exercícios abertos na tabela 'exercicio_aberto'
+                        exercicioAbertoDao.insertExercicios(exerciciosAberto)
+                        Log.d("Sync", "Exercícios abertos sincronizados com sucesso")
+                    }
                 }
+            } else {
+                Log.e("Sync", "Erro ao obter exercícios abertos da API: ${responseExercicioAberto.code()}")
             }
+        } catch (e: Exception) {
+            Log.e("Sync", "Erro ao sincronizar exercícios abertos: ${e.message}")
         }
     }
+
 
     suspend fun syncLicoes(moduloId: Long) {
         // Etapa 1: Obter as lições da API

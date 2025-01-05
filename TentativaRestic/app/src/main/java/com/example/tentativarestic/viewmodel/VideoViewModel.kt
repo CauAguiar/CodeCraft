@@ -4,37 +4,39 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.entities.Quiz
+import com.example.tentativarestic.entities.Video
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class QuizViewModel(private val database: AppDatabase) : ViewModel() {
-    private val quizDao = database.quizDao()
+class VideoViewModel(private val database: AppDatabase) : ViewModel() {
+    private val videoDao = database.videoDao()
 
-    val quizzes: StateFlow<List<Quiz>> = quizDao.getAllQuizzes()
+    val videos: StateFlow<List<Video>> = videoDao.getAllVideos()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun addQuiz(quiz: Quiz) {
+    fun addVideo(video: Video) {
         viewModelScope.launch {
-            quizDao.insertQuiz(quiz)
+            videoDao.insertVideo(video)
         }
     }
 
-    fun updateQuiz(quiz: Quiz) {
+    fun updateVideo(video: Video) {
         viewModelScope.launch {
-            quizDao.updateQuiz(quiz)
+            videoDao.updateVideo(video)
         }
     }
 
-    fun deleteQuiz(quiz: Quiz) {
+    fun deleteVideo(video: Video) {
         viewModelScope.launch {
-            quizDao.deleteQuiz(quiz)
+            videoDao.deleteVideo(video)
         }
     }
 
-    suspend fun getQuizById(atividade_especifica_id: Long): Flow<Quiz> {
-        return quizDao.getQuizById(atividade_especifica_id)
+    suspend fun getVideoById(atividade_especifica_id: Long): Flow<Video> {
+        return videoDao.getVideoById(atividade_especifica_id)
     }
+
 }

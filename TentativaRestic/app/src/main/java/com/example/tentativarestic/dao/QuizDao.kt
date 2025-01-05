@@ -21,4 +21,7 @@ interface QuizDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuizzes(quizzes: List<Quiz>)
+
+    @Query("SELECT * FROM quiz WHERE id = :atividade_especifica_id")
+    fun getQuizById(atividade_especifica_id: Long): Flow<Quiz>
 }

@@ -5,6 +5,7 @@ import com.example.tentativarestic.entities.Modulo
 import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.ExercicioAberto
 import com.example.tentativarestic.entities.Person
+import com.example.tentativarestic.entities.Projeto
 import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.Unidade
 import com.example.tentativarestic.entities.Video
@@ -60,6 +61,10 @@ interface ApiService {
 
     @GET("api/exercicioaberto/getByModuloId")
     suspend fun getExerciciosAberto(@Query("moduloId") moduloId: Long): Response<List<ExercicioAberto>>
+
+    @GET("api/projeto/getByModuloId")
+    suspend fun getProjetos(@Query("moduloId") moduloId: Long): Response<List<Projeto>>
+
 
    // @GET("modulos/{moduloId}/licoes")
    // suspend fun getLicoes(@Path("moduloId") moduloId: Long): Response<List<ApiLicao>>
