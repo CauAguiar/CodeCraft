@@ -14,6 +14,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface ApiService {
@@ -65,9 +66,46 @@ interface ApiService {
     @GET("api/projeto/getByModuloId")
     suspend fun getProjetos(@Query("moduloId") moduloId: Long): Response<List<Projeto>>
 
+    @GET("personQuiz/getByQuizId")
+    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>
 
+    @GET("personExercicioAberto/getByExercicioAbertoId")
+    suspend fun getPersonExercicioAbertoByExercicioAbertoId(@Query("exercicioAbertoId") exercicioAbertoId: Long): Response<PersonExercicioAberto>
+
+    @GET("personProjeto/getByProjetoId")
+    suspend fun getPersonProjetoByProjetoId(@Query("projetoId") projetoId: Long): Response<PersonProjeto>
+
+    @GET("personVideo/getByVideoId")
+    suspend fun getPersonVideoByVideoId(@Query("videoId") videoId: Long): Response<PersonVideo>
+
+    // Para PersonQuiz
+    @PUT("personQuiz/update")
+    suspend fun updatePersonQuiz(@Body personQuiz: PersonQuiz): Response<Void>
+
+    // Para PersonExercicioAberto
+    @PUT("personExercicioAberto/update")
+    suspend fun updatePersonExercicioAberto(@Body personExercicioAberto: PersonExercicioAberto): Response<Void>
+
+    // Para PersonProjeto
+    @PUT("personProjeto/update")
+    suspend fun updatePersonProjeto(@Body personProjeto: PersonProjeto): Response<Void>
+
+    // Para PersonVideo
+    @PUT("personVideo/update")
+    suspend fun updatePersonVideo(@Body personVideo: PersonVideo): Response<Void>
+
+    // Para PersonAtividade
+    @PUT("personAtividade/update")
+    suspend fun updatePersonAtividade(@Body personAtividade: PersonAtividade): Response<Void>
    // @GET("modulos/{moduloId}/licoes")
    // suspend fun getLicoes(@Path("moduloId") moduloId: Long): Response<List<ApiLicao>>
+
+    @GET("personLicao/getByLicaoId")
+    suspend fun getPersonLicaoByLicaoId(@Query("licaoId") licaoId: Long): Response<PersonLicao>
+
+    // PUT para atualizar uma entidade PersonLicao
+    @PUT("personLicao/update")
+    suspend fun updatePersonLicao(@Body personLicao: PersonLicao): Response<Void>
 
 }
 
