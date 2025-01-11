@@ -447,10 +447,15 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
             if(atividadeAtual != null) {
                 // Exibição personalizada para atividades específicas
                 when (atividadeAtual.tipo) {
-                    "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
-                    "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
-                    "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
-                    "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
+//                    "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
+//                    "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
+//                    "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
+//                    "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
+//                    else -> DefaultContent(atividadeAtual, sharedPrefsManager)
+                    "quiz" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+                    "video" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+                    "exercicio_aberto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+                    "projeto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
                     else -> DefaultContent(atividadeAtual, sharedPrefsManager)
                 }
             }
@@ -1063,6 +1068,63 @@ fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
                 if(isConfirmed){
                     Text("Resultado: $resultado", color = if (isValid) Color.Green else Color.Red)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun LicaoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
+    // Exemplo de conteúdo de lição
+    val context = LocalContext.current
+
+
+    //var projeto = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getProjetoById(it) }
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    //val viewModel: LicaoViewModel = viewModel(factory = viewModelFactory)
+
+    val licaoState = remember { mutableStateOf<Projeto?>(null) }
+
+    // Coletando o Flow de quizzes
+//    LaunchedEffect(atividade.atividade_especifica_id) {
+//        viewModel.getLicaoById(atividade.atividade_especifica_id).collect { licao ->
+//            licaoState.value = licao
+//        }
+//    }
+//
+//    var licao = licaoState.value
+//
+//    val currentLicao by rememberUpdatedState(licao)
+
+    var isClicked by remember { mutableStateOf(false) }
+
+    LazyColumn (modifier = Modifier.fillMaxHeight(0.88f)){
+        item {
+            Text(text ="Conteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da liçãoConteúdo da lição", textAlign = TextAlign.Justify, fontSize = 16.sp)
+        }
+
+        item {
+            Button(
+                onClick = {
+                    // Lógica do clique
+                    isClicked = true // Desativa o botão após o clique
+                    //video.isClicked = true
+                    //sharedPrefsManager.saveVideo(video)
+                    //atividade.concluida = true
+                    //sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isClicked) Color.LightGray else Color(0xFF4CAF50),
+                    contentColor = Color.White
+                ),
+                enabled = !isClicked, // Desativa o botão quando clicado
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("Marcar como concluído", fontSize = 16.sp)
             }
         }
     }

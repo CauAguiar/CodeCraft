@@ -66,46 +66,46 @@ interface ApiService {
     @GET("api/projeto/getByModuloId")
     suspend fun getProjetos(@Query("moduloId") moduloId: Long): Response<List<Projeto>>
 
-    @GET("api/personQuiz/getByQuizId")
-    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>
-
-    @GET("api/personExercicioAberto/getByExercicioAbertoId")
-    suspend fun getPersonExercicioAbertoByExercicioAbertoId(@Query("exercicioAbertoId") exercicioAbertoId: Long): Response<PersonExercicioAberto>
-
-    @GET("api/personProjeto/getByProjetoId")
-    suspend fun getPersonProjetoByProjetoId(@Query("projetoId") projetoId: Long): Response<PersonProjeto>
-
-    @GET("api/personVideo/getByVideoId")
-    suspend fun getPersonVideoByVideoId(@Query("videoId") videoId: Long): Response<PersonVideo>
-
-    // Para PersonQuiz
-    @PUT("api/personQuiz/update")
-    suspend fun updatePersonQuiz(@Body personQuiz: PersonQuiz): Response<Void>
-
-    // Para PersonExercicioAberto
-    @PUT("api/personExercicioAberto/update")
-    suspend fun updatePersonExercicioAberto(@Body personExercicioAberto: PersonExercicioAberto): Response<Void>
-
-    // Para PersonProjeto
-    @PUT("api/personProjeto/update")
-    suspend fun updatePersonProjeto(@Body personProjeto: PersonProjeto): Response<Void>
-
-    // Para PersonVideo
-    @PUT("api/personVideo/update")
-    suspend fun updatePersonVideo(@Body personVideo: PersonVideo): Response<Void>
-
-    // Para PersonAtividade
-    @PUT("api/personAtividade/update")
-    suspend fun updatePersonAtividade(@Body personAtividade: PersonAtividade): Response<Void>
-   // @GET("modulos/{moduloId}/licoes")
-   // suspend fun getLicoes(@Path("moduloId") moduloId: Long): Response<List<ApiLicao>>
-
-    @GET("api/personLicao/getByLicaoId")
-    suspend fun getPersonLicaoByLicaoId(@Query("licaoId") licaoId: Long): Response<PersonLicao>
-
-    // PUT para atualizar uma entidade PersonLicao
-    @PUT("api/personLicao/update")
-    suspend fun updatePersonLicao(@Body personLicao: PersonLicao): Response<Void>
+//    @GET("api/personQuiz/getByQuizId")
+//    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>
+//
+//    @GET("api/personExercicioAberto/getByExercicioAbertoId")
+//    suspend fun getPersonExercicioAbertoByExercicioAbertoId(@Query("exercicioAbertoId") exercicioAbertoId: Long): Response<PersonExercicioAberto>
+//
+//    @GET("api/personProjeto/getByProjetoId")
+//    suspend fun getPersonProjetoByProjetoId(@Query("projetoId") projetoId: Long): Response<PersonProjeto>
+//
+//    @GET("api/personVideo/getByVideoId")
+//    suspend fun getPersonVideoByVideoId(@Query("videoId") videoId: Long): Response<PersonVideo>
+//
+//    // Para PersonQuiz
+//    @PUT("api/personQuiz/update")
+//    suspend fun updatePersonQuiz(@Body personQuiz: PersonQuiz): Response<Void>
+//
+//    // Para PersonExercicioAberto
+//    @PUT("api/personExercicioAberto/update")
+//    suspend fun updatePersonExercicioAberto(@Body personExercicioAberto: PersonExercicioAberto): Response<Void>
+//
+//    // Para PersonProjeto
+//    @PUT("api/personProjeto/update")
+//    suspend fun updatePersonProjeto(@Body personProjeto: PersonProjeto): Response<Void>
+//
+//    // Para PersonVideo
+//    @PUT("api/personVideo/update")
+//    suspend fun updatePersonVideo(@Body personVideo: PersonVideo): Response<Void>
+//
+//    // Para PersonAtividade
+//    @PUT("api/personAtividade/update")
+//    suspend fun updatePersonAtividade(@Body personAtividade: PersonAtividade): Response<Void>
+//   // @GET("modulos/{moduloId}/licoes")
+//   // suspend fun getLicoes(@Path("moduloId") moduloId: Long): Response<List<ApiLicao>>
+//
+//    @GET("api/personLicao/getByLicaoId")
+//    suspend fun getPersonLicaoByLicaoId(@Query("licaoId") licaoId: Long): Response<PersonLicao>
+//
+//    // PUT para atualizar uma entidade PersonLicao
+//    @PUT("api/personLicao/update")
+//    suspend fun updatePersonLicao(@Body personLicao: PersonLicao): Response<Void>
 
 }
 
