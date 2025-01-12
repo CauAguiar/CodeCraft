@@ -21,7 +21,8 @@ object RetrofitInstance {
             .build()
 
         val api: ApiService = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000/")  // Altere para 10.0.2.2 para o emulador
+            //.baseUrl("http://10.0.2.2:8000/")  // Altere para 10.0.2.2 para o emulador
+            .baseUrl("https://codecraft-338284394373.us-central1.run.app")
             .client(client) // Adiciona o cliente com o interceptor
             .addConverterFactory(GsonConverterFactory.create())
             .build()
