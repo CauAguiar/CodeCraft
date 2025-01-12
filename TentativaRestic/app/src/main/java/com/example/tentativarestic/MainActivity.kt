@@ -447,16 +447,16 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
             if(atividadeAtual != null) {
                 // Exibição personalizada para atividades específicas
                 when (atividadeAtual.tipo) {
-//                    "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
-//                    "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
-//                    "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
-//                    "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
-//                    else -> DefaultContent(atividadeAtual, sharedPrefsManager)
-                    "quiz" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-                    "video" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-                    "exercicio_aberto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-                    "projeto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+                    "quiz" -> QuizContent(atividadeAtual, sharedPrefsManager)
+                    "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
+                    "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
+                    "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
                     else -> DefaultContent(atividadeAtual, sharedPrefsManager)
+//                    "quiz" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+//                    "video" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+//                    "exercicio_aberto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+//                    "projeto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
+//                    else -> DefaultContent(atividadeAtual, sharedPrefsManager)
                 }
             }
 
