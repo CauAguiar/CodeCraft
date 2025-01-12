@@ -451,12 +451,8 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                     "video" -> VideoContent(atividadeAtual, sharedPrefsManager)
                     "exercicio_aberto" -> ExerciseContent(atividadeAtual, sharedPrefsManager)
                     "projeto" -> ProjetoContent(atividadeAtual, sharedPrefsManager)
+                    "licao" -> LicaoContent(atividadeAtual, sharedPrefsManager)
                     else -> DefaultContent(atividadeAtual, sharedPrefsManager)
-//                    "quiz" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-//                    "video" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-//                    "exercicio_aberto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-//                    "projeto" -> LicaoContent(atividadeAtual, sharedPrefsManager)
-//                    else -> DefaultContent(atividadeAtual, sharedPrefsManager)
                 }
             }
 
