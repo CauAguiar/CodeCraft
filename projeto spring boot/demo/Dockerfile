@@ -1,25 +1,31 @@
-#syntax=docker/dockerfile:1
-FROM eclipse-temurin:17-jdk-jammy
+# Etapa de build
+FROM openjdk:23-jdk-slim as builder
 
-# Define o diretório de trabalho
+# Defina o diretório de trabalho no container
 WORKDIR /app
 
-# Copia o Gradle Wrapper e o arquivo build.gradle para o container
-COPY gradlew build.gradle settings.gradle ./
+# Copie o arquivo build.gradle, settings.gradle, gradlew e o diretório gradle
+COPY build.gradle settings.gradle ./
 COPY gradle ./gradle
+COPY gradlew ./
 
-# Garante que o Gradle Wrapper tenha permissão de execução
-RUN chmod +x ./gradlew
+# Dê permissões de execução ao script gradlew
+RUN chmod +x gradlew
 
-# Instala o dos2unix para converter finais de linha, caso necessário
-RUN apt-get update && apt-get install -y dos2unix
-RUN dos2unix ./gradlew
-
-# Baixa as dependências do projeto
-RUN ./gradlew dependencies --no-daemon
-
-# Copia o código-fonte para o container
+# Copie o código-fonte do projeto
 COPY src ./src
 
-# Define o comando para rodar a aplicação
-CMD ["./gradlew", "bootRun", "--no-daemon"]
+# Execute o Gradle para baixar as dependências e construir o projeto
+RUN ./gradlew build --no-daemon
+
+# Etapa de execução
+FROM openjdk:23-jdk-slim
+
+# Defina o diretório de trabalho no container
+WORKDIR /app
+
+# Copie o JAR gerado na imagem de build
+COPY --from=builder /app/build/libs/demo-0.0.1-SNAPSHOT.jar /app/demo.jar
+
+# Comando para rodar o JAR no container
+ENTRYPOINT ["java", "-jar", "/app/demo.jar"]
