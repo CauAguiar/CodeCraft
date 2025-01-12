@@ -93,11 +93,11 @@ import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.Curso
 import com.example.tentativarestic.entities.ExercicioAberto
 import com.example.tentativarestic.entities.Modulo
+import com.example.tentativarestic.entities.PersonQuiz
 import com.example.tentativarestic.entities.Projeto
 import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.Video
 //import com.example.tentativarestic.models.Atividade
-import com.example.tentativarestic.models.Unidade
 import com.example.tentativarestic.models.UserViewModelFactory
 import com.example.tentativarestic.ui.theme.TentativaResticTheme
 import com.example.tentativarestic.viewmodel.AtividadeViewModel
@@ -117,7 +117,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
@@ -487,6 +486,8 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
 fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     // Estado persistente usando rememberSaveable
     //val quiz = atividade.atividadeEspecificaId?.let { sharedPrefsManager.getQuizById(it) }
+    val personId = sharedPrefsManager.getUserId()
+
 
     val context = LocalContext.current
     val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
@@ -494,6 +495,7 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
     val viewModel: QuizViewModel = viewModel(factory = viewModelFactory)
 
     val quizState = remember { mutableStateOf<Quiz?>(null) }
+    val quizState2 = remember { mutableStateOf<PersonQuiz?>(null) }
 
     // Coletando o Flow de quizzes
     LaunchedEffect(atividade.atividade_especifica_id) {
@@ -502,13 +504,34 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
         }
     }
 
+    LaunchedEffect(atividade.atividade_especifica_id) {
+        viewModel.getPersonQuizByPersonIdAndQuizId(personId, atividade.atividade_especifica_id).collect { personQuiz ->
+            if (personQuiz != null) {
+                quizState2.value = personQuiz
+                Log.d("QuizDebug2 != null", "PersonQuiz: $personQuiz")
+            } else {
+                Log.d("QuizDebug2 == null", "PersonQuiz: $personQuiz")
+                val personQuizEntity = PersonQuiz(
+                    person_id = personId,
+                    quiz_id = atividade.atividade_especifica_id,
+                    respostaSelecionada = null,
+                    acertou = null,
+                    confirmou = null
+                )
+                viewModel.insertPersonQuiz(personQuizEntity)
+                quizState2.value = personQuizEntity
+            }
+        }
+    }
+
     val quiz = quizState.value
+    val personQuiz = quizState2.value
 
 
     val currentQuiz by rememberUpdatedState(quiz)
     Log.d("QuizDebug1", "Quiz: $quiz")
 
-    if(quiz != null && currentQuiz != null) {
+    if(quiz != null && currentQuiz != null && personQuiz != null) {
         //var respostaSelecionadaCopy = quiz.respostaSelecionada
         //var confirmouRespostaCopy = quiz.confirmouResposta
         //var resultadoCopy = quiz.resultado
@@ -519,12 +542,14 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             //resultadoCopy = currentQuiz?.resultado
         }
 
-        //var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionadaCopy) }
-        //var resultado by remember { mutableStateOf<Boolean?>(resultadoCopy) }
-        //var confirmouResposta by remember { mutableStateOf(confirmouRespostaCopy) }
-        var respostaSelecionada = 1
-        var resultado = false
-        var confirmouResposta = false
+        var respostaSelecionada2 by remember { mutableStateOf<Int?>(personQuiz?.respostaSelecionada?.toIntOrNull() ?: -1) }
+        var resultado2 by remember { mutableStateOf(personQuiz?.acertou ?: false) }
+        var confirmouResposta2 by remember { mutableStateOf(personQuiz?.confirmou ?: false) }
+
+        var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionada2) }
+        var resultado by remember { mutableStateOf<Boolean?>(resultado2) }
+        var confirmouResposta by remember { mutableStateOf(confirmouResposta2) }
+
 
         val pergunta = quiz.enunciado
         val opcoes = listOf(
@@ -559,7 +584,17 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
                 Button(
                     onClick = {
                         if (!confirmouResposta) {
+                            if (personQuiz != null) {
+                                viewModel.updatePersonQuiz(
+                                    personQuiz.copy(
+                                        respostaSelecionada = index.toString(),
+                                        confirmou = false,
+                                        acertou = null
+                                    )
+                                )
+                            }
                             respostaSelecionada = index
+                            resultado = letra == resposta_correta
                             //quiz.respostaSelecionada = index
                             //sharedPrefsManager.saveQuiz(quiz)
                             Log.d("QuizDebugReposta", "Resposta selecionada: $quiz")
@@ -622,6 +657,14 @@ fun QuizContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
             Button(
                 onClick = {
                     if (respostaSelecionada != null) {
+                        if (personQuiz != null) {
+                            viewModel.updatePersonQuiz(
+                                personQuiz.copy(
+                                    confirmou = true,
+                                    acertou = resultado
+                                )
+                            )
+                        }
                         //resultado = respostaSelecionada == resposta_correta
                         confirmouResposta = true
                         //quiz.confirmouResposta = true
@@ -748,8 +791,9 @@ fun VideoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager) {
                 LaunchedEffect(currentVideo) {
                    //isClickedCopy = currentVideo?.isClicked ?: false
                 }
-                //var isClicked by remember { mutableStateOf(isClickedCopy) }
-                var isClicked = false
+                var isClicked2 = false
+                var isClicked by remember { mutableStateOf(isClicked2) }
+
 
                 Button(
                     onClick = {
@@ -817,11 +861,31 @@ fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager
         //}
 
         //var resposta by remember { mutableStateOf(respostaCopia) }
-        //var isRespostaSalva by remember { mutableStateOf(isRespostaSalvaCopia) }
-        var resposta = ""
-        var isRespostaSalva = false
+        var isRespostaSalva2 = false
+        var isRespostaSalva by remember { mutableStateOf(isRespostaSalva2) }
+        var resposta2 = ""
+        var resposta by remember { mutableStateOf(resposta2) }
 
-        Column(modifier = Modifier.padding(16.dp)) {
+
+        val maxHeight = LocalConfiguration.current.screenHeightDp.dp
+        val maxWidth = LocalConfiguration.current.screenWidthDp.dp
+
+        val screenHeight = maxHeight // Altura total disponível
+        val screenWidth = maxWidth // Largura total disponível
+        val headerHeight = screenHeight * 0.4f // 40% para o cabeçalho
+        val contentHeight = screenHeight * 0.6f // 60% para o conteúdo
+
+        // Escale o tamanho da fonte com base na largura ou altura da tela
+        val titleFontSize = (screenWidth.value * 0.12).sp // 8% da largura da tela
+        val textFontSize = (screenWidth.value * 0.055).sp // 4.5% da largura da tela
+        val buttonFontSize = (screenWidth.value * 0.05).sp // 5% da largura da tela
+
+        val buttonWidth = screenWidth * 0.8f // 80% da largura da tela
+        val buttonHeight = screenHeight * 0.08f // 8% da altura da tela
+
+        Column(modifier = Modifier
+            .padding(16.dp)
+            .fillMaxHeight(0.85f)) {
             // Exibe o nome do exercício
             Text(
                 text = "Exercício: ${exercicio_aberto.enunciado}",
@@ -864,9 +928,9 @@ fun ExerciseContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .weight(1f)
                     .border(1.dp, Color.LightGray, shape = RoundedCornerShape(15.dp)),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
@@ -960,21 +1024,25 @@ fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
        // }
 
         // 2. Resultado da validação (exibição)
-        //var resultado by remember { mutableStateOf(resultadoCopia) }
-        //var isValid by remember { mutableStateOf(isValidCopia) }
-        //var isLoading by remember { mutableStateOf(false) }
-        //var isConfirmed by remember { mutableStateOf(isConfirmedCopia)}
-        //var texto by remember { mutableStateOf(textoCopia) }
-        var resultado = ""
-        var isValid = false
-        var isLoading = false
-        var isConfirmed = false
-        var texto = ""
+        var resultado2 = ""
+        var isValid2 = false
+        var isLoading2 = false
+        var isConfirmed2 = false
+        var texto2 = ""
+
+        var resultado by remember { mutableStateOf(resultado2) }
+        var isValid by remember { mutableStateOf(isValid2) }
+        var isLoading by remember { mutableStateOf(false) }
+        var isConfirmed by remember { mutableStateOf(isConfirmed2)}
+        var texto by remember { mutableStateOf(texto2) }
+
 
         var enunciado = projeto.descricao
 
         // Exibir a área de edição de código
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier
+            .padding(16.dp)
+            .fillMaxHeight(0.85f)) {
             Text("$enunciado", fontSize = 16.sp, textAlign = TextAlign.Justify)
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -1005,7 +1073,7 @@ fun ProjetoContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.Black)
-                    .height(280.dp),
+                    .weight(1f),
                 value = textFieldValue,
                 onValueChange = {
                     textFieldValue = it.copy(

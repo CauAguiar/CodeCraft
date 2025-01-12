@@ -2,9 +2,11 @@ package com.example.tentativarestic.data
 
 import android.util.Log
 import com.example.tentativarestic.data.RetrofitInstance.api
+import com.example.tentativarestic.entities.PersonQuiz
 import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.Unidade
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
@@ -19,6 +21,7 @@ class DataRepository(private val database: AppDatabase) {
     private val videoDao = database.videoDao()
     private val exercicioAbertoDao = database.exercicioAbertoDao()
     private val projetoDao = database.projetoDao()
+    private val personQuizDao = database.personQuizDao()
     //private val licaoDao = database.licaoDao()
 
     // Função para sincronizar atividades

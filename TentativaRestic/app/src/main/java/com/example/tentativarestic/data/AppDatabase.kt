@@ -21,7 +21,8 @@ import com.example.tentativarestic.entities.*
         RespostasQuestionario::class,
         RespostasUsuarioQuestionario::class,
         Unidade::class,
-        Video::class
+        Video::class,
+        PersonQuiz::class
     ],
     version = 1,
     exportSchema = false
@@ -41,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun respostasUsuarioQuestionarioDao(): RespostasUsuarioQuestionarioDao
     abstract fun unidadeDao(): UnidadeDao
     abstract fun videoDao(): VideoDao
+    abstract fun personQuizDao(): PersonQuizDao
 
     companion object {
         // Volatile para garantir que mudanças na instância sejam visíveis entre threads
