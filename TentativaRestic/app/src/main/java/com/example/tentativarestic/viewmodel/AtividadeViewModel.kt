@@ -46,8 +46,8 @@ class AtividadeViewModel(private val database: AppDatabase, private val reposito
 
     suspend fun getAtividadesByModuloId(moduloId: Long): StateFlow<List<Atividade>> {
         Log.d("AtividadeViewModel", "getAtividadesByModuloId: $moduloId")
-        //val response = atividadeDao.getAtividadesByModuloId(moduloId).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-        val response = atividadeDao.getAllAtividades().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        val response = atividadeDao.getAtividadesByModuloId(moduloId).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        //val response = atividadeDao.getAllAtividades().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
         // Logando o conteúdo da lista
         Log.d("AtividadeViewModel", "getAtividadesByModuloId: ${response.value}")
 

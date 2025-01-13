@@ -18,15 +18,16 @@ import kotlinx.coroutines.launch
 class ModuloViewModel(private val database: AppDatabase, private val dataRepository: DataRepository) : ViewModel() {
     private val moduloDao = database.moduloDao()
 
-    private val _modulos = MutableStateFlow<List<Modulo>>(emptyList())
-    val modulosT: StateFlow<List<Modulo>> get() = _modulos
+    private val _modulos = MutableStateFlow<Map<Long, List<Modulo>>>(emptyMap())
+    val modulosT: StateFlow<Map<Long, List<Modulo>>> get() = _modulos
 
-    fun carregarModulos(unidadeId: Long) {
+    suspend fun carregarModulos(unidadeId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             val fetchedModulos = moduloDao.getModulosByUnidadeId(unidadeId)
-            _modulos.value = fetchedModulos
+            _modulos.value = _modulos.value + (unidadeId to fetchedModulos) // Atualiza apenas para a unidade específica
         }
     }
+
 
     val modulos: StateFlow<List<Modulo>> = moduloDao.getAllModulos()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

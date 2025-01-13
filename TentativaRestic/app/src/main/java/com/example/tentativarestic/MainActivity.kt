@@ -60,6 +60,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -1410,6 +1411,7 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
     // Item individual para cada unidade
@@ -1485,13 +1487,15 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
         viewModel.carregarModulos(unidade.id)
     }
 
-    // Observar os módulos
+// Observar os módulos para a unidade atual
     val modulos by viewModel.modulosT.collectAsState()
+    val modulosUnidade = modulos[unidade.id] ?: emptyList() // Obtém os módulos específicos da unidade
+
+    val modulosOrdenados = modulosUnidade.sortedBy { it.ordem }
 
 
-    val modulosOrdenados = remember(modulos) {
-        modulos.sortedBy { it.ordem }
-    }
+
+    Log.d("UnidadeItem", "módulos ordenados: $modulosOrdenados")
 
 // Agora você pode usar a lista ordenada
 
@@ -1544,6 +1548,7 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
                     ) {
                         //if (isEnabled == 1) {
                         sharedPrefsManager.saveModuloId(modulo.id)
+                        Log.d("ModuloDisgraca", "Modulo ${modulo.id} salvo")
                         navController.navigate("modulo")
                         //}
                     }
@@ -2249,6 +2254,16 @@ fun LanguageCard2(language: LanguageItem) {
         colors = CardDefaults.cardColors(Color.White)
 
     ) {
+
+        val configuration = LocalConfiguration.current
+        val screenWidth = configuration.screenWidthDp
+
+        // Usando a densidade da tela para calcular o tamanho da fonte
+        val fontSize = (screenWidth / 26).sp // Ajusta o valor conforme necessário
+        // Calculando um tamanho de fonte baseado no FontScale
+
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -2265,7 +2280,7 @@ fun LanguageCard2(language: LanguageItem) {
                     .weight(0.9f)
                     .padding(top = 8.dp)
             )
-            Text(language.name, textAlign = TextAlign.Center, fontSize = 13.sp, modifier = Modifier.padding(4.dp))
+            Text(language.name, textAlign = TextAlign.Center, fontSize = fontSize, modifier = Modifier.padding(4.dp))
             //Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -3435,6 +3450,8 @@ fun TelaDeIntroducao(
                             textAlign = TextAlign.Center
                         )
                     )
+
+                    Spacer(modifier = Modifier.height(30.dp))
                 }
 
                 Box(
