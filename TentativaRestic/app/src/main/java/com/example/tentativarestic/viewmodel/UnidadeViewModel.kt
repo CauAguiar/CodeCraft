@@ -41,7 +41,6 @@ class UnidadeViewModel(private val database: AppDatabase, private val dataReposi
         }
     }
 
-
     fun addUnidade(unidade: Unidade) {
         viewModelScope.launch {
             unidadeDao.insertUnidade(unidade)

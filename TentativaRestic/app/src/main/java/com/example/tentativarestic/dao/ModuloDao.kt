@@ -23,5 +23,5 @@ interface ModuloDao {
     suspend fun insertModulos(modulos: List<Modulo>)
 
     @Query("SELECT * FROM modulo WHERE unidade_id = :unidadeId")
-    fun getModulosByUnidadeId(unidadeId: Long): Flow<List<Modulo>>
+    fun getModulosByUnidadeId(unidadeId: Long): List<Modulo>
 }

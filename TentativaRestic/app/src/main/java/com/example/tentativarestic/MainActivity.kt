@@ -13,6 +13,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -117,6 +119,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
@@ -1386,14 +1389,21 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
         //val unidades = remember { sharedPrefsManager.getUnidades() }
         Log.d("UnidadeListScreen", "Número de unidades: ${unidades.size}")
         // Exibe as unidades em uma lista rolável
+
+        val listState = rememberSaveable(saver = LazyListState.Saver) {
+            LazyListState()
+        }
+
         LazyColumn(
+            state = listState,
+            reverseLayout = false,
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             //contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            items(unidades.size) { index ->
+            items(unidades.size, key = { unidades[it].id }) { index ->
                 UnidadeItem(unidades[index], navController, sharedPrefsManager, userViewModel)
             }
         }
@@ -1428,17 +1438,61 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
 
     val unidade_id = unidade.id
 
-    val modulosState = remember { mutableStateOf<List<Modulo>>(emptyList()) }
+//    val modulosState = remember { mutableStateOf<List<Modulo>>(emptyList()) }
+//
+//    // Lançando efeito para consultar os módulos apenas uma vez
+//    LaunchedEffect(unidade_id) {
+//        // Chama o ViewModel para carregar os módulos
+//        viewModel.getModulosByUnidadeId(unidade_id).collect { modulos ->
+//            // Atualiza o estado somente quando os módulos mudam
+//            modulosState.value = modulos
+//        }
+//    }
 
-    // Lançando efeito para consultar os módulos apenas uma vez
-    LaunchedEffect(unidade_id) {
-        // Chama o ViewModel para carregar os módulos
-        viewModel.getModulosByUnidadeId(unidade_id).collect { modulos ->
-            // Atualiza o estado somente quando os módulos mudam
-            modulosState.value = modulos
-        }
+    //val modulosState = viewModel.getModulosByUnidadeId(unidade_id).collectAsState(initial = emptyList())
+    //val modulosState by viewModel.getModulosByUnidadeId(unidade.id).observeAsState(emptyList())
+
+    //criar modulos manualmente
+//    val modulosState = listOf(  // Lista de módulos
+//        Modulo(1, "Estrela", "a",1, 1),
+//        Modulo(2, "Baú", "a",2, 1),
+//        Modulo(3, "Troféu", "a",3, 1),
+//        Modulo(4, "Livro", "a",4, 1),
+//        Modulo(5, "Estrela", "a",5, 2),
+//        Modulo(6, "Baú", "a",6, 2),
+//        Modulo(7, "Troféu", "a",7, 2),
+//        Modulo(8, "Livro", "a",8, 2),
+//        Modulo(9, "Estrela", "a",9, 3),
+//        Modulo(10, "Baú", "a",10, 3),
+//        Modulo(11, "Troféu", "a",11, 3),
+//        Modulo(12, "Livro", "a",12, 3)
+//    )
+
+//
+//    val modulosOrdenados = remember(modulosState.value) {
+//        modulosState.value.sortedBy { it.ordem }
+//    }
+
+//    var modulos by remember { mutableStateOf<List<Modulo>>(emptyList()) }
+//
+//    LaunchedEffect(unidade.id) {
+//        withContext(Dispatchers.IO) {
+//            modulos = viewModel.getModulosByUnidadeId(unidade.id)
+//        }
+//    }
+
+    LaunchedEffect(unidade.id) {
+        viewModel.carregarModulos(unidade.id)
     }
-    val modulosOrdenados = modulosState.value.sortedBy { it.ordem }
+
+    // Observar os módulos
+    val modulos by viewModel.modulosT.collectAsState()
+
+
+    val modulosOrdenados = remember(modulos) {
+        modulos.sortedBy { it.ordem }
+    }
+
 // Agora você pode usar a lista ordenada
 
 
@@ -1489,15 +1543,7 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
                         //enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
                     ) {
                         //if (isEnabled == 1) {
-                        //sharedPrefsManager.saveUnidadeOrdem(unidade.ordem)
                         sharedPrefsManager.saveModuloId(modulo.id)
-                        //sharedPrefsManager.saveAtividades(modulo.atividades ?: emptyList())
-                        //userViewModel.processarAtividades(modulo.atividades ?: emptyList())
-
-                        //CoroutineScope(Dispatchers.Main).launch {
-                        //viewModel.syncAtividadesEEspecificas(modulo.id)
-                        //navController.navigate("modulo") // Navega para o módulo específico
-                        //viewModel.syncAtividadesEEspecificas(modulo.id)
                         navController.navigate("modulo")
                         //}
                     }
@@ -2277,7 +2323,7 @@ fun TelaDigitarSenha(
                 // Sombra para o Card
                 modifier = Modifier
                     .width(380.dp)
-                    .height(350.dp)
+                    .weight(1f)
                     .padding(16.dp)
             ) {
                 Image(
@@ -2478,13 +2524,12 @@ fun TelaDigitarSenha(
                 }
             }
 
-
+            Spacer(modifier = Modifier.height(30.dp))
 
             Button(
                 onClick = { registerUser() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 70.dp)
                     .height(48.dp)
                     .background(
                         brush = Brush.linearGradient(
@@ -2500,6 +2545,8 @@ fun TelaDigitarSenha(
             {
                 Text("Criar Conta")
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -2586,7 +2633,7 @@ fun TelaVerificacaoTelefone (
                 // Sombra para o Card
                 modifier = Modifier
                     .width(380.dp)
-                    .height(400.dp)
+                    .weight(1f)
                     .padding(16.dp)
             ) {
                 Image(
@@ -2697,7 +2744,7 @@ fun TelaVerificacaoTelefone (
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             val context = LocalContext.current
 
@@ -2716,7 +2763,6 @@ fun TelaVerificacaoTelefone (
                 onClick = { verifyCode() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 90.dp)
                     .height(48.dp)
                     .background(
                         brush = Brush.linearGradient(
@@ -2734,6 +2780,8 @@ fun TelaVerificacaoTelefone (
             {
                 Text("Confirmar")
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
 
         }
@@ -3339,7 +3387,7 @@ fun TelaDeIntroducao(
                      // Sombra para o Card
                     modifier = Modifier
                         .width(380.dp)
-                        .height(500.dp)
+                        .weight(1f)
                         .padding(16.dp)
                 ) {
                     Image(
@@ -3429,6 +3477,8 @@ fun TelaDeIntroducao(
 
                     }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     )
