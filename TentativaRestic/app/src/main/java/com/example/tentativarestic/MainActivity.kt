@@ -1753,11 +1753,12 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(
                 modifier = Modifier
@@ -1789,10 +1790,13 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
                     containerColor = Color(0xFFFDD835)
                 ), //Gold color
                 modifier = Modifier
-                    .fillMaxWidth(0.33f)
+                    //.requiredWidthIn(min = 120.dp) // Largura mínima
+                    // Largura máxima
+                    //.fillMaxWidth(0.33f)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
                     .height(28.dp),
             ) {
-                Text("Membro de Ouro", color = Color.White)
+                Text("Membro de Ouro", color = Color.White, modifier = Modifier.padding(start = 10.dp, end = 10.dp), maxLines = 1, textAlign = TextAlign.Center)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -1800,6 +1804,8 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
+
+                    //.weight(1f)
                     .background(
                         brush = Brush.linearGradient(
                             colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
@@ -1808,7 +1814,7 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
                         ),
                         shape = MaterialTheme.shapes.extraLarge
                     )
-                    .padding(26.dp),
+                    .padding(start = 26.dp, end = 26.dp, top = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -2220,7 +2226,11 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
             Icon(
                 imageVector = language.icon,  // Directly use the ImageVector here
                 contentDescription = language.name,
-                modifier = Modifier.size(48.dp)  // Resize the icon to 48dp
+               // modifier = Modifier.size(48.dp).weight(1f)
+                // modifierResize the icon to 48dp
+                modifier = Modifier
+                    .fillMaxSize(1f)
+                    .weight(1f)
             )
             Text(language.name, textAlign = TextAlign.Center)
         }
@@ -2241,17 +2251,22 @@ fun LanguageCard2(language: LanguageItem) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
+                //.padding(2.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             //Image(painter = painterResource(id = language.icon), contentDescription = language.name, modifier = Modifier.size(48.dp))
             Icon(
                 imageVector = language.icon,  // Directly use the ImageVector here
                 contentDescription = language.name,
-                modifier = Modifier.size(48.dp)  // Resize the icon to 48dp
+//                modifier = Modifier.size(48.dp)  // Resize the icon to 48dp
+                modifier = Modifier
+                    .fillMaxSize(1f)
+                    .weight(0.9f)
+                    .padding(top = 8.dp)
             )
-            Text(language.name, textAlign = TextAlign.Center, fontSize = 14.sp)
+            Text(language.name, textAlign = TextAlign.Center, fontSize = 13.sp, modifier = Modifier.padding(4.dp))
+            //Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
