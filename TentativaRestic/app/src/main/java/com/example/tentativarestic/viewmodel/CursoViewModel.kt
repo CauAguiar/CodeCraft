@@ -9,11 +9,18 @@ import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.entities.Curso
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class CursoViewModel(private val database: AppDatabase, private val dataRepository: DataRepository) : ViewModel() {
     private val cursoDao = database.cursoDao()
+
+    init {
+        viewModelScope.launch {
+            syncCursos()
+        }
+    }
 
     //private val _syncStatus = MutableLiveData<Boolean>()
    // val syncStatus: LiveData<Boolean> = _syncStatus
@@ -40,6 +47,7 @@ class CursoViewModel(private val database: AppDatabase, private val dataReposito
     }
 
     val cursos: StateFlow<List<Curso>> = cursoDao.getAllCursos()
+        .distinctUntilChanged() // Garante que só emite valores diferentes do último
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun addCurso(curso: Curso) {

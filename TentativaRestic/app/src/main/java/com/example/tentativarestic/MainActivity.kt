@@ -1922,25 +1922,24 @@ fun TelaPrincipal(
 
 
 
-    val cursoList = remember { mutableStateOf<List<Curso>>(emptyList()) }
+    val cursoList = rememberSaveable { mutableStateOf<List<Curso>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        viewModel.syncCursos()
-
+//        viewModel.syncCursos()
+//
         viewModel.cursos.collect { cursos ->
             cursoList.value = cursos
         }
     }
 
-    val languages = cursoList.value.map { curso ->
-        LanguageItem(
-            name = curso.nome,
-            icon = Icons.Filled.Home
-        )
+    val languages = rememberSaveable(cursoList.value) {
+        cursoList.value.map { curso ->
+            LanguageItem(
+                name = curso.nome,
+                icon = Icons.Filled.Home
+            )
+        }
     }
-
-
-
 
 
     Scaffold(
