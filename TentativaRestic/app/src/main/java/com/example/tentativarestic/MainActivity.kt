@@ -173,8 +173,9 @@ fun AppNavigation(
     val navController = rememberNavController()
 
     val showIntroduction = remember { mutableStateOf(sharedPrefsManager.shouldShowIntroduction()) }
+    val userIsLoggedIn = remember { mutableStateOf(sharedPrefsManager.isUserLoggedIn()) }
 
-    val startCheck = if (showIntroduction.value) "introducao" else "telaInicial"
+    val startCheck = if (showIntroduction.value) "introducao" else if (userIsLoggedIn.value) "telaPrincipal" else "telaInicial"
     // Definir o NavHost e as rotas
     NavHost(navController = navController, startDestination = startCheck) {
         composable("introducao") {
@@ -1921,25 +1922,24 @@ fun TelaPrincipal(
 
 
 
-    val cursoList = remember { mutableStateOf<List<Curso>>(emptyList()) }
+    val cursoList = rememberSaveable { mutableStateOf<List<Curso>>(emptyList()) }
 
     LaunchedEffect(Unit) {
-        viewModel.syncCursos()
-
+//        viewModel.syncCursos()
+//
         viewModel.cursos.collect { cursos ->
             cursoList.value = cursos
         }
     }
 
-    val languages = cursoList.value.map { curso ->
-        LanguageItem(
-            name = curso.nome,
-            icon = Icons.Filled.Home
-        )
+    val languages = rememberSaveable(cursoList.value) {
+        cursoList.value.map { curso ->
+            LanguageItem(
+                name = curso.nome,
+                icon = Icons.Filled.Home
+            )
+        }
     }
-
-
-
 
 
     Scaffold(
@@ -3159,6 +3159,7 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
     var senha by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) } // Controle do estado de carregamento
 
     var dataNascimento by remember { mutableStateOf("") }
     var showDatePickerDialog by remember { mutableStateOf(false) }
@@ -3251,6 +3252,7 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
             TextField(
                 value = email,
                 onValueChange = { email = it },
+                enabled = !isLoading,
                 placeholder = {
                     Text(
                         text = "Digite o seu email",
@@ -3289,6 +3291,7 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
+                enabled = !isLoading,
                 placeholder = {
                     Text(
                         text = "Digite a sua senha",
@@ -3316,38 +3319,46 @@ fun TelaLogin(navController: NavController, onNextClick: () -> Unit, userViewMod
 
             val context = LocalContext.current
 
-            Button(
-                onClick = {
-                    userViewModel.loginWithEmail(email, senha) { isSuccess ->
-                        if (isSuccess) {
-                            // Ação para login bem-sucedido
-                            Toast.makeText(context, "Login bem-sucedido!", Toast.LENGTH_SHORT).show()
-                            onNextClick()
-                        } else {
-                            // Ação para falha no login
-                            Toast.makeText(context, "Falha no login. Tente novamente.", Toast.LENGTH_SHORT).show()
+            Spacer(modifier = Modifier.height(50.dp))
+
+            // Botão ou indicador de progresso
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .size(60.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Button(
+                    onClick = {
+                        isLoading = true
+                        userViewModel.loginWithEmail(email, senha) { isSuccess ->
+                            if (isSuccess) {
+                                Toast.makeText(context, "Login bem-sucedido!", Toast.LENGTH_SHORT).show()
+                                onNextClick()
+                            } else {
+                                isLoading = false
+                                Toast.makeText(context, "Falha no login. Tente novamente.", Toast.LENGTH_SHORT).show()
+                            }
                         }
-                    }
-                }, //onNextClick
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 90.dp)
-                    .height(48.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
-                            start = Offset(0f, 1f),
-                            end = Offset(0f, 180f) // Direção vertical
-                        ),
-                        shape = CircleShape // Mantém a forma circular do botão
-                    )
-                    .size(60.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-            )
-
-
-            {
-                Text("Entrar")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
+                                start = Offset(0f, 1f),
+                                end = Offset(0f, 180f)
+                            ),
+                            shape = CircleShape
+                        )
+                        .size(60.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                ) {
+                    Text("Entrar")
+                }
             }
         }
     }
