@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(23)
+		languageVersion = JavaLanguageVersion.of(22)
 	}
 }
 
@@ -26,6 +26,9 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	//implementation 'javax.persistence:javax.persistence-api:2.2'
+
+	// Smile dependencies for machine learning
+	implementation 'com.github.haifengl:smile-core:4.1.0'
 }
 
 tasks.named('test') {
