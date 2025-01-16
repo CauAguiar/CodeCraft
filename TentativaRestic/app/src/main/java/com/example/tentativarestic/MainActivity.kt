@@ -173,8 +173,9 @@ fun AppNavigation(
     val navController = rememberNavController()
 
     val showIntroduction = remember { mutableStateOf(sharedPrefsManager.shouldShowIntroduction()) }
+    val userIsLoggedIn = remember { mutableStateOf(sharedPrefsManager.isUserLoggedIn()) }
 
-    val startCheck = if (showIntroduction.value) "introducao" else "telaInicial"
+    val startCheck = if (showIntroduction.value) "introducao" else if (userIsLoggedIn.value) "telaPrincipal" else "telaInicial"
     // Definir o NavHost e as rotas
     NavHost(navController = navController, startDestination = startCheck) {
         composable("introducao") {
