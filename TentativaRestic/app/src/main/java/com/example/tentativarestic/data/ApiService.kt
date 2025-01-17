@@ -66,6 +66,11 @@ interface ApiService {
     @GET("api/projeto/getByModuloId")
     suspend fun getProjetos(@Query("moduloId") moduloId: Long): Response<List<Projeto>>
 
+    @GET("api/perguntas-questionario/getByCursoId")
+    suspend fun getPerguntasComRespostas(
+        @Query("cursoId") cursoId: Long
+    ): Response<List<Map<String, Any>>>
+
 //    @GET("api/personQuiz/getByQuizId")
 //    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>
 //

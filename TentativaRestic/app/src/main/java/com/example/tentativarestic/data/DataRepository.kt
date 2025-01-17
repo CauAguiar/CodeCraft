@@ -2,8 +2,10 @@ package com.example.tentativarestic.data
 
 import android.util.Log
 import com.example.tentativarestic.data.RetrofitInstance.api
+import com.example.tentativarestic.entities.PerguntasQuestionario
 import com.example.tentativarestic.entities.PersonQuiz
 import com.example.tentativarestic.entities.Quiz
+import com.example.tentativarestic.entities.RespostasQuestionario
 import com.example.tentativarestic.entities.Unidade
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +24,9 @@ class DataRepository(private val database: AppDatabase) {
     private val exercicioAbertoDao = database.exercicioAbertoDao()
     private val projetoDao = database.projetoDao()
     private val personQuizDao = database.personQuizDao()
+    private val perguntasQuestionarioDao = database.perguntasQuestionarioDao()
+    private val respostasQuestionarioDao = database.respostasQuestionarioDao()
+    private val respostasUsuarioQuestionarioDao = database.respostasUsuarioQuestionarioDao()
     //private val licaoDao = database.licaoDao()
 
     // Função para sincronizar atividades
@@ -236,5 +241,48 @@ class DataRepository(private val database: AppDatabase) {
         val unidades = unidadeDao.getUnidadesByCursoNome(cursoNome)
         Log.d("DataRepository", "Unidades retornadas: $unidades")
         return unidades
+    }
+
+    suspend fun syncPerguntasComRespostas(cursoId: Long) {
+        try{
+            val response = api.getPerguntasComRespostas(cursoId)
+            if (response.isSuccessful) {
+                response.body()?.let { jsonList ->
+                    val perguntas = mutableListOf<PerguntasQuestionario>()
+                    val respostas = mutableListOf<RespostasQuestionario>()
+
+                    jsonList.forEach { json ->
+                        val idPergunta = (json["idPergunta"] as Double).toLong()
+                        val pergunta = json["pergunta"] as String
+                        val idCurso = (json["idCurso"] as Double).toLong()
+
+                        // Adicionar à lista de perguntas
+                        perguntas.add(PerguntasQuestionario(idPergunta, pergunta, idCurso))
+
+                        // Processar respostas
+                        val respostasJson = json["respostas"] as List<Map<String, Any>>
+                        respostasJson.forEach { respostaJson ->
+                            val idResposta = (respostaJson["idResposta"] as Double).toLong()
+                            val resposta = respostaJson["resposta"] as String
+                            val peso = (respostaJson["peso"] as Double).toInt()
+
+                            respostas.add(RespostasQuestionario(idResposta, idPergunta, resposta, peso))
+                        }
+                    }
+
+                    perguntasQuestionarioDao.insertPerguntas(perguntas)
+                    respostasQuestionarioDao.insertRespostas(respostas)
+
+                    // Agora você tem listas separadas de PerguntaQuestionario e RespostaQuestionario
+                    println("Perguntas: $perguntas")
+                    println("Respostas: $respostas")
+                }
+            } else {
+                println("Erro ao buscar dados: ${response.errorBody()?.string()}")
+            }
+
+        } catch (e: Exception) {
+            println("Erro ao sincronizar perguntas com respostas: ${e.message}")
+        }
     }
 }

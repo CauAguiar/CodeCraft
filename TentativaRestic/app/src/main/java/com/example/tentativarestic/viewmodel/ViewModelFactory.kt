@@ -36,6 +36,9 @@ class ViewModelFactory(private val database: AppDatabase, private val dataReposi
             modelClass.isAssignableFrom(ProjetoViewModel::class.java) -> {
                 ProjetoViewModel(database) as T
             }
+            modelClass.isAssignableFrom(NivelamentoViewModel::class.java) -> {
+                NivelamentoViewModel(database, dataRepository) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

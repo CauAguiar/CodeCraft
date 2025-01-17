@@ -107,6 +107,7 @@ import com.example.tentativarestic.viewmodel.AtividadeViewModel
 import com.example.tentativarestic.viewmodel.CursoViewModel
 import com.example.tentativarestic.viewmodel.ExercicioAbertoViewModel
 import com.example.tentativarestic.viewmodel.ModuloViewModel
+import com.example.tentativarestic.viewmodel.NivelamentoViewModel
 import com.example.tentativarestic.viewmodel.ProjetoViewModel
 import com.example.tentativarestic.viewmodel.QuizViewModel
 import com.example.tentativarestic.viewmodel.UnidadeViewModel
@@ -155,6 +156,7 @@ class MainActivity : ComponentActivity() {
         val context = applicationContext
         val database = AppDatabase.getInstance(context)
         val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+
         setContent {
             TentativaResticTheme {
                 AppNavigation(userViewModel, sharedPrefsManager, viewModelFactory)
@@ -1917,6 +1919,12 @@ fun TelaPrincipal(
     val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
     val viewModelFactory = ViewModelFactory(database, DataRepository(database))
     val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
+
+    val viewModel2: NivelamentoViewModel = viewModel(factory = viewModelFactory)
+
+    LaunchedEffect(Unit) {
+        viewModel2.syncPerguntasComRespostas(1)
+    }
 
 
 
