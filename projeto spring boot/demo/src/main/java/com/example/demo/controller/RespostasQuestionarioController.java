@@ -19,7 +19,7 @@ public class RespostasQuestionarioController {
     @Autowired
     private RespostasQuestionarioService respostasQuestionarioService;
 
-    @GetMapping("/getByPerguntaId")
+    @GetMapping("/getRespostasByIdPergunta")
     public ResponseEntity<List<RespostasQuestionario>> getRespostasByPerguntaId(@RequestParam(name = "perguntaId") Long perguntaId) {
         System.out.println("Receive pergunta id: " + perguntaId);
         List<RespostasQuestionario> respostas = respostasQuestionarioService.getRespostasByCursoId(perguntaId);
