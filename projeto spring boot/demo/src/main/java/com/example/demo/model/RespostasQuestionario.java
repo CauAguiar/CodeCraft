@@ -2,9 +2,12 @@ package com.example.demo.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class RespostasQuestionario {
@@ -14,11 +17,15 @@ public class RespostasQuestionario {
     @Column(name = "id_resposta")
     private Long idResposta;
 
-    @Column(name = "id_pergunta", nullable = false)
-    private Long idPergunta;
+    /*@Column(name = "id_pergunta", nullable = false)
+    private Long idPergunta;*/
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String resposta;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_pergunta", insertable = false, updatable = false)
+    private PerguntasQuestionario pergunta;
 
     @Column(nullable = true)
     private Integer peso;
@@ -31,14 +38,15 @@ public class RespostasQuestionario {
     public void setIdResposta(Long idResposta) {
         this.idResposta = idResposta;
     }
+    
 
-    public Long getIdPergunta() {
+   /*  public Long getIdPergunta() {
         return idPergunta;
-    }
+    } */
 
-    public void setIdPergunta(Long idPergunta) {
+    /* public void setIdPergunta(Long idPergunta) {
         this.idPergunta = idPergunta;
-    }
+    } */
 
     public String getResposta() {
         return resposta;

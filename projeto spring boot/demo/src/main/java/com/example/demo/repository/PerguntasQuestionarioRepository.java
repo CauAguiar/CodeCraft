@@ -15,3 +15,23 @@ public interface PerguntasQuestionarioRepository extends JpaRepository<Perguntas
     List<PerguntasQuestionario> findByIdCurso(@Param("cursoId") Long cursoId);
 
 }
+
+/* @Repository
+public interface PerguntasQuestionarioRepository extends JpaRepository<PerguntasQuestionario, Long> {
+    //@Query(value = "SELECT DISTINCT p.*, r.* FROM perguntas_questionario p LEFT JOIN respostas_questionario r ON p.id_pergunta = r.id_pergunta WHERE p.id_curso = :cursoId", nativeQuery = true)
+    //@Query(value = "SELECT p.id_pergunta AS p_id_pergunta, p.*, r.id_pergunta AS r_id_pergunta, r.* FROM perguntas_questionario p LEFT JOIN respostas_questionario r ON p.id_pergunta = r.id_pergunta WHERE p.id_curso = :cursoId", nativeQuery = true)
+    @Query(value = """
+        SELECT 
+            p.id_pergunta AS p_id_pergunta, 
+            p.pergunta AS p_pergunta, 
+            p.id_curso AS p_id_curso,
+            r.id_pergunta AS r_id_pergunta, 
+            r.resposta AS r_resposta
+        FROM perguntas_questionario p 
+        LEFT JOIN respostas_questionario r 
+        ON p.id_pergunta = r.id_pergunta 
+        WHERE p.id_curso = :cursoId
+        """, nativeQuery = true)
+     */
+    /* List<PerguntasQuestionario> findByIdCurso(@Param("cursoId") Long cursoId); */
+//}
