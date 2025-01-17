@@ -1,10 +1,15 @@
 package com.example.demo.model;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class PerguntasQuestionario {
@@ -19,6 +24,9 @@ public class PerguntasQuestionario {
 
     @Column(name = "id_curso", nullable = false)
     private Long idCurso;
+
+    @OneToMany(mappedBy = "pergunta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RespostasQuestionario> respostas;
 
     // Getters e Setters
     public Long getIdPergunta() {
@@ -43,6 +51,14 @@ public class PerguntasQuestionario {
 
     public void setIdCurso(Long idCurso) {
         this.idCurso = idCurso;
+    }
+
+    public List<RespostasQuestionario> getRespostas() {
+        return respostas;
+    }
+
+    public void setRespostas(List<RespostasQuestionario> respostas) {
+        this.respostas = respostas;
     }
 }
 

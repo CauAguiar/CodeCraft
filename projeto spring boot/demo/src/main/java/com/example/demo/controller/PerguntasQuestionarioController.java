@@ -25,6 +25,4 @@ public class PerguntasQuestionarioController {
         List<PerguntasQuestionario> perguntas = perguntasQuestionarioService.getPerguntasByCursoId(cursoId);
         return ResponseEntity.ok(perguntas);
     }
-    
-
 }
