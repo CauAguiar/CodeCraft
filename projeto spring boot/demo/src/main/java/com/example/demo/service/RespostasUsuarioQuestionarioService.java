@@ -15,7 +15,7 @@ public class RespostasUsuarioQuestionarioService {
     private RespostasUsuarioQuestionarioRepository respostasUsuarioQuestionarioRepository;
 
     public List<RespostasUsuarioQuestionario> getRespostasByPersonId(Long personId) {
-        if(personId == null) {
+        if (personId == null) {
             throw new IllegalArgumentException("O id da pessoa não pode ser nulo");
         }
         return respostasUsuarioQuestionarioRepository.findByIdPerson(personId);
