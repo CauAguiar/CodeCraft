@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,13 +28,12 @@ public class RespostasUsuarioQuestionarioController {
         return ResponseEntity.ok(respostas);
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Void> addResposta(
-            @RequestParam Long personId,
-            @RequestParam Long perguntaId,
-            @RequestParam Long respostaId) {
-        respostasUsuarioQuestionarioService.insertResposta(personId, perguntaId, respostaId);
+    @PostMapping("/enviarRespostasNivelamento")
+    public ResponseEntity<Void> addResposta(@RequestBody List<RespostasUsuarioQuestionario> respostasList) {
+        respostasList.forEach(resposta -> {
+            respostasUsuarioQuestionarioService.insertResposta(resposta.getIdPerson(), resposta.getIdPergunta(),
+                    resposta.getIdResposta());
+        });
         return ResponseEntity.ok().build();
     }
-
 }
