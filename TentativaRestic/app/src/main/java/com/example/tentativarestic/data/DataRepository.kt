@@ -3,12 +3,10 @@ package com.example.tentativarestic.data
 import android.util.Log
 import com.example.tentativarestic.data.RetrofitInstance.api
 import com.example.tentativarestic.entities.PerguntasQuestionario
-import com.example.tentativarestic.entities.PersonQuiz
-import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.RespostasQuestionario
+import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
 import com.example.tentativarestic.entities.Unidade
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
@@ -285,4 +283,24 @@ class DataRepository(private val database: AppDatabase) {
             println("Erro ao sincronizar perguntas com respostas: ${e.message}")
         }
     }
+
+    data class RespostasNivelamentoRequest(
+        val respostas: List<RespostasUsuarioQuestionario>,
+        val cursoId: Long
+    )
+
+    suspend fun enviarRespostasNivelamento(respostas: List<RespostasUsuarioQuestionario>, cursoId: Long) {
+        // Cria o objeto que será enviado para a API
+        val request = RespostasNivelamentoRequest(respostas, cursoId)
+
+        // Enviar respostas e cursoId para a API
+        try {
+            api.enviarRespostasNivelamento(request)
+            Log.d("DataRepository", "Respostas enviadas com sucesso para a API ${request}")
+        } catch (e: Exception) {
+            // Tratar exceção
+            Log.e("DataRepository", "Erro ao enviar respostas: ${e.message}")
+        }
+    }
+
 }

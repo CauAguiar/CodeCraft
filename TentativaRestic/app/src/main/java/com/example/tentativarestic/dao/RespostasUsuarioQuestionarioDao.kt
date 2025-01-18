@@ -21,4 +21,28 @@ interface RespostasUsuarioQuestionarioDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRespostasUsuario(respostasUsuario: List<RespostasUsuarioQuestionario>)
+
+    @Query("SELECT * FROM respostas_usuario_questionario WHERE id_person = :personId AND id_pergunta = :quizId")
+    fun getNivelamentoByPersonIdAndQuizId(personId: Long, quizId: Long): Flow<RespostasUsuarioQuestionario?>
+
+
+    @Query(
+        """
+    SELECT * 
+    FROM respostas_usuario_questionario 
+    WHERE id_pergunta IN (:todasPerguntasIds) 
+    AND confirmou_resposta = 1
+"""
+    )
+    fun getRespostasByPerguntasIds(todasPerguntasIds: List<Long>): List<RespostasUsuarioQuestionario>
+
+    @Query(
+        """
+    SELECT * 
+    FROM respostas_usuario_questionario 
+    WHERE id_pergunta IN (:todasPerguntasIds)
+"""
+    )
+    fun getRespostasByPerguntasIds2(todasPerguntasIds: List<Long>): List<RespostasUsuarioQuestionario>
+
 }

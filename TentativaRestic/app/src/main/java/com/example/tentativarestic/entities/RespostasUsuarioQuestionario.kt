@@ -11,6 +11,9 @@ data class RespostasUsuarioQuestionario(
     @SerializedName("idPerson") val id_person: Long,
     @SerializedName("idPergunta") val id_pergunta: Long,
     @SerializedName("idResposta") val id_resposta: Long,
-    @SerializedName("dataResposta") val data_resposta: String // Usar String para armazenar timestamps
+    @SerializedName("dataResposta") val data_resposta: String, // Usar String para armazenar timestamps
+    @SerializedName("respostaSelecionada") val resposta_selecionada: Long?,
+    @SerializedName("resultado") val resultado: Boolean?,
+    @SerializedName("confirmouResposta") val confirmou_resposta: Boolean?
 )
 

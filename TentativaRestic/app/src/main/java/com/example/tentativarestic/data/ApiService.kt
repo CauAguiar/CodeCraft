@@ -4,9 +4,9 @@ import com.example.tentativarestic.entities.Curso
 import com.example.tentativarestic.entities.Modulo
 import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.ExercicioAberto
-import com.example.tentativarestic.entities.Person
 import com.example.tentativarestic.entities.Projeto
 import com.example.tentativarestic.entities.Quiz
+import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
 import com.example.tentativarestic.entities.Unidade
 import com.example.tentativarestic.entities.Video
 import retrofit2.Call
@@ -14,7 +14,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface ApiService {
@@ -70,6 +69,12 @@ interface ApiService {
     suspend fun getPerguntasComRespostas(
         @Query("cursoId") cursoId: Long
     ): Response<List<Map<String, Any>>>
+
+
+    @POST("api/respostas-usuario-questionario/enviarRespostasNivelamento")
+    suspend fun enviarRespostasNivelamento(
+        @Body request: DataRepository.RespostasNivelamentoRequest  // Enviando o request como JSON no corpo
+    ): Response<String>
 
 //    @GET("api/personQuiz/getByQuizId")
 //    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>
