@@ -60,7 +60,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -95,10 +94,12 @@ import com.example.tentativarestic.data.SharedPrefsManager
 import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.Curso
 import com.example.tentativarestic.entities.ExercicioAberto
-import com.example.tentativarestic.entities.Modulo
+import com.example.tentativarestic.entities.PerguntasQuestionario
 import com.example.tentativarestic.entities.PersonQuiz
 import com.example.tentativarestic.entities.Projeto
 import com.example.tentativarestic.entities.Quiz
+import com.example.tentativarestic.entities.RespostasQuestionario
+import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
 import com.example.tentativarestic.entities.Video
 //import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.UserViewModelFactory
@@ -121,7 +122,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
@@ -281,7 +281,7 @@ fun AppNavigation(
             TelaPerfil(navController, onHomeClick = {navController.navigate("telaPrincipal")})
         }
 
-        composable("curso"){
+        composable("curso"){ // lembrar navigate "modulo"
             TelaCurso(navController, onModuloClick = {navController.navigate("modulo")}, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
         }
 
@@ -289,7 +289,341 @@ fun AppNavigation(
             TelaModulo(navController, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
         }
 
+        composable ("nivelamento"){
+            TelaNivelamento(navController, sharedPrefsManager = sharedPrefsManager, userViewModel = userViewModel)
+        }
 
+
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TelaNivelamento(navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
+    // Container principal
+    //var atividades = sharedPrefsManager.getAtividades()
+    var currentActivityIndex by remember { mutableStateOf(0) }
+    val nome_curso = sharedPrefsManager.getCursoNome()
+    val id_curso = sharedPrefsManager.getCursoId()
+    //val unidade_ordem = sharedPrefsManager.getUnidadeOrdem()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "$nome_curso - Unidade ", //$unidade_ordem
+                        fontSize = 24.sp,
+                        modifier = Modifier.offset(y = 14.dp)
+                    ) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack()}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.seta), // Nome da sua imagem PNG
+                            contentDescription = "Seta",
+                            colorFilter = ColorFilter.tint(Color.Black),
+                            modifier = Modifier
+                                .graphicsLayer(
+                                    scaleX = -3.5f,
+                                    scaleY = 3.5f
+                                )
+                        )
+                    }
+                }
+
+            )
+        }
+    ) { paddingValues ->
+        val context = LocalContext.current
+        val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+        val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+        val viewModel: NivelamentoViewModel = viewModel(factory = viewModelFactory)
+
+        val perguntasComRespostasFlow by viewModel.perguntasComRespostasFlow.collectAsState(emptyList())
+
+        LaunchedEffect(Unit) {
+            viewModel.syncPerguntasComRespostas(id_curso)
+
+            viewModel.getPerguntasComRespostas(id_curso)
+        }
+
+        if(perguntasComRespostasFlow.isNotEmpty()){
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF5F5F5))
+                    .padding(paddingValues)
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                var perguntaAtual by remember { mutableStateOf<PerguntasQuestionario?>(null) }
+                var respostasAtuais by remember { mutableStateOf<List<RespostasQuestionario>>(emptyList()) }
+
+                LaunchedEffect(currentActivityIndex) {
+                    if (perguntasComRespostasFlow.isNotEmpty() && currentActivityIndex in perguntasComRespostasFlow.indices) {
+                        val currentItem = perguntasComRespostasFlow[currentActivityIndex]
+                        perguntaAtual = currentItem.pergunta
+                        respostasAtuais = currentItem.respostas
+                    }
+                }
+
+                if(perguntaAtual != null && respostasAtuais.isNotEmpty()) {
+                    // Exibição personalizada para atividades específicas
+                   NivelamentoContent(perguntaAtual!!, respostasAtuais, sharedPrefsManager)
+
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Barra de progresso e navegação
+                BottomProgressBar(
+                    atividades = perguntasComRespostasFlow,
+                    currentActivityIndex = currentActivityIndex,
+                    totalActivities = perguntasComRespostasFlow.size,
+                    onPreviousClick = {
+                        if (currentActivityIndex > 0) {
+                            //atividades = sharedPrefsManager.getAtividades()
+                            currentActivityIndex--
+                        }
+                    },
+                    onNextClick = {
+                        if (currentActivityIndex < perguntasComRespostasFlow.size - 1) {
+                            //atividades = sharedPrefsManager.getAtividades()
+                            currentActivityIndex++
+                        }
+                    },
+                    onFinishClick = {},
+                )
+            }
+        }
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+fun NivelamentoContent(pergunta2: PerguntasQuestionario, respostas: List<RespostasQuestionario>, sharedPrefsManager: SharedPrefsManager) {
+    // Estado persistente usando rememberSaveable
+    val personId = sharedPrefsManager.getUserId()
+//    var respostaSelecionada2 by remember { mutableStateOf<Int?>(-1) }
+//    var resultado2 by remember { mutableStateOf( false) }
+//    var confirmouResposta2 by remember { mutableStateOf(false) }
+//
+
+
+
+    // Manipulando as variáveis com `.value`
+
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: NivelamentoViewModel = viewModel(factory = viewModelFactory)
+
+    val quizState = remember { mutableStateOf<Quiz?>(null) }
+    val quizState2 = remember { mutableStateOf<RespostasUsuarioQuestionario?>(null) }
+
+    LaunchedEffect(pergunta2.id_pergunta) {
+        viewModel.getNivelamentoByPersonIdAndQuizId(personId, pergunta2.id_pergunta).collect { respostasUsuarioQuestionario ->
+            if (respostasUsuarioQuestionario != null) {
+                quizState2.value = respostasUsuarioQuestionario
+                Log.d("QuizDebug2 != null", "respostasUsuarioQuestionario: $respostasUsuarioQuestionario")
+            } else {
+                Log.d("QuizDebug2 == null", "respostasUsuarioQuestionario: $respostasUsuarioQuestionario")
+                val personQuizEntity = RespostasUsuarioQuestionario(
+                    id_resposta_usuario = 0,
+                    id_person = personId,
+                    id_pergunta = pergunta2.id_pergunta,
+                    id_resposta = 1,
+                    data_resposta = "",
+                    resposta_selecionada = null,
+                    resultado = null,
+                    confirmou_resposta = null
+                )
+                viewModel.insertEntity(personQuizEntity)
+                quizState2.value = personQuizEntity
+            }
+        }
+    }
+
+    val personQuiz = quizState2.value
+
+    if(personQuiz != null && personQuiz.id_pergunta == pergunta2.id_pergunta){
+
+    var respostaSelecionada2 by remember { mutableStateOf<Long?>(personQuiz?.resposta_selecionada) }
+    var resultado2 by remember { mutableStateOf(personQuiz?.resultado ?: false) }
+    var confirmouResposta2 by remember { mutableStateOf(personQuiz?.confirmou_resposta ?: false) }
+
+    var respostaSelecionada by remember { mutableStateOf<Int?>(respostaSelecionada2?.toInt()) }
+    var resultado by remember { mutableStateOf<Boolean?>(resultado2) }
+    var confirmouResposta by remember { mutableStateOf(confirmouResposta2) }
+
+
+    val pergunta = pergunta2.pergunta
+    val opcoes = listOf(
+        respostas[0].resposta,
+        respostas[1].resposta,
+        respostas[2].resposta,
+        respostas[3].resposta
+    )
+    val resposta_correta = respostas.indexOfFirst { it.peso == 1 }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            text = pergunta,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Left,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        val letras = listOf('A', 'B', 'C', 'D', 'E')
+
+        opcoes.forEachIndexed { index, opcao ->
+            val letra = letras.getOrNull(index)
+            val cor = when {
+                confirmouResposta && respostaSelecionada == index -> // Cor de seleção
+                    if (index == resposta_correta) Color(0xFF8BAD8D) else Color(0xFFEEA9A3)
+
+                respostaSelecionada == index -> Color(0xFFD6D6D6) // Cor de seleção
+                else -> Color(0xFFFAFAFA) // Cor padrão
+            }
+
+            Button(
+                onClick = {
+                    if (!confirmouResposta) {
+                        if (personQuiz != null) {
+                            viewModel.updateEntity(
+                                personQuiz.copy(
+                                    resposta_selecionada = index.toLong(),
+                                    confirmou_resposta = false,
+                                    resultado = null
+                                )
+                            )
+                        }
+                        respostaSelecionada = index
+                        resultado = index == resposta_correta
+                        //quiz.respostaSelecionada = index
+                        //sharedPrefsManager.saveQuiz(quiz)
+                        //Log.d("QuizDebugReposta", "Resposta selecionada: $quiz")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(vertical = 8.dp)
+                    .background(cor, shape = RoundedCornerShape(14.dp))
+                    .border(
+                        1.dp,
+                        Color.LightGray,
+                        RoundedCornerShape(14.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = cor,
+                    disabledContainerColor = cor
+                ),
+                enabled = !confirmouResposta // Desativa o botão após confirmação
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(Color.White, shape = CircleShape)
+                            .border(1.dp, Color.LightGray, CircleShape)
+                            .padding(6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        text = opcao,
+                        color = Color.Black,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val confirmColor = when {
+            respostaSelecionada != null && !confirmouResposta -> Color(0xFF4CAF50)
+            else -> Color(0xFFBDBDBD)
+        }
+
+        Button(
+            onClick = {
+                if (respostaSelecionada != null) {
+                    if (personQuiz != null) {
+                        viewModel.updateEntity(
+                            personQuiz.copy(
+                                id_resposta = respostas[respostaSelecionada!!].id_resposta,
+                                confirmou_resposta = true,
+                                resultado = resultado
+                            )
+                        )
+                    }
+                    //resultado = respostaSelecionada == resposta_correta
+                    confirmouResposta = true
+                    //quiz.confirmouResposta = true
+                    //quiz.resultado = resultado
+                    //atividade.concluida = true
+                    // Log.d("QuizDebugResposta2", "Enviado selecionada: $quiz")
+                    //sharedPrefsManager.saveQuiz(quiz)
+                    //sharedPrefsManager.saveAtividadeById(atividade.id, atividade)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(
+                    confirmColor,
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .padding(vertical = 8.dp),
+            enabled = respostaSelecionada != null && !confirmouResposta,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (respostaSelecionada != null) Color(0xFF4CAF50) else Color(
+                    0xFFBDBDBD
+                ),
+                disabledContainerColor = Color(0xFFBDBDBD),
+                disabledContentColor = Color.White
+            )
+        ) {
+            Text(
+                text = "Confirmar Resposta",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        if (confirmouResposta) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = if (resultado == true) "Resposta correta!" else "Resposta incorreta.",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (resultado == true) Color(0xFF4CAF50) else Color(0xFFF44336)
+                )
+            }
+        }
+    }
     }
 }
 
@@ -1216,8 +1550,8 @@ fun DefaultContent(atividade: Atividade, sharedPrefsManager: SharedPrefsManager)
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun BottomProgressBar(
-    atividades: List<Atividade>,
+fun <T> BottomProgressBar(
+    atividades: List<T>,
     currentActivityIndex: Int,
     totalActivities: Int,
     onPreviousClick: () -> Unit,
@@ -1227,9 +1561,17 @@ fun BottomProgressBar(
     // Calcula o progresso
     val progress = (currentActivityIndex + 1).toFloat() / totalActivities
 
+    val context = LocalContext.current
+    val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
+    val viewModelFactory = ViewModelFactory(database, DataRepository(database))
+    val viewModel: NivelamentoViewModel = viewModel(factory = viewModelFactory)
+
+    var allActivitiesCompleted by remember { mutableStateOf(false) }
+
+
     // Verifica se todas as atividades estão concluídas
     //val allActivitiesCompleted = atividades.all { it.concluida }
-    val allActivitiesCompleted = false
+
 
     Column(
         modifier = Modifier
@@ -1292,10 +1634,58 @@ fun BottomProgressBar(
 
             // Botão Próxima ou Finalizar
             if (currentActivityIndex == totalActivities - 1) {
+                when (atividades.firstOrNull()) {
+                    is Atividade -> {
+                        // Lógica para TipoA
+                        //ext("Atividade do tipo A")
+                    }
+                    is NivelamentoViewModel.PerguntaComRespostas -> {
+                        // Filtrar atividades do tipo PerguntaComRespostas
+                        val atividadesFiltradas = atividades.filterIsInstance<NivelamentoViewModel.PerguntaComRespostas>()
+
+                        // Extrair todos os IDs de perguntas
+                        val todasPerguntasIds = atividadesFiltradas.map { it.pergunta.id_pergunta }
+
+                        // Verificar se todas as perguntas têm pelo menos uma resposta
+                        LaunchedEffect(todasPerguntasIds) {
+                            val todasConcluidas = viewModel.verificarSePerguntasConcluidas(todasPerguntasIds)
+                            allActivitiesCompleted = todasConcluidas
+                        }
+                    }
+
+
+
+                    else -> {
+                        // Caso padrão
+                        Text("Tipo de atividade desconhecido")
+                    }
+                }
                 // Última atividade e todas concluídas
                 Log.d("DebugFinalizar", "$atividades")
                 Button(
-                    onClick = onFinishClick,
+                    onClick = {
+                        // corotina
+                        when (atividades.firstOrNull()) {
+                            is Atividade -> {
+                                // Lógica para TipoA
+                                //ext("Atividade do tipo A")
+                            }
+                            is NivelamentoViewModel.PerguntaComRespostas -> {
+                                // Filtrar atividades do tipo PerguntaComRespostas
+                                val atividadesFiltradas = atividades.filterIsInstance<NivelamentoViewModel.PerguntaComRespostas>()
+
+                                // Extrair todos os IDs de perguntas
+                                val todasPerguntasIds = atividadesFiltradas.map { it.pergunta.id_pergunta }
+
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    viewModel.finalizarNivelamento(todasPerguntasIds, atividadesFiltradas[0].pergunta.id_curso)
+                                }
+                            }
+                            else -> {
+                                // Caso padrão
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .background(
                             brush = Brush.linearGradient(
@@ -1338,7 +1728,7 @@ fun BottomProgressBar(
     }
 }
 
-data class LanguageItem(val name: String, val icon: ImageVector)
+data class LanguageItem(val name: String, val id: Long,  val icon: ImageVector)
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1570,12 +1960,12 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
 @Composable
 fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
     val languages = listOf(
-        LanguageItem("Meus cursos", /*R.drawable.python*/Icons.Filled.Home),
-        LanguageItem("Tutores", /*R.drawable.javascript*/Icons.Filled.Home),
-        LanguageItem("Pagamento", /*R.drawable.uiux*/Icons.Filled.Home),
-        LanguageItem("Transação", /*R.drawable.java*/Icons.Filled.Home),
-        LanguageItem("Estatísticas", /*R.drawable.cpp*/Icons.Filled.Home),
-        LanguageItem("Favoritos", /*R.drawable.algorithms*/Icons.Filled.Home),
+        LanguageItem("Meus cursos", 1,/*R.drawable.python*/Icons.Filled.Home),
+        LanguageItem("Tutores", 1,/*R.drawable.javascript*/Icons.Filled.Home),
+        LanguageItem("Pagamento", 1,/*R.drawable.uiux*/Icons.Filled.Home),
+        LanguageItem("Transação", 1,/*R.drawable.java*/Icons.Filled.Home),
+        LanguageItem("Estatísticas", 1,/*R.drawable.cpp*/Icons.Filled.Home),
+        LanguageItem("Favoritos", 1,/*R.drawable.algorithms*/Icons.Filled.Home),
     )
 
     Scaffold(
@@ -1920,11 +2310,7 @@ fun TelaPrincipal(
     val viewModelFactory = ViewModelFactory(database, DataRepository(database))
     val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
 
-    val viewModel2: NivelamentoViewModel = viewModel(factory = viewModelFactory)
 
-    LaunchedEffect(Unit) {
-        viewModel2.syncPerguntasComRespostas(1)
-    }
 
 
 
@@ -1944,6 +2330,7 @@ fun TelaPrincipal(
         cursoList.value.map { curso ->
             LanguageItem(
                 name = curso.nome,
+                id = curso.id,
                 icon = Icons.Filled.Home
             )
         }
@@ -2217,11 +2604,12 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
             .clip(RoundedCornerShape(8.dp))
             .clickable {
                 sharedPrefsManager.saveCursoNome(language.name)
+                sharedPrefsManager.saveCursoId(language.id)
 
                 //if (syncStatus) {
                 CoroutineScope(Dispatchers.Main).launch {
                     viewModel.syncUnidadesAndModulos(languageName = language.name)
-                    navController.navigate("curso")
+                    navController.navigate("nivelamento") //curso
                 }
 
                 //}

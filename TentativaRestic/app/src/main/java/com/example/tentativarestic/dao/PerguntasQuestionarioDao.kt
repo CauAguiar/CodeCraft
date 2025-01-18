@@ -21,4 +21,7 @@ interface PerguntasQuestionarioDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPerguntas(perguntas: List<PerguntasQuestionario>)
+
+    @Query("SELECT * FROM perguntas_questionario WHERE id_curso = :id")
+    fun getPerguntasByCursoId(id: Long): List<PerguntasQuestionario>
 }
