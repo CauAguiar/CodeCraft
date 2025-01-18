@@ -2609,6 +2609,7 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
                 //if (syncStatus) {
                 CoroutineScope(Dispatchers.Main).launch {
                     viewModel.syncUnidadesAndModulos(languageName = language.name)
+                    viewModel.syncPersonCurso(language.id, sharedPrefsManager.getUserId())
                     navController.navigate("nivelamento") //curso
                 }
 
