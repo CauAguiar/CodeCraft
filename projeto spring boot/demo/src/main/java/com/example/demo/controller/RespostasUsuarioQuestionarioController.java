@@ -69,19 +69,4 @@ public class RespostasUsuarioQuestionarioController {
 
         return ResponseEntity.ok(nivelamento);
     }
-    
-    /*public ResponseEntity<Void> addResposta(@RequestBody RespostasNivelamentoRequest request) {
-        List<RespostasUsuarioQuestionario> respostasList = request.getRespostas();
-        Long cursoId = request.getCursoId();
-
-        respostasList.forEach(resposta -> {
-            respostasUsuarioQuestionarioService.insertResposta(
-                    resposta.getIdPerson(),
-                    resposta.getIdPergunta(),
-                    resposta.getIdResposta());
-        });
-
-        System.out.println("Curso ID: " + cursoId); // Use cursoId as needed
-        return ResponseEntity.ok().build();
-    }*/
 }
