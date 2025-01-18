@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.model.NivelamentoResponse;
 import com.example.demo.model.RespostasNivelamentoRequest;
 import com.example.demo.model.RespostasUsuarioQuestionario;
 import com.example.demo.service.RandomForestService;
@@ -37,7 +38,7 @@ public class RespostasUsuarioQuestionarioController {
     }
 
     @PostMapping("/enviarRespostasNivelamento")
-    public ResponseEntity<String> addResposta(@RequestBody RespostasNivelamentoRequest request) {
+    public ResponseEntity<NivelamentoResponse> addResposta(@RequestBody RespostasNivelamentoRequest request) {
         List<RespostasUsuarioQuestionario> respostasList = request.getRespostas();
         Long cursoId = request.getCursoId();
 
@@ -68,7 +69,10 @@ public class RespostasUsuarioQuestionarioController {
         //Save the prediction result to the database
         respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId, nivelamento);
 
+        // Create the response object
+        NivelamentoResponse nivelamentoResponse = new NivelamentoResponse(nivelamento);
+
         //return ResponseEntity.ok(nivelamento);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nivelamento);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nivelamentoResponse);
     }
 }
