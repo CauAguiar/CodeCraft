@@ -55,7 +55,7 @@ public class RespostasUsuarioQuestionarioController {
                 .map(resposta -> new double[] { resposta.getIdResposta() })
                 .toArray(double[][]::new);
         
-        int[] predictionResult = randomForestService.predict(features);
+        int[] predictionResult = randomForestService.predict(features, cursoId);
 
         // Map the prediction result to the course ID
         String nivelamento;

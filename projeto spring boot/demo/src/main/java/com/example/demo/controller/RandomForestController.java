@@ -32,7 +32,7 @@ public class RandomForestController {
     @PostMapping("/predict")
     public ResponseEntity<int[]> predict(@RequestBody double[][] features) {
         try {
-            return ResponseEntity.ok(this.randomForestService.predict(features));
+            return ResponseEntity.ok(this.randomForestService.predict(features, 1));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -51,9 +51,9 @@ public class RandomForestController {
     }
 
     @PostMapping("/load")
-    public ResponseEntity<String> loadModel(@RequestBody String filename) {
+    public ResponseEntity<String> loadModel(@RequestBody Long cursoId) {
         try {
-            this.randomForestService.loadModel(filename);
+            this.randomForestService.loadModel(cursoId);
             return ResponseEntity.ok("Model loaded");
         } catch (Exception e) {
             e.printStackTrace();
