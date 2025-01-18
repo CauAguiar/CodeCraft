@@ -67,4 +67,12 @@ class CursoViewModel(private val database: AppDatabase, private val dataReposito
             cursoDao.deleteCurso(curso)
         }
     }
+
+    suspend fun syncPersonCurso(cursoId: Long, personId: Long) {
+        try{
+            dataRepository.syncPersonCurso(cursoId, personId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 }

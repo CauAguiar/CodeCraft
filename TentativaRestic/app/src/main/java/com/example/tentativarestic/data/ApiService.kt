@@ -4,6 +4,7 @@ import com.example.tentativarestic.entities.Curso
 import com.example.tentativarestic.entities.Modulo
 import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.ExercicioAberto
+import com.example.tentativarestic.entities.PersonCurso
 import com.example.tentativarestic.entities.Projeto
 import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
@@ -75,6 +76,9 @@ interface ApiService {
     suspend fun enviarRespostasNivelamento(
         @Body request: DataRepository.RespostasNivelamentoRequest  // Enviando o request como JSON no corpo
     ): Response<String>
+
+    @GET("api/personCurso/getByCursoIdAndPersonId")
+    suspend fun getPersonCurso(@Query("cursoId") cursoId: Long, @Query("personId") personId: Long): Response<PersonCurso>
 
 //    @GET("api/personQuiz/getByQuizId")
 //    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>

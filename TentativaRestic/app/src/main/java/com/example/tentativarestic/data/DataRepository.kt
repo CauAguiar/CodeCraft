@@ -25,6 +25,7 @@ class DataRepository(private val database: AppDatabase) {
     private val perguntasQuestionarioDao = database.perguntasQuestionarioDao()
     private val respostasQuestionarioDao = database.respostasQuestionarioDao()
     private val respostasUsuarioQuestionarioDao = database.respostasUsuarioQuestionarioDao()
+    private val personCursoDao = database.personCursoDao()
     //private val licaoDao = database.licaoDao()
 
     // Função para sincronizar atividades
@@ -295,11 +296,36 @@ class DataRepository(private val database: AppDatabase) {
 
         // Enviar respostas e cursoId para a API
         try {
-            api.enviarRespostasNivelamento(request)
+            val response = api.enviarRespostasNivelamento(request)
             Log.d("DataRepository", "Respostas enviadas com sucesso para a API ${request}")
+            if (response.isSuccessful) {
+                // A resposta foi bem-sucedida, acessa o corpo
+                val responseBody = response.body()
+                Log.d("DataRepository", "Resposta da API: $responseBody")
+            } else {
+                // A resposta falhou, pega o código e o corpo do erro
+                val errorBody = response.errorBody()?.string()
+                Log.e("DataRepository", "Erro na API: Código ${response.code()}, Erro: $errorBody")
+            }
         } catch (e: Exception) {
             // Tratar exceção
             Log.e("DataRepository", "Erro ao enviar respostas: ${e.message}")
+        }
+    }
+
+    suspend fun syncPersonCurso(cursoId: Long, personId: Long) {
+        try{
+            Log.d("DataRepository", "Sincronizando personCurso $personId com curso $cursoId")
+            val response = api.getPersonCurso(cursoId, personId)
+            if (response.isSuccessful) {
+                response.body()?.let { personCurso ->
+                    personCursoDao.insertPersonCurso(personCurso)
+                }
+            } else {
+                // Tratar erro
+            }
+        } catch (e: Exception) {
+            // Tratar exceção
         }
     }
 
