@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.model.RespostasNivelamentoRequest;
 import com.example.demo.model.RespostasUsuarioQuestionario;
+import com.example.demo.service.RandomForestService;
 import com.example.demo.service.RespostasUsuarioQuestionarioService;
 
 @RestController
@@ -21,20 +23,65 @@ public class RespostasUsuarioQuestionarioController {
     @Autowired
     private RespostasUsuarioQuestionarioService respostasUsuarioQuestionarioService;
 
+    @Autowired
+    private RandomForestService randomForestService;
+
     @GetMapping("/getByPersonId")
-    public ResponseEntity<List<RespostasUsuarioQuestionario>> getRespostasByPersonId(@RequestParam(name = "personId") Long personId) {
+    public ResponseEntity<List<RespostasUsuarioQuestionario>> getRespostasByPersonId(
+            @RequestParam(name = "personId") Long personId) {
         System.out.println("Receive person id: " + personId);
-        List<RespostasUsuarioQuestionario> respostas = respostasUsuarioQuestionarioService.getRespostasByPersonId(personId);
+        List<RespostasUsuarioQuestionario> respostas = respostasUsuarioQuestionarioService
+                .getRespostasByPersonId(personId);
         return ResponseEntity.ok(respostas);
     }
 
     @PostMapping("/enviarRespostasNivelamento")
-    public ResponseEntity<Void> addResposta(@RequestBody List<RespostasUsuarioQuestionario> respostasList) {
-        System.out.println(respostasList.toString());
+    public ResponseEntity<String> addResposta(@RequestBody RespostasNivelamentoRequest request) {
+        List<RespostasUsuarioQuestionario> respostasList = request.getRespostas();
+        Long cursoId = request.getCursoId();
+
+        // Insert each answer into the database
         respostasList.forEach(resposta -> {
-            respostasUsuarioQuestionarioService.insertResposta(resposta.getIdPerson(), resposta.getIdPergunta(),
+            respostasUsuarioQuestionarioService.insertResposta(
+                    resposta.getIdPerson(),
+                    resposta.getIdPergunta(),
                     resposta.getIdResposta());
         });
-        return ResponseEntity.ok().build();
+
+        // Extract features for prediction
+        double[][] features = respostasList.stream()
+                .map(resposta -> new double[] { resposta.getIdResposta() })
+                .toArray(double[][]::new);
+        
+        int[] predictionResult = randomForestService.predict(features);
+
+        // Map the prediction result to the course ID
+        String nivelamento;
+        switch(predictionResult[0]) {
+            case 0 -> nivelamento = "Básico";
+            case 1 -> nivelamento = "Intermediário";
+            case 2 -> nivelamento = "Avançado";
+            default -> nivelamento = "Indefinido";
+        }
+
+        //Save the prediction result to the database
+        respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId, nivelamento);
+
+        return ResponseEntity.ok("Responses saved and prediction: " + nivelamento);
     }
+    
+    /*public ResponseEntity<Void> addResposta(@RequestBody RespostasNivelamentoRequest request) {
+        List<RespostasUsuarioQuestionario> respostasList = request.getRespostas();
+        Long cursoId = request.getCursoId();
+
+        respostasList.forEach(resposta -> {
+            respostasUsuarioQuestionarioService.insertResposta(
+                    resposta.getIdPerson(),
+                    resposta.getIdPergunta(),
+                    resposta.getIdResposta());
+        });
+
+        System.out.println("Curso ID: " + cursoId); // Use cursoId as needed
+        return ResponseEntity.ok().build();
+    }*/
 }

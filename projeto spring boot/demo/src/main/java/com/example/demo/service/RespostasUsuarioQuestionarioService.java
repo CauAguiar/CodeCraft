@@ -24,4 +24,8 @@ public class RespostasUsuarioQuestionarioService {
     public void insertResposta(Long personId, Long perguntaId, Long respostaId) {
         respostasUsuarioQuestionarioRepository.insertResposta(personId, perguntaId, respostaId);
     }
+
+    public void insertNivelamento(Long personId, Long cursoId, String nivelamento) {
+        respostasUsuarioQuestionarioRepository.insertNivelamento(personId, cursoId, nivelamento);
+    }
 }
