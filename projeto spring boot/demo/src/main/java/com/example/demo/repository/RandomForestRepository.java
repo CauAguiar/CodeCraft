@@ -1,6 +1,5 @@
 package com.example.demo.repository;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -23,7 +22,7 @@ public class RandomForestRepository {
 
     public RandomForest loadModel(Long cursoId) {
         String filename = "models/final_model" + cursoId + ".ser";
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+        try (ObjectInputStream ois = new ObjectInputStream(getClass().getClassLoader().getResourceAsStream(filename))) {
             return (RandomForest) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
