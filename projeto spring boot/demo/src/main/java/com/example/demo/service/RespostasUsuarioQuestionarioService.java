@@ -26,6 +26,6 @@ public class RespostasUsuarioQuestionarioService {
     }
 
     public void insertNivelamento(Long personId, Long cursoId, String nivelamento) {
-        respostasUsuarioQuestionarioRepository.insertNivelamento(personId, cursoId, nivelamento);
+        respostasUsuarioQuestionarioRepository.insertNivelamento(personId, cursoId, nivelamento, false, true);
     }
 }

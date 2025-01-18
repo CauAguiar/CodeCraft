@@ -19,7 +19,7 @@ public class PersonCursoController {
     @Autowired
     private PersonCursoService personCursoService;
 
-    @GetMapping("/getPersonCurso")
+    @GetMapping("/getByCursoIdAndPersonId")
     public ResponseEntity<List<PersonCurso>> getPersonCurso(@RequestParam(name = "personId") Long personId, @RequestParam(name = "cursoId") Long cursoId) {
         System.out.println("Receive person id: " + personId + " and curso id: " + cursoId);
         List<PersonCurso> personCurso = personCursoService.findByIdPersonAndCurso(personId, cursoId);
