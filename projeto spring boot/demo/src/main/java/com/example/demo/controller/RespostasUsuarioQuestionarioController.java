@@ -67,7 +67,7 @@ public class RespostasUsuarioQuestionarioController {
         //Save the prediction result to the database
         respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId, nivelamento);
 
-        return ResponseEntity.ok("Responses saved and prediction: " + nivelamento);
+        return ResponseEntity.ok(nivelamento);
     }
     
     /*public ResponseEntity<Void> addResposta(@RequestBody RespostasNivelamentoRequest request) {
