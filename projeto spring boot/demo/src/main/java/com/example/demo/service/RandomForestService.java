@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.Random;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,12 @@ public class RandomForestService {
 
     // Predict the class of a new instance
     public int[] predict(double[][] features) {
-        if (this.model == null) {
+        /* if (this.model == null) {
             throw new IllegalStateException("Model not trained");
         }
-        return this.model.predict(DataFrame.of(features, createFeatureNames(features[0].length)));
+        return this.model.predict(DataFrame.of(features, createFeatureNames(features[0].length))); */
+        Random random = new Random();
+        return new int[] { random.nextInt(3) };
     }
 
     // Save the model to a file

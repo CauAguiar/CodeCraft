@@ -22,4 +22,11 @@ public interface RespostasUsuarioQuestionarioRepository extends JpaRepository<Re
     void insertResposta(@Param("personId") Long personId, @Param("perguntaId") Long perguntaId,
             @Param("respostaId") Long respostaId);
 
+    
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT INTO person_curso (id_person, id_curso, nivelamento) VALUES (:personId, :cursoId, :nivelamento)", nativeQuery = true)
+    void insertNivelamento(@Param("personId") Long personId, @Param("cursoId") Long cursoId,
+            @Param("nivelamento") String nivelamento);
+
 }
