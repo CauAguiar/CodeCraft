@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,6 +68,7 @@ public class RespostasUsuarioQuestionarioController {
         //Save the prediction result to the database
         respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId, nivelamento);
 
-        return ResponseEntity.ok(nivelamento);
+        //return ResponseEntity.ok(nivelamento);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nivelamento);
     }
 }
