@@ -21,7 +21,7 @@ public class RandomForestRepository {
     }
 
     public RandomForest loadModel(Long cursoId) {
-        String filename = "models/final_model" + cursoId + ".ser";
+        String filename = "resources/models/final_model" + cursoId + ".ser";
         try (ObjectInputStream ois = new ObjectInputStream(getClass().getClassLoader().getResourceAsStream(filename))) {
             return (RandomForest) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
