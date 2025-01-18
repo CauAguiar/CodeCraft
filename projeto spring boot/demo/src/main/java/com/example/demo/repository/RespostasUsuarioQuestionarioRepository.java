@@ -24,7 +24,7 @@ public interface RespostasUsuarioQuestionarioRepository extends JpaRepository<Re
 
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO person_curso (id_person, id_curso, nivelamento, concluido, habilitado) VALUES (:personId, :cursoId, :nivelamento)", nativeQuery = true)
+    @Query(value = "INSERT INTO person_curso (id_person, id_curso, nivelamento, concluido, habilitado) VALUES (:personId, :cursoId, :nivelamento, :concluido, :habilitado)", nativeQuery = true)
     void insertNivelamento(@Param("personId") Long personId, @Param("cursoId") Long cursoId,
             @Param("nivelamento") String nivelamento, @Param("concluido") boolean concluido, @Param("habilitado") boolean habilitado);
 
