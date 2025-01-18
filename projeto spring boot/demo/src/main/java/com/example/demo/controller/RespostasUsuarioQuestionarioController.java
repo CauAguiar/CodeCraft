@@ -30,6 +30,7 @@ public class RespostasUsuarioQuestionarioController {
 
     @PostMapping("/enviarRespostasNivelamento")
     public ResponseEntity<Void> addResposta(@RequestBody List<RespostasUsuarioQuestionario> respostasList) {
+        System.out.println(respostasList.toString());
         respostasList.forEach(resposta -> {
             respostasUsuarioQuestionarioService.insertResposta(resposta.getIdPerson(), resposta.getIdPergunta(),
                     resposta.getIdResposta());
