@@ -27,8 +27,10 @@ public class PersonQuizId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PersonQuizId that = (PersonQuizId) o;
         return Objects.equals(personId, that.personId) && Objects.equals(quizId, that.quizId);
     }
@@ -38,4 +40,3 @@ public class PersonQuizId implements Serializable {
         return Objects.hash(personId, quizId);
     }
 }
-

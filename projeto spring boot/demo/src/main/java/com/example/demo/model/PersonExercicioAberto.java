@@ -1,6 +1,5 @@
 package com.example.demo.model;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
@@ -60,5 +59,3 @@ public class PersonExercicioAberto {
         this.correto = correto;
     }
 }
-
-

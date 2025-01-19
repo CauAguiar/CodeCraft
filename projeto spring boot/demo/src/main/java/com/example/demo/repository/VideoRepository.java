@@ -10,10 +10,10 @@ import com.example.demo.model.Video;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query(value = """
-        SELECT v.* 
-        FROM video v 
-        JOIN atividade a ON a.atividade_especifica_id = v.id 
-        WHERE a.modulo_id = :moduloId
-        """, nativeQuery = true)
+            SELECT v.*
+            FROM video v
+            JOIN atividade a ON a.atividade_especifica_id = v.id
+            WHERE a.modulo_id = :moduloId
+            """, nativeQuery = true)
     List<Video> findByModuloId(@Param("moduloId") Long moduloId);
 }

@@ -55,27 +55,28 @@ public class RespostasUsuarioQuestionarioController {
         });
 
         // Extract features for prediction
-        double[][] features = dataFetchRepository.fetchFeaturesUniqueLevel(cursoId.intValue(), respostasList.get(0).getIdPerson().intValue());
-    
-        
+        double[][] features = dataFetchRepository.fetchFeaturesUniqueLevel(cursoId.intValue(),
+                respostasList.get(0).getIdPerson().intValue());
+
         int[] predictionResult = randomForestService.predict(features, cursoId);
 
         // Map the prediction result to the course ID
         String nivelamento;
-        switch(predictionResult[0]) {
+        switch (predictionResult[0]) {
             case 0 -> nivelamento = "Básico";
             case 1 -> nivelamento = "Intermediário";
             case 2 -> nivelamento = "Avançado";
             default -> nivelamento = "Indefinido";
         }
 
-        //Save the prediction result to the database
-        respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId, nivelamento);
+        // Save the prediction result to the database
+        respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId,
+                nivelamento);
 
         // Create the response object
         NivelamentoResponse nivelamentoResponse = new NivelamentoResponse(nivelamento);
 
-        //return ResponseEntity.ok(nivelamento);
+        // return ResponseEntity.ok(nivelamento);
         return ResponseEntity.status(HttpStatus.CREATED).body(nivelamentoResponse);
     }
 }

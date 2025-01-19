@@ -20,7 +20,7 @@ public class PersonLicao {
     private Long licaoId;
 
     @Column(name = "progresso")
-    private String progresso;  // Exemplo: "Em andamento", "Concluído"
+    private String progresso; // Exemplo: "Em andamento", "Concluído"
 
     @Column(name = "completou")
     private Boolean completou;
@@ -69,4 +69,3 @@ public class PersonLicao {
         this.confirmou = confirmou;
     }
 }
-

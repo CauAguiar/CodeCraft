@@ -22,13 +22,12 @@ public class PersonService {
         // Salva a pessoa no banco de dados
         return personRepository.save(person);
     }
-    
+
     // Realizar login usando email e senha
     public boolean loginWithEmail(String email, String password) {
         Optional<Person> person = personRepository.findByEmail(email);
         return person.isPresent() && person.get().getPassword().equals(password);
     }
-    
 
     // Login via Facebook
     public Optional<Person> loginWithFacebook(String facebookId) {
@@ -43,8 +42,9 @@ public class PersonService {
     public String sendConfirmationCode(String telefone) {
         // Gera um código aleatório de 6 dígitos
         String codigo = String.format("%06d", new Random().nextInt(999999));
-        
-        // Você pode simular o envio do código aqui (em um sistema real, você usaria um serviço SMS)
+
+        // Você pode simular o envio do código aqui (em um sistema real, você usaria um
+        // serviço SMS)
         System.out.println("Código de confirmação enviado para " + telefone + ": " + codigo);
 
         // Retorna o código gerado

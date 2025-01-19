@@ -21,7 +21,7 @@ public class RandomForestService {
 
     @Autowired
     private RandomForestRepository randomForestRepository;
-    
+
     private RandomForest model;
 
     public String trainTest(int languageID) {
@@ -29,7 +29,7 @@ public class RandomForestService {
         int[] labels = this.dataFetchRepository.fetchLabels(languageID);
 
         if (features.length == 0 || labels.length == 0) {
-            //logger.warn("No data available");
+            // logger.warn("No data available");
             return "No data available";
         }
         train(languageID, features, labels);
@@ -39,7 +39,8 @@ public class RandomForestService {
     // Train the model
     public void train(int languageId, double[][] features, int[] labels) {
         String[] featureNames = createFeatureNames(features[0].length);
-        this.model = RandomForest.fit(Formula.lhs("nivel"), DataFrame.of(features, featureNames).merge(IntVector.of("nivel", labels)));
+        this.model = RandomForest.fit(Formula.lhs("nivel"),
+                DataFrame.of(features, featureNames).merge(IntVector.of("nivel", labels)));
     }
 
     // Predict the class of a new instance

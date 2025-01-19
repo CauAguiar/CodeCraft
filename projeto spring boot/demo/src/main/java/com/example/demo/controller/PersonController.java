@@ -31,12 +31,12 @@ public class PersonController {
         String password = params.get("password");
         String telefone = params.get("telefone");
         String dataNascimento = params.get("dataNascimento");
-    
+
         // Verifica se algum parâmetro não foi enviado
         if (name == null || email == null || password == null || telefone == null || dataNascimento == null) {
             throw new IllegalArgumentException("Todos os campos são obrigatórios.");
         }
-    
+
         // Cria um objeto Person com os dados recebidos
         Person person = new Person();
         person.setName(name);
@@ -44,26 +44,24 @@ public class PersonController {
         person.setPassword(password);
         person.setTelefone(telefone);
         person.setDataNascimento(dataNascimento);
-    
-        // Envia o código de confirmação    
+
+        // Envia o código de confirmação
         // Registra a pessoa e salva no banco de dados
         Person savedPerson = personService.registerPerson(person);
-    
+
         // Retorna o ID da pessoa registrada
         return savedPerson.getId();
     }
-    
-    
 
     @PostMapping("/login/email")
     public boolean loginWithEmail(@RequestBody Map<String, String> credentials) {
         String email = credentials.get("email");
         String password = credentials.get("password");
-    
+
         if (email == null || password == null) {
             throw new IllegalArgumentException("Email and password are required");
         }
-    
+
         // Use diretamente o boolean retornado pelo PersonService
         return personService.loginWithEmail(email, password);
     }
@@ -73,7 +71,6 @@ public class PersonController {
         String email = requestBody.get("email");
         return personService.findPersonByEmail(email);
     }
-    
 
     // Endpoint para login com Facebook
     @PostMapping("/login/facebook")
@@ -106,11 +103,10 @@ public class PersonController {
         return ResponseEntity.ok(response);
     }
 
-
     // Endpoint para atualizar o perfil de uma pessoa
     @PutMapping("/updateProfile")
     public Person updateProfile(@RequestParam Long personId, @RequestParam(required = false) String secondName,
-                                @RequestParam(required = false) Integer age, @RequestParam(required = false) String gender) {
+            @RequestParam(required = false) Integer age, @RequestParam(required = false) String gender) {
         return personService.updateProfile(personId, secondName, age, gender);
     }
 }

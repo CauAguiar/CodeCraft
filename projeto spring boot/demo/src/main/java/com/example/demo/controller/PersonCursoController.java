@@ -19,14 +19,15 @@ public class PersonCursoController {
     private PersonCursoService personCursoService;
 
     @GetMapping("/getByCursoIdAndPersonId")
-    public ResponseEntity<?> getPersonCurso(@RequestParam(name = "personId") Long personId, @RequestParam(name = "cursoId") Long cursoId) {
+    public ResponseEntity<?> getPersonCurso(@RequestParam(name = "personId") Long personId,
+            @RequestParam(name = "cursoId") Long cursoId) {
         System.out.println("Receive person id: " + personId + " and curso id: " + cursoId);
         PersonCurso personCurso = personCursoService.findByIdPersonAndCurso(personId, cursoId);
-        
-        if(personCurso == null) {
+
+        if (personCurso == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("PersonCurso not found");
         }
-        
+
         return ResponseEntity.ok(personCurso);
     }
 

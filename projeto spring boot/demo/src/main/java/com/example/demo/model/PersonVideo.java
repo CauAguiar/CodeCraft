@@ -50,4 +50,3 @@ public class PersonVideo {
         this.confirmou = confirmou;
     }
 }
-

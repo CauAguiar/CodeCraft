@@ -20,7 +20,8 @@ public class PerguntasQuestionarioController {
     private PerguntasQuestionarioService perguntasQuestionarioService;
 
     @GetMapping("/getByCursoId")
-    public ResponseEntity<List<PerguntasQuestionario>> getPerguntasByCursoId(@RequestParam(name = "cursoId") Long cursoId) {
+    public ResponseEntity<List<PerguntasQuestionario>> getPerguntasByCursoId(
+            @RequestParam(name = "cursoId") Long cursoId) {
         System.out.println("Receive curso id: " + cursoId);
         List<PerguntasQuestionario> perguntas = perguntasQuestionarioService.getPerguntasByCursoId(cursoId);
         return ResponseEntity.ok(perguntas);

@@ -10,10 +10,10 @@ import com.example.demo.model.Quiz;
 
 public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query(value = """
-        SELECT q.* 
-        FROM quiz q 
-        JOIN atividade a ON a.atividade_especifica_id = q.id 
-        WHERE a.modulo_id = :moduloId
-        """, nativeQuery = true)
+            SELECT q.*
+            FROM quiz q
+            JOIN atividade a ON a.atividade_especifica_id = q.id
+            WHERE a.modulo_id = :moduloId
+            """, nativeQuery = true)
     List<Quiz> findByModuloId(@Param("moduloId") Long moduloId);
 }

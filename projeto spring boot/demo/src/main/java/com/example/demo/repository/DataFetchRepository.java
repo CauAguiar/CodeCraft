@@ -16,24 +16,25 @@ public class DataFetchRepository {
     }
 
     public double[][] fetchFeatures(int languageId) {
-        /*String query = """
-            SELECT GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
-            FROM person_curso pc
-            JOIN respostas_usuario_questionario ruq ON pc.id_person = ruq.id_person
-            JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
-            WHERE pc.id_curso = r.id_curso AND pc.id_curso = ?
-            GROUP BY pc.id_person
-        """;*/
+        /*
+         * String query = """
+         * SELECT GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
+         * FROM person_curso pc
+         * JOIN respostas_usuario_questionario ruq ON pc.id_person = ruq.id_person
+         * JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
+         * WHERE pc.id_curso = r.id_curso AND pc.id_curso = ?
+         * GROUP BY pc.id_person
+         * """;
+         */
         String query = """
-            SELECT GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
-            FROM person_curso pc
-            JOIN respostas_usuario_questionario ruq ON pc.id_person = ruq.id_person
-            JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
-            JOIN perguntas_questionario pq ON r.id_pergunta = pq.id_pergunta
-            WHERE pc.id_curso = ?
-            GROUP BY pc.id_person
-        """;
-
+                    SELECT GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
+                    FROM person_curso pc
+                    JOIN respostas_usuario_questionario ruq ON pc.id_person = ruq.id_person
+                    JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
+                    JOIN perguntas_questionario pq ON r.id_pergunta = pq.id_pergunta
+                    WHERE pc.id_curso = ?
+                    GROUP BY pc.id_person
+                """;
 
         List<double[]> featuresList = new ArrayList<>();
         jdbcTemplate.query(query, ps -> ps.setInt(1, languageId), rs -> {
@@ -46,20 +47,20 @@ public class DataFetchRepository {
 
     public double[][] fetchFeaturesUniqueLevel(int languageId, int userId) {
         String query = """
-            SELECT 
-                GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
-            FROM 
-                respostas_usuario_questionario ruq
-            JOIN 
-                respostas_questionario r ON ruq.id_resposta = r.id_resposta
-            JOIN 
-                perguntas_questionario pq ON ruq.id_pergunta = pq.id_pergunta
-            WHERE 
-                ruq.id_person = ? 
-                AND pq.id_curso = ?
-            GROUP BY 
-                ruq.id_person, pq.id_curso;
-        """;
+                    SELECT
+                        GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
+                    FROM
+                        respostas_usuario_questionario ruq
+                    JOIN
+                        respostas_questionario r ON ruq.id_resposta = r.id_resposta
+                    JOIN
+                        perguntas_questionario pq ON ruq.id_pergunta = pq.id_pergunta
+                    WHERE
+                        ruq.id_person = ?
+                        AND pq.id_curso = ?
+                    GROUP BY
+                        ruq.id_person, pq.id_curso;
+                """;
 
         List<double[]> featuresList = new ArrayList<>();
         jdbcTemplate.query(query, ps -> {
@@ -74,25 +75,15 @@ public class DataFetchRepository {
     }
 
     public int[] fetchLabels(int languageId) {
-        /*String query = """
-            SELECT l.nivel
-            FROM person_curso l
-            JOIN respostas_usuario_questionario ruq ON l.id_person = ruq.id_person
-            JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
-            WHERE l.id_curso = r.id_curso AND l.id_curso = ?
-            GROUP BY l.id_usuario, l.nivel
-        """;*/
-
         String query = """
-            SELECT l.nivelamento
-            FROM person_curso l
-            JOIN respostas_usuario_questionario ruq ON l.id_person = ruq.id_person
-            JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
-            JOIN perguntas_questionario pq ON r.id_pergunta = pq.id_pergunta
-            WHERE l.id_curso = ?
-            GROUP BY l.id_person, l.nivelamento
-        """;
-
+                    SELECT l.nivelamento
+                    FROM person_curso l
+                    JOIN respostas_usuario_questionario ruq ON l.id_person = ruq.id_person
+                    JOIN respostas_questionario r ON ruq.id_resposta = r.id_resposta
+                    JOIN perguntas_questionario pq ON r.id_pergunta = pq.id_pergunta
+                    WHERE l.id_curso = ?
+                    GROUP BY l.id_person, l.nivelamento
+                """;
 
         List<Integer> labelsList = new ArrayList<>();
         jdbcTemplate.query(query, ps -> ps.setInt(1, languageId), rs -> {
@@ -107,5 +98,5 @@ public class DataFetchRepository {
         });
         return labelsList.stream().mapToInt(i -> i).toArray();
     }
-    
+
 }

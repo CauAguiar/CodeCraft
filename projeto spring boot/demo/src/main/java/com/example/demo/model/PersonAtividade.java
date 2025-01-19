@@ -50,4 +50,3 @@ public class PersonAtividade {
         this.confirmou = confirmou;
     }
 }
-

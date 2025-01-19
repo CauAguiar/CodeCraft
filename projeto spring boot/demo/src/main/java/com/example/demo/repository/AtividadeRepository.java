@@ -10,10 +10,10 @@ import com.example.demo.model.Atividade;
 
 public interface AtividadeRepository extends JpaRepository<Atividade, Long> {
     // Adicione métodos personalizados, se necessário
-        @Query(value = """
-        SELECT * 
-        FROM atividade 
-        WHERE modulo_id = :moduloId
-        """, nativeQuery = true)
+    @Query(value = """
+            SELECT *
+            FROM atividade
+            WHERE modulo_id = :moduloId
+            """, nativeQuery = true)
     List<Atividade> findAtividadesByModuloId(@Param("moduloId") Long moduloId);
 }

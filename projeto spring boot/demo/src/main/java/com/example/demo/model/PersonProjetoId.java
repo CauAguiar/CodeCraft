@@ -1,6 +1,5 @@
 package com.example.demo.model;
 
-
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -28,8 +27,10 @@ public class PersonProjetoId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PersonProjetoId that = (PersonProjetoId) o;
         return Objects.equals(personId, that.personId) && Objects.equals(projetoId, that.projetoId);
     }
@@ -39,4 +40,3 @@ public class PersonProjetoId implements Serializable {
         return Objects.hash(personId, projetoId);
     }
 }
-

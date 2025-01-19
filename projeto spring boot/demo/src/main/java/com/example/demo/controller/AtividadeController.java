@@ -16,7 +16,6 @@ import com.example.demo.service.AtividadeService;
 @RequestMapping("/api/atividade")
 public class AtividadeController {
 
-
     @Autowired
     AtividadeService atividadeService;
 
@@ -26,9 +25,4 @@ public class AtividadeController {
         return ResponseEntity.ok(atividades);
     }
 
-    // @PostMapping("/processar")
-    // public ResponseEntity<Map<String, List<Object>>> processarAtividades(@RequestBody List<Atividade> atividades) {
-    //     Map<String, List<Object>> resultado = atividadeService.processarAtividades(atividades);
-    //     return ResponseEntity.ok(resultado);
-    // }
 }

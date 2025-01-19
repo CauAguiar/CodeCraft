@@ -15,7 +15,7 @@ public class RespostasQuestionarioService {
     private RespostasQuestionarioRepository respostasQuestionarioRepository;
 
     public List<RespostasQuestionario> getRespostasByCursoId(Long cursoId) {
-        if(cursoId == null) {
+        if (cursoId == null) {
             throw new IllegalArgumentException("O id do curso não pode ser nulo");
         }
         return respostasQuestionarioRepository.findByIdPergunta(cursoId);

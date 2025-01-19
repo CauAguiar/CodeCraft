@@ -21,17 +21,6 @@ public class RandomForestRepository {
         }
     }
 
-    /*public RandomForest loadModel(Long cursoID) throws IOException {
-        String filePath = getModelFilePath(cursoID); // Example: return a file path for cursoID
-        try (InputStream inputStream = new FileInputStream(filePath);
-                ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            return (RandomForest) objectInputStream.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }*/
-
     public RandomForest loadModel(Long cursoID) throws IOException {
         String filePath = String.format("final_model%d.ser", cursoID); // Example: return a file path for cursoID
         try (InputStream inputStream = new ClassPathResource(filePath).getInputStream();
@@ -42,10 +31,4 @@ public class RandomForestRepository {
             return null;
         }
     }
-
-    /*private String getModelFilePath(Long cursoID) throws IOException {
-        String fileName = String.format("final_model%d.ser", cursoID);
-        File resourceFile = new ClassPathResource(fileName).getFile();
-        return resourceFile.getAbsolutePath();
-    }*/
 }

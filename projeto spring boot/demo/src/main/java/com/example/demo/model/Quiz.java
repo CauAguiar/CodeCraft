@@ -32,7 +32,7 @@ public class Quiz {
     private String enunciado;
 
     @Column(name = "resposta_correta", nullable = false, length = 1)
-    private String resposta_correta;    
+    private String resposta_correta;
 
     // Getters e Setters
     public Long getId() {

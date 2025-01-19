@@ -17,9 +17,6 @@ public class RespostasQuestionario {
     @Column(name = "id_resposta")
     private Long idResposta;
 
-    /*@Column(name = "id_pergunta", nullable = false)
-    private Long idPergunta;*/
-
     @Column(nullable = false, columnDefinition = "TEXT")
     private String resposta;
 
@@ -38,15 +35,6 @@ public class RespostasQuestionario {
     public void setIdResposta(Long idResposta) {
         this.idResposta = idResposta;
     }
-    
-
-   /*  public Long getIdPergunta() {
-        return idPergunta;
-    } */
-
-    /* public void setIdPergunta(Long idPergunta) {
-        this.idPergunta = idPergunta;
-    } */
 
     public String getResposta() {
         return resposta;

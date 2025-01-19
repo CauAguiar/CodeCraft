@@ -27,8 +27,10 @@ public class PersonVideoId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PersonVideoId that = (PersonVideoId) o;
         return Objects.equals(personId, that.personId) && Objects.equals(videoId, that.videoId);
     }
@@ -38,4 +40,3 @@ public class PersonVideoId implements Serializable {
         return Objects.hash(personId, videoId);
     }
 }
-

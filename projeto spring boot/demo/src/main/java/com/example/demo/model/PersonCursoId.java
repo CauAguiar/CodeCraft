@@ -28,8 +28,10 @@ public class PersonCursoId implements Serializable {
     // hashCode e equals
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PersonCursoId that = (PersonCursoId) o;
         return Objects.equals(idPerson, that.idPerson) && Objects.equals(idCurso, that.idCurso);
     }
