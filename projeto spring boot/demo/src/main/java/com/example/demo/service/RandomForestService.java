@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import java.util.Random;
+import java.io.IOException;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,21 +38,17 @@ public class RandomForestService {
 
     // Train the model
     public void train(int languageId, double[][] features, int[] labels) {
-        //double[][] features = this.dataFetchRepository.fetchFeatures(languageId);
-        //int[] labels = this.dataFetchRepository.fetchLabels(languageId);
-
         String[] featureNames = createFeatureNames(features[0].length);
         this.model = RandomForest.fit(Formula.lhs("nivel"), DataFrame.of(features, featureNames).merge(IntVector.of("nivel", labels)));
     }
 
     // Predict the class of a new instance
-    public int[] predict(double[][] features) {
-        /* if (this.model == null) {
+    public int[] predict(double[][] features, long cursoId) {
+        this.model = loadModel(cursoId);
+        if (this.model == null) {
             throw new IllegalStateException("Model not trained");
         }
-        return this.model.predict(DataFrame.of(features, createFeatureNames(features[0].length))); */
-        Random random = new Random();
-        return new int[] { random.nextInt(3) };
+        return this.model.predict(DataFrame.of(features, createFeatureNames(features[0].length)));
     }
 
     // Save the model to a file
@@ -65,11 +61,12 @@ public class RandomForestService {
     }
 
     // Load the model from a file
-    public void loadModel(String filename) {
+    public RandomForest loadModel(Long cursoID) {
         try {
-            this.model = this.randomForestRepository.loadModel(filename);
-        } catch (Exception e) {
+            return this.model = this.randomForestRepository.loadModel(cursoID);
+        } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
     }
 

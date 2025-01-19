@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.model.NivelamentoResponse;
 import com.example.demo.model.RespostasNivelamentoRequest;
 import com.example.demo.model.RespostasUsuarioQuestionario;
 import com.example.demo.service.RandomForestService;
@@ -36,7 +38,7 @@ public class RespostasUsuarioQuestionarioController {
     }
 
     @PostMapping("/enviarRespostasNivelamento")
-    public ResponseEntity<String> addResposta(@RequestBody RespostasNivelamentoRequest request) {
+    public ResponseEntity<NivelamentoResponse> addResposta(@RequestBody RespostasNivelamentoRequest request) {
         List<RespostasUsuarioQuestionario> respostasList = request.getRespostas();
         Long cursoId = request.getCursoId();
 
@@ -52,8 +54,8 @@ public class RespostasUsuarioQuestionarioController {
         double[][] features = respostasList.stream()
                 .map(resposta -> new double[] { resposta.getIdResposta() })
                 .toArray(double[][]::new);
-        
-        int[] predictionResult = randomForestService.predict(features);
+    
+        int[] predictionResult = randomForestService.predict(features, cursoId);
 
         // Map the prediction result to the course ID
         String nivelamento;
@@ -67,21 +69,10 @@ public class RespostasUsuarioQuestionarioController {
         //Save the prediction result to the database
         respostasUsuarioQuestionarioService.insertNivelamento(request.getRespostas().get(0).getIdPerson(), cursoId, nivelamento);
 
-        return ResponseEntity.ok("Responses saved and prediction: " + nivelamento);
+        // Create the response object
+        NivelamentoResponse nivelamentoResponse = new NivelamentoResponse(nivelamento);
+
+        //return ResponseEntity.ok(nivelamento);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nivelamentoResponse);
     }
-    
-    /*public ResponseEntity<Void> addResposta(@RequestBody RespostasNivelamentoRequest request) {
-        List<RespostasUsuarioQuestionario> respostasList = request.getRespostas();
-        Long cursoId = request.getCursoId();
-
-        respostasList.forEach(resposta -> {
-            respostasUsuarioQuestionarioService.insertResposta(
-                    resposta.getIdPerson(),
-                    resposta.getIdPergunta(),
-                    resposta.getIdResposta());
-        });
-
-        System.out.println("Curso ID: " + cursoId); // Use cursoId as needed
-        return ResponseEntity.ok().build();
-    }*/
 }

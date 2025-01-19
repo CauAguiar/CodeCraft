@@ -1,8 +1,7 @@
 package com.example.demo.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,10 +18,15 @@ public class PersonCursoController {
     @Autowired
     private PersonCursoService personCursoService;
 
-    @GetMapping("/getPersonCurso")
-    public ResponseEntity<List<PersonCurso>> getPersonCurso(@RequestParam(name = "personId") Long personId, @RequestParam(name = "cursoId") Long cursoId) {
+    @GetMapping("/getByCursoIdAndPersonId")
+    public ResponseEntity<?> getPersonCurso(@RequestParam(name = "personId") Long personId, @RequestParam(name = "cursoId") Long cursoId) {
         System.out.println("Receive person id: " + personId + " and curso id: " + cursoId);
-        List<PersonCurso> personCurso = personCursoService.findByIdPersonAndCurso(personId, cursoId);
+        PersonCurso personCurso = personCursoService.findByIdPersonAndCurso(personId, cursoId);
+        
+        if(personCurso == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("PersonCurso not found");
+        }
+        
         return ResponseEntity.ok(personCurso);
     }
 

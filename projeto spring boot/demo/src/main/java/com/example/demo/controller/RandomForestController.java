@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +33,7 @@ public class RandomForestController {
     @PostMapping("/predict")
     public ResponseEntity<int[]> predict(@RequestBody double[][] features) {
         try {
-            return ResponseEntity.ok(this.randomForestService.predict(features));
+            return ResponseEntity.ok(this.randomForestService.predict(features, 1));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -50,11 +51,12 @@ public class RandomForestController {
         }
     }
 
-    @PostMapping("/load")
-    public ResponseEntity<String> loadModel(@RequestBody String filename) {
+    @GetMapping("/load")
+    public ResponseEntity<String> loadModel(@RequestParam(name = "cursoId") Long cursoId) {
+        System.out.println("Receive curso id: " + cursoId);
         try {
-            this.randomForestService.loadModel(filename);
-            return ResponseEntity.ok("Model loaded");
+            this.randomForestService.loadModel(cursoId);
+            return ResponseEntity.ok("Model loaded " + cursoId);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error loading the model");
