@@ -1,7 +1,5 @@
 package com.example.demo.repository;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +21,7 @@ public class RandomForestRepository {
         }
     }
 
-    public RandomForest loadModel(Long cursoID) throws IOException {
+    /*public RandomForest loadModel(Long cursoID) throws IOException {
         String filePath = getModelFilePath(cursoID); // Example: return a file path for cursoID
         try (InputStream inputStream = new FileInputStream(filePath);
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
@@ -32,11 +30,22 @@ public class RandomForestRepository {
             e.printStackTrace();
             return null;
         }
+    }*/
+
+    public RandomForest loadModel(Long cursoID) throws IOException {
+        String filePath = String.format("final_model%d.ser", cursoID); // Example: return a file path for cursoID
+        try (InputStream inputStream = new ClassPathResource(filePath).getInputStream();
+                ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
+            return (RandomForest) objectInputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    private String getModelFilePath(Long cursoID) throws IOException {
+    /*private String getModelFilePath(Long cursoID) throws IOException {
         String fileName = String.format("final_model%d.ser", cursoID);
         File resourceFile = new ClassPathResource(fileName).getFile();
         return resourceFile.getAbsolutePath();
-    }
+    }*/
 }
