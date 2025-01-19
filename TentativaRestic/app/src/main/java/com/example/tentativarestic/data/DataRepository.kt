@@ -3,11 +3,13 @@ package com.example.tentativarestic.data
 import android.util.Log
 import com.example.tentativarestic.data.RetrofitInstance.api
 import com.example.tentativarestic.entities.PerguntasQuestionario
+import com.example.tentativarestic.entities.PersonCurso
 import com.example.tentativarestic.entities.RespostasQuestionario
 import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
 import com.example.tentativarestic.entities.Unidade
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import retrofit2.HttpException
 
 class DataRepository(private val database: AppDatabase) {
@@ -298,10 +300,27 @@ class DataRepository(private val database: AppDatabase) {
         try {
             val response = api.enviarRespostasNivelamento(request)
             Log.d("DataRepository", "Respostas enviadas com sucesso para a API ${request}")
+
             if (response.isSuccessful) {
                 // A resposta foi bem-sucedida, acessa o corpo
-                val responseBody = response.body()
+                val responseBody = response.body()?.string()
                 Log.d("DataRepository", "Resposta da API: $responseBody")
+                responseBody?.let {
+                    val jsonObject = JSONObject(it)
+                    val nivelamento = jsonObject.optString("nivelamento")
+                    println("Nivelamento: $nivelamento")  // Isso vai imprimir "Básico"
+
+                    val existingPersonCurso = personCursoDao.getPersonCursoByPersonIdAndCursoId(respostas[0].id_person, cursoId)
+
+                    if (existingPersonCurso != null) {
+                        // Registro existe, faça o update
+                        personCursoDao.updatePersonCurso(PersonCurso(respostas[0].id_person, cursoId, nivelamento, false, true))
+                    } else {
+                        // Registro não encontrado, talvez insira um novo
+                        personCursoDao.insertPersonCurso(PersonCurso(respostas[0].id_person, cursoId, nivelamento, false, true))
+                    }
+                }
+
             } else {
                 // A resposta falhou, pega o código e o corpo do erro
                 val errorBody = response.errorBody()?.string()
@@ -317,15 +336,34 @@ class DataRepository(private val database: AppDatabase) {
         try{
             Log.d("DataRepository", "Sincronizando personCurso $personId com curso $cursoId")
             val response = api.getPersonCurso(cursoId, personId)
+            Log.d("DataRepository", "Resposta da API: $response")
             if (response.isSuccessful) {
-                response.body()?.let { personCurso ->
-                    personCursoDao.insertPersonCurso(personCurso)
+                val responseBody = response.body()
+
+                if (responseBody != null) {
+                    when (responseBody) {
+                        is PersonCurso -> {
+                            // Processar PersonCurso
+                            Log.d("DataRepository", "Resposta da API PersonCurso: $responseBody")
+                            personCursoDao.insertPersonCurso(responseBody)
+                        }
+                        is String -> {
+                            // Se for uma String, trate a resposta adequadamente
+                            Log.d("DataRepository", "Resposta da API é uma String: $responseBody")
+                            val personCurso = PersonCurso(personId, cursoId, "", false, true)
+                            personCursoDao.insertPersonCurso(personCurso)
+                        }
+                        else -> {
+                            Log.d("DataRepository", "Resposta da API com tipo inesperado: $responseBody")
+                        }
+                    }
+                } else {
+                    Log.d("DataRepository", "Resposta da API foi nula")
                 }
-            } else {
-                // Tratar erro
             }
         } catch (e: Exception) {
             // Tratar exceção
+            Log.e("DataRepository", "Erro ao sincronizar personCurso: ${e.message}", e)
         }
     }
 

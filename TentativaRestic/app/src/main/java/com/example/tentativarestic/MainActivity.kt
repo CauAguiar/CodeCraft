@@ -309,6 +309,7 @@ fun TelaNivelamento(navController: NavHostController, sharedPrefsManager: Shared
     //val unidade_ordem = sharedPrefsManager.getUnidadeOrdem()
 
     Scaffold(
+        //containerColor = Color.White,
         topBar = {
             TopAppBar(
                 title = {
@@ -330,7 +331,12 @@ fun TelaNivelamento(navController: NavHostController, sharedPrefsManager: Shared
                                 )
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    //containerColor = Color(0xFFF5F5F5), // Cor do fundo
+                    titleContentColor = Color.Black, // Cor do texto do título
+                    actionIconContentColor = Color.Black // Cor dos ícones de ação
+                )
 
             )
         }
@@ -374,7 +380,7 @@ fun TelaNivelamento(navController: NavHostController, sharedPrefsManager: Shared
 
                 if(perguntaAtual != null && respostasAtuais.isNotEmpty()) {
                     // Exibição personalizada para atividades específicas
-                   NivelamentoContent(perguntaAtual!!, respostasAtuais, sharedPrefsManager)
+                   NivelamentoContent(perguntaAtual!!, respostasAtuais, sharedPrefsManager, perguntasComRespostasFlow)
 
                 }
 
@@ -397,7 +403,9 @@ fun TelaNivelamento(navController: NavHostController, sharedPrefsManager: Shared
                             currentActivityIndex++
                         }
                     },
-                    onFinishClick = {},
+                    onFinishClick = {
+                        navController.navigate("curso")
+                    },
                 )
             }
         }
@@ -406,7 +414,7 @@ fun TelaNivelamento(navController: NavHostController, sharedPrefsManager: Shared
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun NivelamentoContent(pergunta2: PerguntasQuestionario, respostas: List<RespostasQuestionario>, sharedPrefsManager: SharedPrefsManager) {
+fun NivelamentoContent(pergunta2: PerguntasQuestionario, respostas: List<RespostasQuestionario>, sharedPrefsManager: SharedPrefsManager, atividades: List<NivelamentoViewModel.PerguntaComRespostas>) {
     // Estado persistente usando rememberSaveable
     val personId = sharedPrefsManager.getUserId()
 //    var respostaSelecionada2 by remember { mutableStateOf<Int?>(-1) }
@@ -474,6 +482,7 @@ fun NivelamentoContent(pergunta2: PerguntasQuestionario, respostas: List<Respost
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
             text = pergunta,
+            color = Color.Black,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Left,
@@ -568,6 +577,12 @@ fun NivelamentoContent(pergunta2: PerguntasQuestionario, respostas: List<Respost
         Button(
             onClick = {
                 if (respostaSelecionada != null) {
+
+                    // Extrair todos os IDs de perguntas
+                    val todasPerguntasIds = atividades.map { it.pergunta.id_pergunta }
+
+
+                    CoroutineScope(Dispatchers.IO).launch {
                     if (personQuiz != null) {
                         viewModel.updateEntity(
                             personQuiz.copy(
@@ -576,7 +591,12 @@ fun NivelamentoContent(pergunta2: PerguntasQuestionario, respostas: List<Respost
                                 resultado = resultado
                             )
                         )
+
+                            viewModel.verificarSePerguntasConcluidas(todasPerguntasIds)
+                            Log.d("NivelamentoViewModel", "Verificando se todas as perguntas foram concluídas")
+                        }
                     }
+
                     //resultado = respostaSelecionada == resposta_correta
                     confirmouResposta = true
                     //quiz.confirmouResposta = true
@@ -660,8 +680,12 @@ fun TelaModulo(navController: NavHostController, sharedPrefsManager: SharedPrefs
                                 )
                         )
                     }
-                }
-
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    //containerColor = Color(0xFFF5F5F5), // Cor do fundo
+                    titleContentColor = Color.Black, // Cor do texto do título
+                    actionIconContentColor = Color.Black // Cor dos ícones de ação
+                )
             )
         }
     ) { paddingValues ->
@@ -1566,8 +1590,7 @@ fun <T> BottomProgressBar(
     val viewModelFactory = ViewModelFactory(database, DataRepository(database))
     val viewModel: NivelamentoViewModel = viewModel(factory = viewModelFactory)
 
-    var allActivitiesCompleted by remember { mutableStateOf(false) }
-
+    val allActivitiesCompleted by viewModel.todasPerguntasConcluidas.collectAsState()
 
     // Verifica se todas as atividades estão concluídas
     //val allActivitiesCompleted = atividades.all { it.concluida }
@@ -1623,13 +1646,14 @@ fun <T> BottomProgressBar(
                 ),
                 enabled = currentActivityIndex > 0 // Desabilita se for a primeira atividade
             ) {
-                Text(text = "Anterior")
+                Text(text = "Anterior", color = Color.White)
             }
 
             // Texto indicando progresso
             Text(
                 text = "${currentActivityIndex + 1}/$totalActivities",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black
             )
 
             // Botão Próxima ou Finalizar
@@ -1647,9 +1671,9 @@ fun <T> BottomProgressBar(
                         val todasPerguntasIds = atividadesFiltradas.map { it.pergunta.id_pergunta }
 
                         // Verificar se todas as perguntas têm pelo menos uma resposta
-                        LaunchedEffect(todasPerguntasIds) {
-                            val todasConcluidas = viewModel.verificarSePerguntasConcluidas(todasPerguntasIds)
-                            allActivitiesCompleted = todasConcluidas
+                        LaunchedEffect(Unit) {
+                            viewModel.verificarSePerguntasConcluidas(todasPerguntasIds)
+                            //allActivitiesCompleted = todasConcluidas
                         }
                     }
 
@@ -1680,6 +1704,7 @@ fun <T> BottomProgressBar(
                                 CoroutineScope(Dispatchers.IO).launch {
                                     viewModel.finalizarNivelamento(todasPerguntasIds, atividadesFiltradas[0].pergunta.id_curso)
                                 }
+                                onFinishClick()
                             }
                             else -> {
                                 // Caso padrão
@@ -1708,7 +1733,10 @@ fun <T> BottomProgressBar(
             } else {
                 // Não é a última ou nem todas concluídas
                 Button(
-                    onClick = onNextClick,
+                    onClick = {
+                        onNextClick() // Aqui o onNextClick é chamado fora do bloco 'when'
+                    },
+
                     modifier = Modifier.background(
                         brush = Brush.linearGradient(
                             colors = listOf(Color(0xFF59C4FF), Color(0xFF0F59FF)),
@@ -1721,7 +1749,7 @@ fun <T> BottomProgressBar(
                     ),
                     enabled = currentActivityIndex < totalActivities - 1 // Desabilita se for a última atividade
                 ) {
-                    Text(text = "Próxima")
+                    Text(text = "Próxima", color = Color.White)
                 }
             }
         }
@@ -1746,7 +1774,7 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
                         modifier = Modifier.offset(y = 14.dp)
                 ) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack()}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
+                    IconButton(onClick = { navController.navigate("telaPrincipal")}, modifier = Modifier.offset(x = 3.dp, y = 14.dp)) {
                         Image(
                             painter = painterResource(id = R.drawable.seta), // Nome da sua imagem PNG
                             contentDescription = "Seta",
@@ -1763,6 +1791,15 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
             )
         }
     ) { innerPadding ->
+
+        BackHandler {
+            // Quando o botão de voltar for pressionado, verifica se estamos na tela "Curso"
+            // E então volta para "TelaPrincipal"
+            navController.navigate("telaPrincipal") {
+                // Esta parte vai limpar a pilha de navegação e garantir que você não volte para a tela "Curso"
+                popUpTo("telaPrincipal") { inclusive = true }
+            }
+        }
 
         val context = LocalContext.current
         val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
@@ -1971,7 +2008,7 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(title = { Text("Perfil", fontWeight = FontWeight.Black, fontSize = 28.sp) }, modifier = Modifier.offset(y = 14.dp), actions = {
+            TopAppBar(title = { Text("Perfil", fontWeight = FontWeight.Black, fontSize = 24.sp) }, modifier = Modifier.offset(y = 14.dp), actions = {
                 IconButton(onClick = { /*TODO*/ }) {
                     Box(
                         modifier = Modifier
@@ -1994,7 +2031,13 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
                         )
                     }
                 }
-            })
+            },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    //containerColor = Color(0xFFF5F5F5), // Cor do fundo
+                    titleContentColor = Color.Black, // Cor do texto do título
+                    actionIconContentColor = Color.Black // Cor dos ícones de ação
+                )
+            )
         },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
@@ -2269,6 +2312,7 @@ fun TelaPerfil(navController: NavHostController, onHomeClick: () -> Unit) {
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaPrincipal(
@@ -2277,6 +2321,12 @@ fun TelaPrincipal(
     sharedPrefsManager: SharedPrefsManager,
     userViewModel: UserViewModel
 ) {
+
+    BackHandler {
+        // Não faz nada, evitando que o app seja fechado
+        Log.d("TelaPrincipal", "Back pressionado, mas o app não vai fechar.")
+    }
+
     var searchText by remember { mutableStateOf("") }
 
 //    val languages = listOf(
@@ -2344,7 +2394,14 @@ fun TelaPrincipal(
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(Icons.Filled.Notifications, contentDescription = "Notification")
                 }
-            })
+            },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5), // Cor do fundo
+                    titleContentColor = Color.Black, // Cor do texto do título
+                    actionIconContentColor = Color.Black // Cor dos ícones de ação
+                )
+
+            )
         },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {

@@ -33,21 +33,43 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+//@Composable
+//fun TentativaResticTheme(
+//    darkTheme: Boolean = isSystemInDarkTheme(),
+//    // Dynamic color is available on Android 12+
+//    dynamicColor: Boolean = true,
+//    content: @Composable () -> Unit
+//) {
+//    val colorScheme = when {
+//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+//            val context = LocalContext.current
+//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+//        }
+//
+//        darkTheme -> DarkColorScheme
+//        else -> LightColorScheme
+//    }
+//
+//    MaterialTheme(
+//        colorScheme = colorScheme,
+//        typography = Typography,
+//        content = content
+//    )
+//}
+
 @Composable
 fun TentativaResticTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // Remova a lógica que depende do sistema para o tema escuro
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            // Use o LightColorScheme fixo, independentemente do modo do sistema
+            dynamicLightColorScheme(context)  // Sempre aplicar LightColorScheme
         }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> LightColorScheme // Forçar sempre o tema claro
     }
 
     MaterialTheme(

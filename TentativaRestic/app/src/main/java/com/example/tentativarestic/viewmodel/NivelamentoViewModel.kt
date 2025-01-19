@@ -71,7 +71,10 @@ class NivelamentoViewModel(private val database: AppDatabase, private val dataRe
         }
     }
 
-    suspend fun verificarSePerguntasConcluidas(todasPerguntasIds: List<Long>): Boolean {
+    private val _todasPerguntasConcluidas = MutableStateFlow(false)
+    val todasPerguntasConcluidas: StateFlow<Boolean> = _todasPerguntasConcluidas
+
+    suspend fun verificarSePerguntasConcluidas(todasPerguntasIds: List<Long>) {
         val respostas = withContext(Dispatchers.IO) {
             respostasUsuarioQuestionarioDao.getRespostasByPerguntasIds(todasPerguntasIds)
         }
@@ -80,7 +83,7 @@ class NivelamentoViewModel(private val database: AppDatabase, private val dataRe
         val todasConcluidas = respostas.size == todasPerguntasIds.size
         Log.d("NivelamentoViewModel", "Todas concluídas: $todasConcluidas")
 
-        return todasConcluidas
+        _todasPerguntasConcluidas.value = todasConcluidas
     }
 
     fun finalizarNivelamento(todasPerguntasIds: List<Long>, cursoId: Long) {

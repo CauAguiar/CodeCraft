@@ -10,6 +10,7 @@ import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
 import com.example.tentativarestic.entities.Unidade
 import com.example.tentativarestic.entities.Video
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
@@ -75,10 +76,14 @@ interface ApiService {
     @POST("api/respostas-usuario-questionario/enviarRespostasNivelamento")
     suspend fun enviarRespostasNivelamento(
         @Body request: DataRepository.RespostasNivelamentoRequest  // Enviando o request como JSON no corpo
-    ): Response<String>
+    ): Response<ResponseBody>
 
-    @GET("api/personCurso/getByCursoIdAndPersonId")
-    suspend fun getPersonCurso(@Query("cursoId") cursoId: Long, @Query("personId") personId: Long): Response<PersonCurso>
+    @GET("api/person-curso/getByCursoIdAndPersonId")
+    suspend fun getPersonCurso(
+        @Query("cursoId") cursoId: Long,
+        @Query("personId") personId: Long
+    ): Response<Any?> // Pode ser PersonCurso ou String ou outro tipo
+
 
 //    @GET("api/personQuiz/getByQuizId")
 //    suspend fun getPersonQuizByQuizId(@Query("quizId") quizId: Long): Response<PersonQuiz>

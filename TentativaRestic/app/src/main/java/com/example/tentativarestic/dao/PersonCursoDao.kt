@@ -21,4 +21,7 @@ interface PersonCursoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPersonCursos(personCursos: List<PersonCurso>)
+
+    @Query("SELECT * FROM person_curso WHERE id_person = :idPerson AND id_curso = :cursoId")
+    suspend fun getPersonCursoByPersonIdAndCursoId(idPerson: Long, cursoId: Long): PersonCurso?
 }
