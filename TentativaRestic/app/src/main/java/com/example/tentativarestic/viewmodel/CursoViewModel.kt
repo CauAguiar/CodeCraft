@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.tentativarestic.data.AppDatabase
 import com.example.tentativarestic.data.DataRepository
 import com.example.tentativarestic.entities.Curso
+import com.example.tentativarestic.entities.PersonCurso
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 
 class CursoViewModel(private val database: AppDatabase, private val dataRepository: DataRepository) : ViewModel() {
     private val cursoDao = database.cursoDao()
+    private val personCursoDao = database.personCursoDao()
 
     init {
         viewModelScope.launch {
@@ -73,6 +76,20 @@ class CursoViewModel(private val database: AppDatabase, private val dataReposito
             dataRepository.syncPersonCurso(cursoId, personId)
         } catch (e: Exception) {
             throw e
+        }
+    }
+
+    suspend fun getPersonCurso(cursoId: Long, personId: Long): Flow<PersonCurso?> {
+        try{
+            return personCursoDao.getPersonCurso(cursoId, personId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    fun insertPersonCurso(personCurso: PersonCurso) {
+        viewModelScope.launch {
+            personCursoDao.insertPersonCurso(personCurso)
         }
     }
 }

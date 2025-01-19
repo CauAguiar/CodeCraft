@@ -336,7 +336,7 @@ class DataRepository(private val database: AppDatabase) {
         try{
             Log.d("DataRepository", "Sincronizando personCurso $personId com curso $cursoId")
             val response = api.getPersonCurso(cursoId, personId)
-            Log.d("DataRepository", "Resposta da API: $response")
+            Log.d("DataRepository", "Resposta da API: ${response.body()}")
             if (response.isSuccessful) {
                 val responseBody = response.body()
 
@@ -360,8 +360,15 @@ class DataRepository(private val database: AppDatabase) {
                 } else {
                     Log.d("DataRepository", "Resposta da API foi nula")
                 }
+            } else if (response.code() == 404) {
+                Log.e("DataRepository", "Erro ao obter personCurso da API: ${response.code()}")
+                val personCurso = PersonCurso(personId, cursoId, "", false, true)
+                personCursoDao.insertPersonCurso(personCurso)
+
+        } else {
+
             }
-        } catch (e: Exception) {
+            } catch (e: Exception) {
             // Tratar exceção
             Log.e("DataRepository", "Erro ao sincronizar personCurso: ${e.message}", e)
         }

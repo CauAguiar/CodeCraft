@@ -24,4 +24,7 @@ interface PersonCursoDao {
 
     @Query("SELECT * FROM person_curso WHERE id_person = :idPerson AND id_curso = :cursoId")
     suspend fun getPersonCursoByPersonIdAndCursoId(idPerson: Long, cursoId: Long): PersonCurso?
+
+    @Query("SELECT * FROM person_curso WHERE id_curso = :cursoId AND id_person = :personId")
+    fun getPersonCurso(cursoId: Long, personId: Long): Flow<PersonCurso?>
 }

@@ -95,11 +95,13 @@ import com.example.tentativarestic.entities.Atividade
 import com.example.tentativarestic.entities.Curso
 import com.example.tentativarestic.entities.ExercicioAberto
 import com.example.tentativarestic.entities.PerguntasQuestionario
+import com.example.tentativarestic.entities.PersonCurso
 import com.example.tentativarestic.entities.PersonQuiz
 import com.example.tentativarestic.entities.Projeto
 import com.example.tentativarestic.entities.Quiz
 import com.example.tentativarestic.entities.RespostasQuestionario
 import com.example.tentativarestic.entities.RespostasUsuarioQuestionario
+import com.example.tentativarestic.entities.Unidade
 import com.example.tentativarestic.entities.Video
 //import com.example.tentativarestic.models.Atividade
 import com.example.tentativarestic.models.UserViewModelFactory
@@ -122,6 +124,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
@@ -1805,15 +1808,44 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
         val database = AppDatabase.getInstance(context) // Acessando a instância singleton do banco de dados
         val viewModelFactory = ViewModelFactory(database, DataRepository(database))
         val viewModel: UnidadeViewModel = viewModel(factory = viewModelFactory)
+        val viewModel2: CursoViewModel = viewModel(factory = viewModelFactory)
+
 
         val unidades by viewModel.unidades.observeAsState(emptyList())
 
         // Exemplo de nome do curso
         val cursoNome = sharedPrefsManager.getCursoNome()
 
+        var personCurso by remember { mutableStateOf<PersonCurso?>(null) }
+
         LaunchedEffect(cursoNome) {
             if (cursoNome != null) {
+                viewModel2.getPersonCurso(sharedPrefsManager.getCursoId(), sharedPrefsManager.getUserId()).collect { result ->
+                    // Atualizar o estado com os dados coletados
+                    personCurso = result
+                    Log.d("TelaCurso", "personCurso: $personCurso")
+                    val cursoId = sharedPrefsManager.getCursoId()
+                    val userId = sharedPrefsManager.getUserId()
+                    Log.d("TelaCurso", "cursoId: $cursoId userId: $userId")
+                }
+
                 viewModel.fetchUnidadesByCursoNome(cursoNome)
+
+
+            }
+        }
+
+        var livre = 0
+
+        if(personCurso != null){
+            val nivel = personCurso!!.nivelamento
+
+            if(nivel == "Básico"){
+                livre = 1
+            } else if (nivel == "Intermediário"){
+                livre = 2
+            } else if (nivel == "Avançado"){
+                livre = 3
             }
         }
 
@@ -1835,7 +1867,7 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
             //contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(unidades.size, key = { unidades[it].id }) { index ->
-                UnidadeItem(unidades[index], navController, sharedPrefsManager, userViewModel)
+                UnidadeItem(unidades[index], navController, sharedPrefsManager, userViewModel, index < livre)
             }
         }
     }
@@ -1843,7 +1875,13 @@ fun TelaCurso(navController: NavHostController, onModuloClick: () -> Unit, share
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navController: NavHostController, sharedPrefsManager: SharedPrefsManager, userViewModel: UserViewModel) {
+fun UnidadeItem(
+    unidade: Unidade,
+    navController: NavHostController,
+    sharedPrefsManager: SharedPrefsManager,
+    userViewModel: UserViewModel,
+    b: Boolean
+) {
     // Item individual para cada unidade
     Spacer(modifier = Modifier.height(8.dp))
     Box(
@@ -1974,7 +2012,7 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
                     .size(80.dp)
                     .offset(x = offsetX) // Aplica o deslocamento calculado
                     .clickable(
-                        //enabled = (isEnabled == 1) // Clique só funciona se o módulo estiver habilitado
+                        enabled = (b) // Clique só funciona se o módulo estiver habilitado
                     ) {
                         //if (isEnabled == 1) {
                         sharedPrefsManager.saveModuloId(modulo.id)
@@ -1983,8 +2021,7 @@ fun UnidadeItem(unidade: com.example.tentativarestic.entities.Unidade, navContro
                         //}
                     }
                     .graphicsLayer { // Aplica transparência se desabilitado
-                        //alpha =
-                        //if (isEnabled == 1) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
+                        alpha = if (b) 1f else 0.3f // 1f = opaco, 0.3f = semitransparente
                     }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -2653,6 +2690,8 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
     val viewModel: CursoViewModel = viewModel(factory = viewModelFactory)
     //val syncStatus by viewModel.syncStatus.observeAsState(false)
 
+    var personCurso by remember { mutableStateOf<PersonCurso?>(null) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -2663,11 +2702,35 @@ fun LanguageCard(language: LanguageItem, sharedPrefsManager: SharedPrefsManager,
                 sharedPrefsManager.saveCursoNome(language.name)
                 sharedPrefsManager.saveCursoId(language.id)
 
+
+
                 //if (syncStatus) {
                 CoroutineScope(Dispatchers.Main).launch {
-                    viewModel.syncUnidadesAndModulos(languageName = language.name)
-                    viewModel.syncPersonCurso(language.id, sharedPrefsManager.getUserId())
-                    navController.navigate("nivelamento") //curso
+                    withContext(Dispatchers.IO) {
+                        viewModel.syncUnidadesAndModulos(languageName = language.name)
+                        viewModel.syncPersonCurso(language.id, sharedPrefsManager.getUserId())
+                    }
+
+
+
+                    viewModel.getPersonCurso(sharedPrefsManager.getCursoId(), sharedPrefsManager.getUserId()).collect { result ->
+                        // Atualizar o estado com os dados coletados
+                        personCurso = result
+                        //Log.d("TelaCurso!+", "personCurso: $personCurso")
+                        //val cursoId = sharedPrefsManager.getCursoId()
+                        //val userId = sharedPrefsManager.getUserId()
+                        //Log.d("TelaCurso", "cursoId: $cursoId userId: $userId")
+                        if(personCurso != null){
+                            if(personCurso!!.nivelamento != ""){
+                                navController.navigate("curso")
+                            } else {
+                                navController.navigate("nivelamento")
+                            }
+                        } else {
+                            Log.d("TelaCurso+!", "personCurso é nulo")
+                        }
+
+                    }
                 }
 
                 //}
