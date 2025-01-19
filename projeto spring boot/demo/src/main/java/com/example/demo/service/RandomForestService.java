@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class RandomForestService {
 
     // Predict the class of a new instance
     public int[] predict(double[][] features, long cursoId) {
-        loadModel(cursoId);
+        this.model = loadModel(cursoId);
         if (this.model == null) {
             throw new IllegalStateException("Model not trained");
         }
@@ -60,11 +61,12 @@ public class RandomForestService {
     }
 
     // Load the model from a file
-    public void loadModel(Long cursoID) {
+    public RandomForest loadModel(Long cursoID) {
         try {
-            this.model = this.randomForestRepository.loadModel(cursoID);
-        } catch (Exception e) {
+            return this.model = this.randomForestRepository.loadModel(cursoID);
+        } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
     }
 

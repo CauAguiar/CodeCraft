@@ -54,7 +54,7 @@ public class RespostasUsuarioQuestionarioController {
         double[][] features = respostasList.stream()
                 .map(resposta -> new double[] { resposta.getIdResposta() })
                 .toArray(double[][]::new);
-        
+    
         int[] predictionResult = randomForestService.predict(features, cursoId);
 
         // Map the prediction result to the course ID
