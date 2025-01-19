@@ -44,6 +44,35 @@ public class DataFetchRepository {
         return featuresList.toArray(new double[0][0]);
     }
 
+    public double[][] fetchFeaturesUniqueLevel(int languageId, int userId) {
+        String query = """
+            SELECT 
+                GROUP_CONCAT(r.peso ORDER BY r.id_resposta) AS pesos_respostas
+            FROM 
+                respostas_usuario_questionario ruq
+            JOIN 
+                respostas_questionario r ON ruq.id_resposta = r.id_resposta
+            JOIN 
+                perguntas_questionario pq ON ruq.id_pergunta = pq.id_pergunta
+            WHERE 
+                ruq.id_person = ? 
+                AND pq.id_curso = ?
+            GROUP BY 
+                ruq.id_person, pq.id_curso;
+        """;
+
+        List<double[]> featuresList = new ArrayList<>();
+        jdbcTemplate.query(query, ps -> {
+            ps.setInt(1, userId);
+            ps.setInt(2, languageId);
+        }, rs -> {
+            String[] pesos = rs.getString("pesos_respostas").split(",");
+            double[] featureRow = Arrays.stream(pesos).mapToDouble(Double::parseDouble).toArray();
+            featuresList.add(featureRow);
+        });
+        return featuresList.toArray(new double[0][0]);
+    }
+
     public int[] fetchLabels(int languageId) {
         /*String query = """
             SELECT l.nivel

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.model.NivelamentoResponse;
 import com.example.demo.model.RespostasNivelamentoRequest;
 import com.example.demo.model.RespostasUsuarioQuestionario;
+import com.example.demo.repository.DataFetchRepository;
 import com.example.demo.service.RandomForestService;
 import com.example.demo.service.RespostasUsuarioQuestionarioService;
 
@@ -27,6 +28,9 @@ public class RespostasUsuarioQuestionarioController {
 
     @Autowired
     private RandomForestService randomForestService;
+
+    @Autowired
+    private DataFetchRepository dataFetchRepository;
 
     @GetMapping("/getByPersonId")
     public ResponseEntity<List<RespostasUsuarioQuestionario>> getRespostasByPersonId(
@@ -51,10 +55,9 @@ public class RespostasUsuarioQuestionarioController {
         });
 
         // Extract features for prediction
-        double[][] features = respostasList.stream()
-                .map(resposta -> new double[] { resposta.getIdResposta() })
-                .toArray(double[][]::new);
+        double[][] features = dataFetchRepository.fetchFeaturesUniqueLevel(cursoId.intValue(), respostasList.get(0).getIdPerson().intValue());
     
+        
         int[] predictionResult = randomForestService.predict(features, cursoId);
 
         // Map the prediction result to the course ID
